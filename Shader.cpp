@@ -80,6 +80,10 @@ void GLnewin::Shader::use() noexcept {
     glUseProgram(_program);
 }
 
+void GLnewin::Shader::setUniform(const IUniform* v) {
+    v->upload(_program);
+}
+
 GLnewin::Shader::~Shader() {
     glDeleteProgram(_program);
 }

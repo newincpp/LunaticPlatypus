@@ -4,7 +4,7 @@
 
 int main() {
     GLnewin::Mesh* tri;
-    GLnewin::IRendertarget* r = new GLnewin::Window(100, 100, false, "demo");
+    GLnewin::IRendertarget* r = new GLnewin::Window(1920, 1080, false, "demo");
     r->pushRenderCandidate(tri = new GLnewin::Mesh({-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f}));
 
     GLnewin::Shader s;
@@ -13,7 +13,11 @@ int main() {
     s.link();
     tri->setShader(&s);
 
+    GLnewin::Uniform<float> value = 0.0;
+
     while (true) {
+	s.setUniform(&value);
+	value += 0.001;
 	r->render();
     }
     delete r;

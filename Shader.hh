@@ -4,6 +4,7 @@
 #include <fstream>
 #include <streambuf>
 #include "GL.h"
+#include "Uniform.hh"
 
 namespace GLnewin {
     class Shader {
@@ -30,7 +31,8 @@ namespace GLnewin {
 		std::ifstream t(file);
 		return std::string((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 	    }
-	    virtual void use() noexcept ;
+	    void use() noexcept ;
+	    void setUniform(const IUniform*);
     };
 }
 

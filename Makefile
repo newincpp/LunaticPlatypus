@@ -1,7 +1,8 @@
 SRC	=main.cpp \
 	 Window.cpp \
 	 Mesh.cpp \
-	 Shader.cpp
+	 Shader.cpp \
+	 Uniform.cpp
 EXT     =cpp
 NAME	=gl
 CXXFLAGS= -Wall -Wextra -W -std=c++0x

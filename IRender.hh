@@ -6,7 +6,6 @@ namespace GLnewin {
     class IRenderable {
 	public:
 	    virtual void draw() noexcept = 0;
-	    virtual void setShader(Shader*) noexcept = 0;
     };
 
     class IRendertarget {
