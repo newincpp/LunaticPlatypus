@@ -13,11 +13,20 @@ int main() {
     s.link();
     tri->setShader(&s);
 
-    GLnewin::Uniform<float> value(0.01f, s.getProgram(), "color");
+    GLnewin::Uniform<GLfloat> color = s.genUniform(0.1f, "color");
+    GLnewin::Uniform<glm::vec4> displacement = s.genUniform(glm::vec4(0.1,0.1,0.1, 0.1), "displacement");
+    glm::vec4& d = displacement.get();
 
     while (true) {
-	s.setUniform(&value);
-	value += 0.001f;
+	if (color <= 0.5f) {
+	    color += 0.01;
+	    d.x += 0.01;
+	} else {
+	    color = 0.0f;
+	    d.x = 0;
+	}
+	s.setUniform(&displacement);
+	s.setUniform(&color);
 	r->render();
     }
     delete r;

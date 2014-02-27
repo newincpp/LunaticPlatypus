@@ -26,7 +26,6 @@ namespace GLnewin {
 	    void setGeometry(const std::string& source)noexcept;
 	    void setVertex(const std::string& source)noexcept;
 	    void setFragment(const std::string& source)noexcept;
-	    inline GLuint getProgram() const noexcept { return _program; }
 	    void link()noexcept;
 	    static std::string fileToString(const std::string& file)noexcept{
 		std::ifstream t(file);

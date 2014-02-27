@@ -194,6 +194,8 @@ void GLnewin::Window::getSize() const noexcept {
 }
 
 void GLnewin::Window::render() noexcept {
+    glClearColor(0,0,0,0);
+    glClear(GL_COLOR_BUFFER_BIT);
     std::vector<IRenderable*>::iterator&& end = _objects.end();
     for (std::vector<IRenderable*>::iterator it = _objects.begin(); it != end; ++it) {
 	(*it)->draw();

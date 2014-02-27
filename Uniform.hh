@@ -29,6 +29,12 @@ namespace GLnewin {
 		void operator-=(const Uniform<T>& v) noexcept { _value -= v._value; return *this; }
 		const Uniform<T>& operator++() noexcept { ++_value; }
 		const Uniform<T>& operator--() noexcept { ++_value; }
+		bool operator==(const Uniform<T>& v) { return _value == v._value; }
+		bool operator!=(const Uniform<T>& v) { return _value != v._value; }
+		bool operator<(const Uniform<T>& v) { return _value < v._value; }
+		bool operator>(const Uniform<T>& v) { return _value > v._value; }
+		bool operator<=(const Uniform<T>& v) { return _value <= v._value; }
+		bool operator>=(const Uniform<T>& v) { return _value >= v._value; }
 
 		const Uniform<T>& operator=(const T&& v) noexcept { _value = v; return *this; }
 		const Uniform<T>& operator*(const T&& v) noexcept { _value = v; return *this; }
@@ -37,6 +43,15 @@ namespace GLnewin {
 		const Uniform<T>& operator-(const T&& v) noexcept { _value = v; return *this; }
 		void operator+=(const T&& v) noexcept { _value += v; }
 		void operator-=(const T&& v) noexcept { _value -= v; }
+		bool operator==(const T&& v) noexcept { return _value == v; }
+		bool operator!=(const T&& v) noexcept { return _value != v; }
+		bool operator<(const T&& v) noexcept{ return _value < v; }
+		bool operator>(const T&& v) noexcept{ return _value > v; }
+		bool operator<=(const T&& v) noexcept { return _value <= v; }
+		bool operator>=(const T&& v) noexcept { return _value >= v; }
+
+		T& operator>>(T&& v) noexcept { v = _value; return _value; }
+		T& get() noexcept { return _value; }
 
 		virtual void upload() const noexcept;
 	};
