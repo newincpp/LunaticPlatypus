@@ -1,12 +1,12 @@
 #ifndef RENDERTARGER_H_
 # define RENDERTARGER_H_
+#include "IShader.hh"
 
 namespace GLnewin {
-    class Shader;
     class IRenderable {
 	public:
 	    virtual void draw() noexcept = 0;
-	    virtual void setShader(Shader*) noexcept = 0;
+	    virtual void setShader(IShader*) noexcept = 0;
     };
 
     class IRendertarget {

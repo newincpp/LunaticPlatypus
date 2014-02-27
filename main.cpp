@@ -3,7 +3,7 @@
 #include "Mesh.hh"
 
 int main() {
-    GLnewin::Mesh* tri;
+    GLnewin::IRenderable* tri;
     GLnewin::IRendertarget* r = new GLnewin::Window(100, 100, false, "demo");
     r->pushRenderCandidate(tri = new GLnewin::Mesh({-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f}));
 

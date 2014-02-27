@@ -1,7 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <stack>
-#include "IRendertarget.hh"
+#include "IRender.hh"
 #include "Window.hh"
 
 namespace GLnewin {

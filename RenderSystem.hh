@@ -1,7 +1,7 @@
 #ifndef RENDERSYSTEM_H_
 # define RENDERSYSTEM_H_
 
-#include "IRendertarget.hh"
+#include "IRender.hh"
 #include "Window.hh"
 #include "RenderTexture.hh"
 
