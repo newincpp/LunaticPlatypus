@@ -13,11 +13,11 @@ int main() {
     s.link();
     tri->setShader(&s);
 
-    GLnewin::Uniform<float> value = 0.0;
+    GLnewin::Uniform<float> value(0.01f, s.getProgram(), "color");
 
     while (true) {
 	s.setUniform(&value);
-	value += 0.001;
+	value += 0.001f;
 	r->render();
     }
     delete r;
