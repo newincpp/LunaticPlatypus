@@ -25,6 +25,7 @@ namespace GLnewin {
 	    virtual void draw() noexcept;
 
 	    void setShader(Shader*) noexcept;
+	    inline Shader* getShader() noexcept { return _shad; }
     };
 }
 
