@@ -9,10 +9,13 @@ namespace GLnewin {
 	    Shader& _linkedShader;
 	    Uniform<glm::mat4> _projection;
 	    Uniform<glm::mat4> _modelview;
+	    glm::vec3 _position;
+	    glm::vec3 _lookAt;
 	public:
 	    explicit Camera(Shader&);
-	    void lookAt(glm::vec3)noexcept;
-	    void position(glm::vec3)noexcept;
+	    void lookAt(const glm::vec3&)noexcept;
+	    void position(const glm::vec3&)noexcept;
+	    void setActive();
     };
 }
 

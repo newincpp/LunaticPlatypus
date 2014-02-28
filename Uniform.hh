@@ -1,5 +1,6 @@
 #ifndef UNIFORM_H_
 # define UNIFORM_H_
+#include <iostream>
 #include <string>
 #include "GL.h"
 #include "glm/glm.hpp"
@@ -15,7 +16,11 @@ namespace GLnewin {
 		T _value;
 		GLint _location;
 	    public:
-		Uniform(T value, GLuint prgm, const std::string& name) : _value(value), _location(glGetUniformLocation(prgm, name.c_str())) {  }
+		Uniform(T value, GLuint prgm, const std::string& name) : _value(value), _location(glGetUniformLocation(prgm, name.c_str())) {
+		    if (_location == -1) {
+			std::cout << "failed to bind location of uniform: \"" << name << "\"" << std::endl;
+		    }
+		}
 		Uniform(T value) : _value(value) {}
 		Uniform(const Uniform&) = default;
 		Uniform(Uniform&&) = default;

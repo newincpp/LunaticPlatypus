@@ -1,3 +1,4 @@
+#include <glm/gtc/type_ptr.hpp>
 #include "Uniform.hh"
 
 //VECTORS
@@ -36,7 +37,7 @@ void GLnewin::Uniform<glm::mat3>::upload() const noexcept  {
 
 template <>
 void GLnewin::Uniform<glm::mat4>::upload() const noexcept  {
-  glUniformMatrix4fv(_location, 1, GL_FALSE, &_value[0][0]);
+  glUniformMatrix4fv(_location, 1, GL_FALSE, glm::value_ptr(_value));
 }
 
 template <>
