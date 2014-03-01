@@ -1,14 +1,15 @@
-SRC	=main.cpp \
-	 Window.cpp \
-	 Mesh.cpp \
-	 Shader.cpp \
-	 Uniform.cpp \
-	 Object.cpp \
-	 Camera.cpp
+SRCDIR	=GLnewin
+SRC	=$(SRCDIR)/main.cpp \
+	 $(SRCDIR)/Window.cpp \
+	 $(SRCDIR)/Mesh.cpp \
+	 $(SRCDIR)/Shader.cpp \
+	 $(SRCDIR)/Uniform.cpp \
+	 $(SRCDIR)/Object.cpp \
+	 $(SRCDIR)/Camera.cpp
 EXT     =cpp
 NAME	=gl
 CXXFLAGS= -Wall -Wextra -W -std=c++0x
-LDFLAGS	=-lGL -lX11 -DGLEW_STATIC ./libGLEW.a ./libassimp.a
+LDFLAGS	=-lGL -lX11 -DGLEW_STATIC ./libs/libGLEW.a ./libs/libassimp.a
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
 CXX	= clang++
