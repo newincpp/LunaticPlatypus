@@ -8,7 +8,7 @@ SRC	=main.cpp \
 EXT     =cpp
 NAME	=gl
 CXXFLAGS= -Wall -Wextra -W -std=c++0x
-LDFLAGS	=-lGL -lX11 -DGLEW_STATIC /usr/lib/libGLEW.a
+LDFLAGS	=-lGL -lX11 -DGLEW_STATIC ./libGLEW.a ./libassimp.a
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
 CXX	= clang++
