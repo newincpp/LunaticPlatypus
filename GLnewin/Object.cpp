@@ -2,8 +2,8 @@
 #include "Object.hh"
 
 GLnewin::Object::Object() : _mesh({-1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f}), _rotPosScale(NULL) {
-    _shader.setVertex(GLnewin::Shader::fileToString("vert.glsl"));
-    _shader.setFragment(GLnewin::Shader::fileToString("frag.glsl"));
+    _shader.setVertex(GLnewin::Shader::fileToString("shaders/vert.glsl"));
+    _shader.setFragment(GLnewin::Shader::fileToString("shaders/frag.glsl"));
     _shader.link();
     _mesh.setShader(&_shader);
     _rotPosScale = new Uniform<glm::mat4>(_shader.genUniform(glm::mat4(), "object"));
