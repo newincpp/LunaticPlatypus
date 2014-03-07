@@ -8,7 +8,7 @@ SRC	=$(SRCDIR)/main.cpp \
 	 $(SRCDIR)/Camera.cpp
 EXT     =cpp
 NAME	=gl
-CXXFLAGS= -Wall -Wextra -W -std=c++0x
+CXXFLAGS= -Wall -Wextra -W -std=c++0x -I./
 LDFLAGS	=-lGL -lX11 -DGLEW_STATIC ./libs/libGLEW.a ./libs/libassimp.a
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
