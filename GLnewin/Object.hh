@@ -21,6 +21,7 @@ namespace GLnewin {
 	    void setPos(const glm::vec3&) noexcept;
 	    void setRot(const glm::vec3&) noexcept;
 	    void setScale(const glm::vec3&) noexcept;
+	    bool DoTheImportThing(const std::string& pFile);
     };
 }
 
