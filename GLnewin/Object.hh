@@ -14,14 +14,16 @@ namespace GLnewin {
 	    glm::vec3 _rot;
 	    glm::vec3 _scale;
 	    Uniform<glm::mat4>* _rotPosScale;
+
+	    std::vector<GLfloat> _genMesh(const std::string&);
 	public:
-	    explicit Object();
+	    explicit Object(const std::string&);
 	    virtual void draw()noexcept;
 	    inline Camera genCamera() noexcept { return Camera(_shader); }
 	    void setPos(const glm::vec3&) noexcept;
 	    void setRot(const glm::vec3&) noexcept;
 	    void setScale(const glm::vec3&) noexcept;
-	    bool DoTheImportThing(const std::string& pFile);
+	    bool importThing(const std::string& pFile);
     };
 }
 

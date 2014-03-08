@@ -7,10 +7,13 @@ GLnewin::Mesh::Mesh(std::initializer_list<GLfloat> l) : _size(l.size() / 3), _sh
 	g_vertex_buffer_data[i] = x;
 	++i;
     }
-    vertexbuffer = GPUAlloc(g_vertex_buffer_data, _size * 3);
+    vertexbuffer = _GPUAlloc(g_vertex_buffer_data, _size * 3);
 }
 
-GLnewin::Mesh::Mesh(GLfloat* data, unsigned int size) : _size(size / 3), vertexbuffer(GPUAlloc(data, size)) {
+GLnewin::Mesh::Mesh(std::vector<GLfloat> data) : _size(data.size() / 3), vertexbuffer(_GPUAlloc(&data[0], data.size())) {
+}
+
+GLnewin::Mesh::Mesh(GLfloat* data, unsigned int size) : _size(size / 3), vertexbuffer(_GPUAlloc(data, size)) {
 }
 
 void GLnewin::Mesh::draw() noexcept {

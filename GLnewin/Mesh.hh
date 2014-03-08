@@ -1,6 +1,7 @@
 #ifndef MESH_H_
 # define MESH_H_
 #include <initializer_list>
+#include <vector>
 #include "GL.h"
 #include "IRender.hh"
 #include "Shader.hh"
@@ -11,7 +12,7 @@ namespace GLnewin {
 	    GLint _size;
 	    GLuint vertexbuffer;
 	    Shader* _shad;
-	    inline GLuint GPUAlloc(GLfloat* data, unsigned int size) noexcept {
+	    inline GLuint _GPUAlloc(GLfloat* data, unsigned int size) noexcept {
 		GLuint id;
 		size *= sizeof(GLfloat);
 		glGenBuffers(1, &id); // malloc
@@ -21,6 +22,7 @@ namespace GLnewin {
 	    }
 	public:
 	    explicit Mesh(std::initializer_list<GLfloat> l);
+	    explicit Mesh(std::vector<GLfloat> l);
 	    explicit Mesh(GLfloat* data, unsigned int size);
 	    virtual void draw() noexcept;
 
