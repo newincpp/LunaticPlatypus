@@ -32,7 +32,8 @@ namespace GLnewin {
 		return std::string((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 	    }
 	    void use() noexcept ;
-	    void setUniform(const IUniform*)const noexcept;
+	    template <typename T>
+		void setUniform(const Uniform<T>& value)const noexcept;
 	    template<typename T>
 		Uniform<T> genUniform(T value, const std::string& name) const noexcept {
 		    return Uniform<T>(value, _program, name);

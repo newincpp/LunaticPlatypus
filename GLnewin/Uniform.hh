@@ -6,12 +6,8 @@
 #include "glm/glm.hpp"
 
 namespace GLnewin {
-    class IUniform {
-	public:
-	    virtual void upload() const noexcept = 0;
-    };
     template <typename T>
-	class Uniform : public IUniform {
+	class Uniform {
 	    private:
 		T _value;
 		GLint _location;

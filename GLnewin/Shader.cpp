@@ -80,8 +80,9 @@ void GLnewin::Shader::use() noexcept {
     glUseProgram(_program);
 }
 
-void GLnewin::Shader::setUniform(const IUniform* v) const noexcept {
-    v->upload();
+template <typename T>
+void GLnewin::Shader::setUniform(const Uniform<T>& v) const noexcept {
+    v.upload();
 }
 
 GLnewin::Shader::~Shader() {
