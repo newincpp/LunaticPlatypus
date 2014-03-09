@@ -5,6 +5,8 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "Object.hh"
 
+//http://ogldev.atspace.co.uk/www/tutorial22/tutorial22.html
+
 
 GLnewin::Object::Object(const std::string& file) : _mesh(_genMesh(file)), _rotPosScale(NULL) {
     _shader.setVertex(GLnewin::Shader::fileToString("shaders/vert.glsl"));
