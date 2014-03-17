@@ -1,7 +1,7 @@
 #include <iostream>
-#include "RenderSystem.hh"
-#include "Camera.hh"
-#include "Object.hh"
+#include <RenderSystem.hh>
+#include <Camera.hh>
+#include <Object.hh>
 
 int main(int ac, char** av) {
     GLnewin::IRendertarget* r = new GLnewin::Window(1920, 1080, false, "demo");
