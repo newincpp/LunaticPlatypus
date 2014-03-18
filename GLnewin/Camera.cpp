@@ -1,4 +1,4 @@
-#include <glm/gtc/matrix_transform.hpp>
+#include "glm/gtc/matrix_transform.hpp"
 #include "Camera.hh"
 
 GLnewin::Camera::Camera(Shader& s) : _linkedShader(s), _projection(s.genUniform(glm::mat4(), "projection")), _modelview(s.genUniform(glm::mat4(), "modelview")) {

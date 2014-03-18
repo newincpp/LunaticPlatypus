@@ -2,8 +2,8 @@ SRCDIR	=exemple
 SRC	=$(SRCDIR)/main.cpp
 EXT     =cpp
 NAME	=gl
-CXXFLAGS= -Wall -Wextra -W -std=c++0x
-LDFLAGS	=
+CXXFLAGS= -Wall -Wextra -W -std=c++0x -I./GLnewin
+LDFLAGS	= GLnewin.a -lGL -lX11
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
 CXX	= clang++

@@ -7,8 +7,8 @@ SRC	=Window.cpp \
 
 EXT     =cpp
 NAME	=GLnewin.a
-CXXFLAGS= -Wall -Wextra -W -std=c++0x -I../
-LDFLAGS	= ./libs/libGLEW.a ./libs/libassimp.a ./libs/libz.a ./libs/libminizip.a # -lGL -lX11 -DGLEW_STATIC
+CXXFLAGS= -Wall -Wextra -W -std=c++0x -I./ -DGLEW_STATIC
+LDFLAGS	= ./libs/*.o # -lGL -lX11 -DGLEW_STATIC
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
 CXX	= clang++
