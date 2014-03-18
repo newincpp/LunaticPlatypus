@@ -1,7 +1,6 @@
-#include "glm/gtc/matrix_transform.hpp"
 #include "Camera.hh"
 
-GLnewin::Camera::Camera(Shader& s) : _linkedShader(s), _projection(s.genUniform(glm::mat4(), "projection")), _modelview(s.genUniform(glm::mat4(), "modelview")) {
+GLnewin::Camera::Camera(Shader& s) : _projection(s.genUniform(glm::mat4(), "projection")), _modelview(s.genUniform(glm::mat4(), "modelview")) {
     //_projection = glm::perspective(45.0f, 1920.0f/1024.0f, 0.1f, 10.0f);
     _projection = glm::perspectiveFov(45.0f, 1920.0f,1024.0f, 0.1f, 10.0f);
     _modelview = glm::mat4();

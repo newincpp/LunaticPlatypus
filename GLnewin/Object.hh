@@ -15,7 +15,6 @@ namespace GLnewin {
 	    glm::vec3 _scale;
 	    Uniform<glm::mat4>* _rotPosScale;
 
-	    std::vector<GLfloat> _genMesh(const std::string&);
 	public:
 	    explicit Object(const std::string&);
 	    virtual void draw()noexcept;

@@ -2,8 +2,8 @@ SRC	=Window.cpp \
 	 Mesh.cpp \
 	 Shader.cpp \
 	 Uniform.cpp \
-	 Object.cpp \
-	 Camera.cpp
+	 Camera.cpp \
+	 Scene.cpp
 
 EXT     =cpp
 NAME	=GLnewin.a
@@ -18,7 +18,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(LINKER) -cvq $(NAME) $(OBJS) $(LDFLAGS)
-	cp $(NAME) ../
+	mv $(NAME) ../
 
 clean:
 	$(RM) $(OBJS) *.swp *~ *#

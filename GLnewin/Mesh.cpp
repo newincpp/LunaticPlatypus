@@ -1,6 +1,6 @@
 #include "Mesh.hh"
 
-GLnewin::Mesh::Mesh(std::initializer_list<GLfloat> l) : _size(l.size() / 3), _shad(NULL) {
+GLnewin::Mesh::Mesh(std::initializer_list<GLfloat> l) : _size(l.size() / 3) {
     GLfloat g_vertex_buffer_data[_size * 3];
     unsigned int i = 0;
     for (GLfloat x : l) {
@@ -17,9 +17,6 @@ GLnewin::Mesh::Mesh(GLfloat* data, unsigned int size) : _size(size / 3), vertexb
 }
 
 void GLnewin::Mesh::draw() noexcept {
-    if (_shad) {
-	_shad->use();
-    }
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexAttribPointer(
@@ -31,8 +28,4 @@ void GLnewin::Mesh::draw() noexcept {
 	    (void*)0 // array buffer offset
 	    );
     glDrawArrays(GL_TRIANGLES, 0, _size); // Starting from vertex 0; 3 vertices total -> 1 triangle
-}
-
-void GLnewin::Mesh::setShader(Shader* s) noexcept {
-    _shad = s;
 }

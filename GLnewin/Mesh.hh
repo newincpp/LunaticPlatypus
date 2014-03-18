@@ -11,7 +11,6 @@ namespace GLnewin {
 	private:
 	    GLint _size;
 	    GLuint vertexbuffer;
-	    Shader* _shad;
 	    inline GLuint _GPUAlloc(GLfloat* data, unsigned int size) noexcept {
 		GLuint id;
 		size *= sizeof(GLfloat);
@@ -25,9 +24,6 @@ namespace GLnewin {
 	    explicit Mesh(std::vector<GLfloat> l);
 	    explicit Mesh(GLfloat* data, unsigned int size);
 	    virtual void draw() noexcept;
-
-	    void setShader(Shader*) noexcept;
-	    inline Shader* getShader() noexcept { return _shad; }
     };
 }
 
