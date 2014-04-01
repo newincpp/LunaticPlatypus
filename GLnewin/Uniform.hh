@@ -20,7 +20,7 @@ namespace GLnewin {
 		Uniform(T value) : _value(value) {}
 		Uniform(const Uniform&) = default;
 		Uniform(Uniform&&) = default;
-		~Uniform() = default;
+		virtual ~Uniform() = default;
 		const Uniform<T>& operator=(const Uniform<T>& v) noexcept { _value = v._value; return *this; }
 		const Uniform<T>& operator*(const Uniform<T>& v) noexcept { _value = v._value; return *this; }
 		const Uniform<T>& operator/(const Uniform<T>& v) noexcept { _value = v._value; return *this; }

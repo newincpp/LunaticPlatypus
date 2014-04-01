@@ -43,7 +43,9 @@ GLnewin::Mesh* GLnewin::Scene::genMesh(const std::string& file) {
     for (GLfloat x : verts) {
 	std::cout << "value: " << x << std::endl;
     }
-    return new Mesh(verts);
+    Mesh* m = new Mesh(verts);
+    m->bindMatrixModifier(_shader.genUniform(glm::mat4(), "model"));
+    return m;
 }
 
 void GLnewin::Scene::render() {

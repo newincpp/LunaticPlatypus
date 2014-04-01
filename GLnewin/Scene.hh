@@ -12,7 +12,7 @@ namespace GLnewin {
 	    GLnewin::Shader _shader;
 	    GLnewin::Camera* _cam;
 	    inline void _setTrivialShader() noexcept {
-		std::string trivVertex = "#version 330 \n layout(location = 0) in vec3 vertex; \n uniform mat4 projection; \n uniform mat4 view; \n uniform mat4 model; \n void main(void) { \n gl_Position = projection * view * vec4(vertex, 1.0); \n }";
+		std::string trivVertex = "#version 330 \n layout(location = 0) in vec3 vertex; \n uniform mat4 projection; \n uniform mat4 view; \n uniform mat4 model; \n void main(void) { \n gl_Position = projection * view * model * vec4(vertex, 1.0); \n }";
 		std::string trivFrag = "#version 330 \n out vec4 outColor; \n uniform float color; \n void main(void) { \n outColor = vec4(0.0,0.3, color, 1.0); \n }";
 		_shader.setVertex(trivVertex);
 		_shader.setFragment(trivFrag);

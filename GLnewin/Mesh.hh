@@ -11,8 +11,8 @@ namespace GLnewin {
 	private:
 	    GLint _size;
 	    short _padding;
-	    GLuint _ebo;
 	    GLuint vertexbuffer;
+	    Uniform<glm::mat4>* _model;
 	    inline GLuint _GPUAlloc(GLfloat* data, unsigned int size) noexcept {
 		GLuint id;
 		size *= sizeof(GLfloat);
@@ -27,6 +27,9 @@ namespace GLnewin {
 	    Mesh(GLfloat* data, unsigned int size);
 	    virtual void draw() const noexcept;
 	    inline void setPadding(short n) { _padding = n; }
+	    void bindMatrixModifier(const Uniform<glm::mat4>&);
+	    void bindMatrixModifier(const glm::mat4& n) = delete;
+	    void refreshModifier(const glm::mat4& n);
     };
 }
 
