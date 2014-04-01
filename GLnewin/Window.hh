@@ -14,7 +14,7 @@
 namespace GLnewin {
     int ctxErrorHandler(Display *dpy, XErrorEvent *ev);
 
-    class Window : public IRendertarget {
+    class Window : public IGLContext {
 	private:
 #define GLX_CONTEXT_MAJOR_VERSION_ARB       0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB       0x2092
@@ -26,7 +26,6 @@ namespace GLnewin {
 	    Colormap _cmap;
 	    std::string _name;
 	    bool _fullscreen;
-	    std::vector<IRenderable*> _objects;
 	public:
 	    explicit Window(unsigned long, unsigned long, bool, const std::string&);
 	    explicit Window(const Window*) = delete;
@@ -35,8 +34,9 @@ namespace GLnewin {
 
 	    virtual void initalize(unsigned long, unsigned long);
 	    virtual void getSize() const noexcept;
-	    virtual void render() noexcept;
-	    virtual void pushRenderCandidate(IRenderable*) noexcept;
+
+	    void flush() const noexcept;
+	    void clear() const noexcept;
 
 	    bool isExtensionSupported(const std::string& extList, const std::string& extension);
 	    void setName(const std::string&) noexcept;

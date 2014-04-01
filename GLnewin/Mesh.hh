@@ -7,9 +7,11 @@
 #include "Shader.hh"
 
 namespace GLnewin {
-    class Mesh : public GLnewin::IRenderable {
+    class Mesh : public IRenderable {
 	private:
 	    GLint _size;
+	    short _padding;
+	    GLuint _ebo;
 	    GLuint vertexbuffer;
 	    inline GLuint _GPUAlloc(GLfloat* data, unsigned int size) noexcept {
 		GLuint id;
@@ -20,10 +22,11 @@ namespace GLnewin {
 		return id;
 	    }
 	public:
-	    explicit Mesh(std::initializer_list<GLfloat> l);
-	    explicit Mesh(std::vector<GLfloat> l);
-	    explicit Mesh(GLfloat* data, unsigned int size);
-	    virtual void draw() noexcept;
+	    Mesh(std::initializer_list<GLfloat> l);
+	    Mesh(std::vector<GLfloat> l);
+	    Mesh(GLfloat* data, unsigned int size);
+	    virtual void draw() const noexcept;
+	    inline void setPadding(short n) { _padding = n; }
     };
 }
 

@@ -1,6 +1,6 @@
 #include "Mesh.hh"
 
-GLnewin::Mesh::Mesh(std::initializer_list<GLfloat> l) : _size(l.size() / 3) {
+GLnewin::Mesh::Mesh(std::initializer_list<GLfloat> l) : _size(l.size() / 3), _padding(3) {
     GLfloat g_vertex_buffer_data[_size * 3];
     unsigned int i = 0;
     for (GLfloat x : l) {
@@ -10,18 +10,18 @@ GLnewin::Mesh::Mesh(std::initializer_list<GLfloat> l) : _size(l.size() / 3) {
     vertexbuffer = _GPUAlloc(g_vertex_buffer_data, _size * 3);
 }
 
-GLnewin::Mesh::Mesh(std::vector<GLfloat> data) : _size(data.size() / 3), vertexbuffer(_GPUAlloc(&data[0], data.size())) {
+GLnewin::Mesh::Mesh(std::vector<GLfloat> data) : _size(data.size() / 3), _padding(3), vertexbuffer(_GPUAlloc(&data[0], data.size())) {
 }
 
-GLnewin::Mesh::Mesh(GLfloat* data, unsigned int size) : _size(size / 3), vertexbuffer(_GPUAlloc(data, size)) {
+GLnewin::Mesh::Mesh(GLfloat* data, unsigned int size) : _size(size / 3), _padding(3), vertexbuffer(_GPUAlloc(data, size)) {
 }
 
-void GLnewin::Mesh::draw() noexcept {
+void GLnewin::Mesh::draw() const noexcept {
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexAttribPointer(
 	    0, // attribute 0. No particular reason for 0, but must match the layout in the shader.
-	    _size, // size (number of vertex ?)
+	    _padding, // size
 	    GL_FLOAT, // type
 	    GL_TRUE,// normalized?
 	    0,// stride

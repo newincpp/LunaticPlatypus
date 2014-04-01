@@ -193,18 +193,13 @@ GLnewin::Window::~Window() {
 void GLnewin::Window::getSize() const noexcept {
 }
 
-void GLnewin::Window::render() noexcept {
-    glClearColor(0,0,0,0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    std::vector<IRenderable*>::iterator&& end = _objects.end();
-    for (std::vector<IRenderable*>::iterator it = _objects.begin(); it != end; ++it) {
-	(*it)->draw();
-    }
-    glXSwapBuffers (_display, _win);
+void GLnewin::Window::flush() const noexcept {
+    glXSwapBuffers(_display, _win);
 }
 
-void GLnewin::Window::pushRenderCandidate(IRenderable* a) noexcept {
-    _objects.push_back(a);
+void GLnewin::Window::clear() const noexcept {
+    glClearColor(0,0,0,0);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 

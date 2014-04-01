@@ -2,21 +2,23 @@
 #include <RenderSystem.hh>
 #include <Scene.hh>
 
-int main(int ac, char** av) {
-    GLnewin::IRendertarget* r = new GLnewin::Window(1920, 1080, false, "demo");
-    GLnewin::Scene sc;
-    GLnewin::Mesh tri(sc.genMesh("models/tri.dae"));
-
-    r->pushRenderCandidate(&tri);
-    GLnewin::Camera cam = sc.genCamera();
-    cam.lookAt(glm::vec3(0.0, 0.0, 1.0));
+int main() {
     float x = 0;
-    while (true) {
-	r->render();
-	sc.setActive();
+    GLnewin::Window w(1920, 1080, false, "demo");
+    GLnewin::Scene sc;
+    GLnewin::Mesh tri = {
+	0.0,  0.5, 1.0,
+	0.5, -0.5, 1.0,
+	-0.5, -0.5, 1.0 };
+
+    sc.pushRenderCandidate(sc.genMesh("models/tri.dae"));
+    GLnewin::Camera& cam = sc.getCamera();
+
+    while (x > -30) {
+	w.clear();
+	sc.render();
 	x -= 0.1;
-	//tri.setPos(glm::vec3(0,0,-3));
-	//sc.getCamera().position(glm::vec3(0,0,x));
+	cam.position(glm::vec3(0,0,x));
+	w.flush();
     }
-    delete r;
 }

@@ -14,6 +14,12 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(LINKER) $(OBJS) $(LDFLAGS) -o $(NAME)
 
+rl: $(OBJS)
+	$(LINKER) $(OBJS) $(LDFLAGS) -o $(NAME)
+
+glnewin:
+	make -C GLnewin
+
 clean:
 	$(RM) $(OBJS) *.swp *~ *#
 

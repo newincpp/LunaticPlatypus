@@ -17,7 +17,7 @@ namespace GLnewin {
 
 	public:
 	    explicit Object(const std::string&);
-	    virtual void draw()noexcept;
+	    virtual void draw() const noexcept;
 	    inline Camera genCamera() noexcept { return Camera(_shader); }
 	    void setPos(const glm::vec3&) noexcept;
 	    void setRot(const glm::vec3&) noexcept;

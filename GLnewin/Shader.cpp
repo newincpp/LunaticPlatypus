@@ -54,6 +54,7 @@ void GLnewin::Shader::link() noexcept {
     } else {
 	std::cout << "\e[1;32mprogramm linked with success\e[0m" << std::endl;
     }
+    glBindFragDataLocation(_program, 0, "outColor");
 }
 
 void GLnewin::Shader::setTesselation(const std::string& source) noexcept {

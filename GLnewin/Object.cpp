@@ -15,7 +15,7 @@ GLnewin::Object::Object(const std::string& file) : _mesh({0}), _rotPosScale(NULL
     _rotPosScale = new Uniform<glm::mat4>(_shader.genUniform(glm::mat4(), "object"));
 }
 
-void GLnewin::Object::draw() noexcept {
+void GLnewin::Object::draw() const noexcept {
     _mesh.draw();
 }
 

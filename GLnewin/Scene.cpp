@@ -4,16 +4,24 @@
 
 #include "Scene.hh"
 
-GLnewin::Scene::Scene() : _cam(_shader) {
-    setTrivialShader();
-    _cam.reGenUniform(_shader);
+GLnewin::Scene::Scene() : _cam(NULL) {
+    _setTrivialShader();
+    _cam = new Camera(_shader);
+}
+
+GLnewin::Scene::Scene(const Shader& s) : _shader(s), _cam(new Camera(_shader)) {
+}
+
+GLnewin::Scene::~Scene() {
+    delete _cam;
 }
 
 void GLnewin::Scene::setShader(const Shader& n) {
     _shader = n;
+    _cam->reGenUniform(_shader);
 }
 
-std::vector<GLfloat> GLnewin::Scene::genMesh(const std::string& file) {
+GLnewin::Mesh* GLnewin::Scene::genMesh(const std::string& file) {
     std::vector<GLfloat> verts;
 
     Assimp::Importer importer;
@@ -28,9 +36,6 @@ std::vector<GLfloat> GLnewin::Scene::genMesh(const std::string& file) {
 	//const aiVector3D* pNormal = &(paiMesh->mNormals[i]) : &Zero3D;
 	//const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
 
-	//Vertex v(Vector3f(pPos->x, pPos->y, pPos->z), Vector2f(pTexCoord->x, pTexCoord->y), Vector3f(pNormal->x, pNormal->y, pNormal->z));
-
-	//Vertices.push_back(v);
 	verts.push_back(pPos->x);
 	verts.push_back(pPos->y);
 	verts.push_back(pPos->z);
@@ -38,10 +43,17 @@ std::vector<GLfloat> GLnewin::Scene::genMesh(const std::string& file) {
     for (GLfloat x : verts) {
 	std::cout << "value: " << x << std::endl;
     }
-    return verts;
+    return new Mesh(verts);
 }
 
-void GLnewin::Scene::setActive() {
+void GLnewin::Scene::render() {
     _shader.use();
-    _cam.setActive();
+    _cam->setActive();
+    for (const IRenderable* ent : _objects) {
+	ent->draw();
+    }
+}
+
+void GLnewin::Scene::pushRenderCandidate(const IRenderable* a) noexcept {
+    _objects.push_back(a);
 }
