@@ -1,6 +1,7 @@
 #ifndef SCENEMANAGER_H_
 # define SCENEMANAGER_H_
 
+#include <functional>
 #include <utility>
 #include <future>
 #include <assimp/Importer.hpp>      // C++ importer interface
@@ -17,13 +18,19 @@ namespace GLnewin {
 	    template <typename T>
 		struct __InternalFuture {
 		    private:
-#define __INT_SAFE_FUTURE_CALL(X) if(!_worker){return;}if(_worker->valid()){ X }
+#define __INT_SAFE_FUTURE_CALL(X) if(!_worker){return;}if(_worker->valid()){ X ; }
 			std::future<T>* _worker;
 			inline void _intPush(std::future<T>&& n) noexcept {
 			    _worker = new std::future<T>(std::move(n));
 			}
+			inline void _autoReinit() {
+			    delete _worker;
+			    _worker = NULL;
+			}
 		    public:
-			__InternalFuture(){}
+			__InternalFuture() : _worker(NULL) {
+			    std::cout << "default constructed" << std::endl;
+			}
 			__InternalFuture(std::future<T>&& n) : _worker(NULL) {
 			    _intPush(std::move(n));
 			}
@@ -33,21 +40,24 @@ namespace GLnewin {
 			    }
 			}
 			void push(std::future<T>&& n) {
+			    std::cout << "go push" << std::endl;
+			    wait();
 			    _intPush(std::move(n));
+			    std::cout << "push success" << std::endl;
 			}
 			T get() {
+			    std::cout << "go get" << std::endl;
 			    __INT_SAFE_FUTURE_CALL(_worker->get());
-			    delete _worker;
+			    _autoReinit();
+			    std::cout << "get success" << std::endl;
 			}
-			void wait() const {
-			    if (!_worker) {
-				return;
-			    }
-			    if (_worker->valid()) {
-				_worker->get();
-			    }
-			    _worker->wait();
+			void wait() {
+			    std::cout << "go wait" << std::endl;
+			    __INT_SAFE_FUTURE_CALL(_worker->wait());
+			    _autoReinit();
+			    std::cout << "wait success" << std::endl;
 			}
+#undef __INT_SAFE_FUTURE_CALL
 		};
 	    __InternalFuture<void> _worker;
 	    std::vector<const IRenderable*> _objects;
@@ -61,6 +71,7 @@ namespace GLnewin {
 		_shader.link();
 	    }
 	    void _internalRender() const;
+	    //TO BE DELETED
 	public:
 	    Scene();
 	    Scene(const Shader&);

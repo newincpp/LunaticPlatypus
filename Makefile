@@ -3,7 +3,7 @@ SRC	=$(SRCDIR)/main.cpp
 EXT     =cpp
 NAME	=gl
 CXXFLAGS= -Wall -Wextra -W -std=c++0x -I./GLnewin
-LDFLAGS	= GLnewin.a -lGL -lX11
+LDFLAGS	= GLnewin.a -lGL -lX11 -lpthread
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
 CXX	= clang++
