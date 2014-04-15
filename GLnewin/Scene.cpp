@@ -1,10 +1,7 @@
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
-
+#include <functional>
 #include "Scene.hh"
 
-GLnewin::Scene::Scene() : _cam(NULL) {
+GLnewin::Scene::Scene() : _cam(NULL), _worker() {
     _setTrivialShader();
     _cam = new Camera(_shader);
 }
@@ -21,39 +18,26 @@ void GLnewin::Scene::setShader(const Shader& n) {
     _cam->reGenUniform(_shader);
 }
 
-GLnewin::Mesh* GLnewin::Scene::genMesh(const std::string& file) {
-    std::vector<GLfloat> verts;
 
-    Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(file, aiProcess_CalcTangentSpace|aiProcess_Triangulate|aiProcess_JoinIdenticalVertices|aiProcess_SortByPType);
-    if( !scene) {
-	std::cout << "error: " << importer.GetErrorString() << std::endl;
-    }
-    aiMesh* paiMesh = scene->mMeshes[0];
-
-    for (unsigned int i = 0 ; i < paiMesh->mNumVertices ; i++) {
-	const aiVector3D* pPos = &(paiMesh->mVertices[i]);
-	//const aiVector3D* pNormal = &(paiMesh->mNormals[i]) : &Zero3D;
-	//const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
-
-	verts.push_back(pPos->x);
-	verts.push_back(pPos->y);
-	verts.push_back(pPos->z);
-    }
-    for (GLfloat x : verts) {
-	std::cout << "value: " << x << std::endl;
-    }
-    Mesh* m = new Mesh(verts);
-    m->bindMatrixModifier(_shader.genUniform(glm::mat4(), "model"));
-    return m;
+void GLnewin::Scene::draw() const noexcept {
+    _internalRender();
 }
 
-void GLnewin::Scene::render() {
+void GLnewin::Scene::draw() noexcept {
+    render();
+}
+
+void GLnewin::Scene::_internalRender() const {
     _shader.use();
     _cam->setActive();
     for (const IRenderable* ent : _objects) {
 	ent->draw();
     }
+}
+
+void GLnewin::Scene::render() {
+    _worker.wait();
+    _worker.push(std::async(std::launch::async, std::bind(&Scene::_internalRender, this)));
 }
 
 void GLnewin::Scene::pushRenderCandidate(const IRenderable* a) noexcept {

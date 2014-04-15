@@ -31,7 +31,7 @@ namespace GLnewin {
 		std::ifstream t(file);
 		return std::string((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 	    }
-	    void use() noexcept ;
+	    void use() const noexcept ;
 	    template <typename T>
 		void setUniform(const Uniform<T>& value)const noexcept;
 	    template<typename T>

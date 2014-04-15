@@ -1,9 +1,9 @@
 SRC	=Window.cpp \
-	 Mesh.cpp \
 	 Shader.cpp \
 	 Uniform.cpp \
 	 Camera.cpp \
-	 Scene.cpp
+	 Scene.cpp \
+	 Texture.cpp
 
 EXT     =cpp
 NAME	=GLnewin.a

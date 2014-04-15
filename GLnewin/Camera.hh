@@ -5,8 +5,6 @@
 #include "Shader.hh"
 
 namespace GLnewin {
-    class ICamera {
-    };
     class Camera {
 	private:
 	    Uniform<glm::mat4> _projection;

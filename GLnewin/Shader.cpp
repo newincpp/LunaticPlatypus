@@ -77,7 +77,7 @@ void GLnewin::Shader::setFragment(const std::string& source) noexcept {
     _fragment = _makeShader(GL_FRAGMENT_SHADER, source.c_str(), source.size());
 }
 
-void GLnewin::Shader::use() noexcept {
+void GLnewin::Shader::use() const noexcept {
     glUseProgram(_program);
 }
 

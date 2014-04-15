@@ -12,14 +12,12 @@
 #include "GL.h"
 
 namespace GLnewin {
-    int ctxErrorHandler(Display *dpy, XErrorEvent *ev);
 
     class Window : public IGLContext {
 	private:
 #define GLX_CONTEXT_MAJOR_VERSION_ARB       0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB       0x2092
 	    typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, bool, const int*);
-
 	    Display* _display;
 	    ::Window _win;
 	    GLXContext _ctx;

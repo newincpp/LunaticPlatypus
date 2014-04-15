@@ -4,11 +4,7 @@
 #include "IRender.hh"
 #include "Window.hh"
 
-namespace GLnewin {
-    bool _ctxErrorOccurred = false;
-}
-
-GLnewin::Window::Window(unsigned long sizeX, unsigned long sizeY, bool fullscreen, const std::string& name) :  _win(), _ctx(0),_name(name), _fullscreen(fullscreen) {
+GLnewin::Window::Window(unsigned long sizeX, unsigned long sizeY, bool fullscreen, const std::string& name) :  _win(), _ctx(0), _name(name), _fullscreen(fullscreen) {
     initalize(sizeX, sizeY);
 }
 
@@ -104,19 +100,7 @@ void GLnewin::Window::initalize(unsigned long sizeX, unsigned long sizeY) {
     // NOTE: It is not necessary to create or make current to a context before
     // calling glXGetProcAddressARB
     glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
-    glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)
-	glXGetProcAddressARB( (const GLubyte *) "glXCreateContextAttribsARB" );
-
-    _ctxErrorOccurred = false;
-
-    // Install an X error handler so the application won't exit if GL 3.0
-    // context allocation fails.
-    //
-    // Note this error handler is global.  All display connections in all threads
-    // of a process use the same error handler, so be sure to guard against other
-    // threads issuing X commands while this code is running.
-    _ctxErrorOccurred = false;
-    int (*oldHandler)(Display*, XErrorEvent*) = XSetErrorHandler(&GLnewin::ctxErrorHandler);
+    glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddressARB((const GLubyte *)"glXCreateContextAttribsARB");
 
     // Check for the GLX_ARB_create_context extension string and the function.
     // If either is not present, use GLX 1.3 context creation method.
@@ -138,32 +122,10 @@ void GLnewin::Window::initalize(unsigned long sizeX, unsigned long sizeY) {
 
 	// Sync to ensure any errors generated are processed.
 	XSync(_display, False);
-	if (!_ctxErrorOccurred && _ctx) {
-	    std::cout << "context successfully" << std::endl;
-	} else {
-	    // Couldn't create GL 3.0 context.  Fall back to old-style 2.x context.
-	    // When a context version below 3.0 is requested, implementations will
-	    // return the newest context version compatible with OpenGL versions less
-	    // than version 3.0.
-	    // GLX_CONTEXT_MAJOR_VERSION_ARB = 1
-	    context_attribs[1] = 1;
-	    // GLX_CONTEXT_MINOR_VERSION_ARB = 0
-	    context_attribs[3] = 0;
-
-	    _ctxErrorOccurred = false;
-
-	    std::cout << "Failed to create GL 3.0 context... using old-style GLX context" << std::endl;
-	    _ctx = glXCreateContextAttribsARB(_display, bestFbc, 0, True, context_attribs);
-	}
     }
     // Sync to ensure any errors generated are processed.
     XSync(_display, False);
     // Restore the original error handler
-    XSetErrorHandler(oldHandler);
-    if (_ctxErrorOccurred || !_ctx) {
-	printf( "Failed to create an OpenGL context\n" );
-	exit(1);
-    }
     // Verifying that context is a direct context
     if (!glXIsDirect (_display, _ctx)) {
 	std::cout << "Indirect GLX rendering context obtained" << std::endl;
@@ -214,10 +176,4 @@ bool GLnewin::Window::isExtensionSupported(const std::string& extList, const std
 void GLnewin::Window::setName(const std::string& nnew) noexcept {
     XStoreName(_display, _win, nnew.c_str());
     _name = nnew;
-}
-
-
-int GLnewin::ctxErrorHandler(Display*, XErrorEvent*) {
-    GLnewin::_ctxErrorOccurred = true;
-    return 0;
 }
