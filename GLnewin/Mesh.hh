@@ -49,6 +49,6 @@ namespace GLnewin {
 	};
 }
 
-#include "Mesh.tcc"
+#include "Mesh.inl"
 
 #endif /* !MESH_H_ */

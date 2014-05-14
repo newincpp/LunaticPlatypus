@@ -26,6 +26,7 @@ int main(int ac, char** av) {
     }
     sc.pushRenderCandidate(tri);
     sc.getCamera().position(glm::vec3(0,0,x));
+    sc.getCamera().syncronizeRez(w);
 
     glm::mat4 add = glm::rotate(glm::mat4(), -1.0f, glm::vec3(0,1,0));
     glm::mat4 current = glm::mat4();

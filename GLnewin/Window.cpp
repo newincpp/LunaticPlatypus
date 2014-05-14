@@ -112,8 +112,8 @@ void GLnewin::Window::initalize(unsigned long sizeX, unsigned long sizeY) {
     // If it does, try to get a GL 3.0 context!
     else {
 	int context_attribs[] = {
-	    GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-	    GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+	    0x2091, 3, // 0x2091 = GLX_CONTEXT_MAJOR_VERSION_ARB
+	    0x2092, 0, // 0x2091 = GLX_CONTEXT_MINOR_VERSION_ARB
 	    //GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
 	    None
 	};
@@ -152,7 +152,8 @@ GLnewin::Window::~Window() {
     XCloseDisplay(_display);
 }
 
-void GLnewin::Window::getSize() const noexcept {
+GLnewin::IGLContext::Size GLnewin::Window::getSize() const noexcept {
+    return Size{1920, 1080};
 }
 
 void GLnewin::Window::flush() const noexcept {

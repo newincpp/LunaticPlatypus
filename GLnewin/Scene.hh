@@ -13,54 +13,11 @@
 #include "Mesh.hh"
 
 namespace GLnewin {
+    template <typename T>
     class Scene : public IRenderable {
 	private:
-	    template <typename T>
-		struct __InternalFuture {
-		    private:
-#define __INT_SAFE_FUTURE_CALL(X) if(!_worker){return;}if(_worker->valid()){ X ; }
-			std::future<T>* _worker;
-			inline void _intPush(std::future<T>&& n) noexcept {
-			    _worker = new std::future<T>(std::move(n));
-			}
-			inline void _autoReinit() {
-			    delete _worker;
-			    _worker = NULL;
-			}
-		    public:
-			__InternalFuture() : _worker(NULL) {
-			    std::cout << "default constructed" << std::endl;
-			}
-			__InternalFuture(std::future<T>&& n) : _worker(NULL) {
-			    _intPush(std::move(n));
-			}
-			~__InternalFuture() {
-			    if (_worker) {
-				delete _worker;
-			    }
-			}
-			void push(std::future<T>&& n) {
-			    std::cout << "go push" << std::endl;
-			    wait();
-			    _intPush(std::move(n));
-			    std::cout << "push success" << std::endl;
-			}
-			T get() {
-			    std::cout << "go get" << std::endl;
-			    __INT_SAFE_FUTURE_CALL(_worker->get());
-			    _autoReinit();
-			    std::cout << "get success" << std::endl;
-			}
-			void wait() {
-			    std::cout << "go wait" << std::endl;
-			    __INT_SAFE_FUTURE_CALL(_worker->wait());
-			    _autoReinit();
-			    std::cout << "wait success" << std::endl;
-			}
-#undef __INT_SAFE_FUTURE_CALL
-		};
-	    __InternalFuture<void> _worker;
-	    std::vector<const IRenderable*> _objects;
+	    typedef T __Internal_;
+	    std::vector<const __Internal_*> _objects;
 	    GLnewin::Shader _shader;
 	    GLnewin::Camera* _cam;
 	    inline void _setTrivialShader() noexcept {
@@ -70,8 +27,6 @@ namespace GLnewin {
 		_shader.setFragment(trivFrag);
 		_shader.link();
 	    }
-	    void _internalRender() const;
-	    //TO BE DELETED
 	public:
 	    Scene();
 	    Scene(const Shader&);
@@ -82,48 +37,16 @@ namespace GLnewin {
 	    const Shader& getShader() const { return _shader; }
 	    inline Camera& getCamera() noexcept { return *_cam; }
 	    inline Camera genCamera() noexcept { return Camera(_shader); }
-	    void render();
 	    virtual void draw() const noexcept;
 	    virtual void draw() noexcept;
+	    void render()const;
+	    std::vector<const __Internal_*>& getObjectList() const noexcept;
 	    void pushRenderCandidate(const IRenderable*) noexcept;
 	    template<unsigned int RENDERTYPE = GL_TRIANGLES>
 		void bindMatrix(Mesh<RENDERTYPE>&) const noexcept;
     };
 }
 
-template <unsigned int RENDERTYPE, bool DEBUG>
-GLnewin::Mesh<RENDERTYPE>* GLnewin::Scene::genMesh(const std::string& file) {
-    std::vector<GLfloat> verts;
-
-    Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(file, aiProcess_CalcTangentSpace|aiProcess_Triangulate|aiProcess_JoinIdenticalVertices|aiProcess_SortByPType);
-    if( !scene) {
-	std::cout << "error: " << importer.GetErrorString() << std::endl;
-    }
-    aiMesh* paiMesh = scene->mMeshes[0];
-
-    for (unsigned int i = 0 ; i < paiMesh->mNumVertices ; i++) {
-	const aiVector3D& pPos = paiMesh->mVertices[i];
-	//const aiVector3D* pNormal = &(paiMesh->mNormals[i]) : &Zero3D;
-	//const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
-
-	verts.push_back(pPos.x);
-	verts.push_back(pPos.y);
-	verts.push_back(pPos.z);
-    }
-    if (DEBUG) { //TODO delete this code at compiling
-	for (GLfloat x : verts) {
-	    std::cout << "value: " << x << std::endl;
-	}
-    }
-    Mesh<RENDERTYPE>* m = new Mesh<RENDERTYPE>(verts);
-    m->bindMatrixModifier(_shader.genUniform(glm::mat4(), "model"));
-    return m;
-}
-
-template<unsigned int RENDERTYPE>
-void GLnewin::Scene::bindMatrix(Mesh<RENDERTYPE>& m) const noexcept {
-    m.bindMatrixModifier(_shader.genUniform(glm::mat4(), "model"));
-}
+#include "Scene.inl"
 
 #endif /* !SCENEMANAGER_H_ */

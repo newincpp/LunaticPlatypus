@@ -12,16 +12,15 @@
 #include "GL.h"
 
 namespace GLnewin {
-
     class Window : public IGLContext {
 	private:
-#define GLX_CONTEXT_MAJOR_VERSION_ARB       0x2091
-#define GLX_CONTEXT_MINOR_VERSION_ARB       0x2092
+//#define GLX_CONTEXT_MAJOR_VERSION_ARB       0x2091
+//#define GLX_CONTEXT_MINOR_VERSION_ARB       0x2092
 	    typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, bool, const int*);
-	    Display* _display;
+	    ::Display* _display;
 	    ::Window _win;
 	    GLXContext _ctx;
-	    Colormap _cmap;
+	    ::Colormap _cmap;
 	    std::string _name;
 	    bool _fullscreen;
 	public:
@@ -31,7 +30,7 @@ namespace GLnewin {
 	    ~Window();
 
 	    virtual void initalize(unsigned long, unsigned long);
-	    virtual void getSize() const noexcept;
+	    virtual IGLContext::Size getSize() const noexcept;
 
 	    void flush() const noexcept;
 	    void clear() const noexcept;

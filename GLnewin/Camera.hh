@@ -11,12 +11,16 @@ namespace GLnewin {
 	    Uniform<glm::mat4> _view;
 	    glm::vec3 _position;
 	    glm::vec3 _lookAt;
+	    glm::vec2 _res;
 	public:
 	    explicit Camera(Shader&);
 	    void lookAt(const glm::vec3&)noexcept;
+	    void projection(float fov, float = 0.1, float = 1000)noexcept;
 	    void position(const glm::vec3&)noexcept;
 	    void position(glm::vec3&& v)noexcept;
 	    void setActive();
+	    template <typename __DISP_TYPE> void syncronizeRez(__DISP_TYPE&&);
+	    template <typename __DISP_TYPE> void syncronizeRez(const __DISP_TYPE&);
 	    inline void reGenUniform(const Shader& s)noexcept{
 		_projection = s.genUniform(glm::mat4(), "projection");
 		_view = s.genUniform(glm::mat4(), "view");
@@ -25,5 +29,7 @@ namespace GLnewin {
 	    }
     };
 }
+
+#include "Camera.inl"
 
 #endif /* !CAMERA_H_ */

@@ -10,8 +10,12 @@ namespace GLnewin {
 
     class IGLContext {
 	public:
+	   struct Size {
+	       int x;
+	       int y;
+	   };
 	    virtual void initalize(unsigned long, unsigned long) = 0;
-	    virtual void getSize() const noexcept = 0;
+	    virtual Size getSize() const noexcept = 0;
 	    virtual void flush() const noexcept = 0;
 	    virtual ~IGLContext() {}
     };
