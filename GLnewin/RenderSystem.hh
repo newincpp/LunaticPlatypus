@@ -3,6 +3,6 @@
 
 #include "IRender.hh"
 #include "Window.hh"
-#include "RenderTexture.hh"
+//#include "RenderTexture.hh" // does not exist for now...
 
 #endif /* !RENDERSYSTEM_H_ */

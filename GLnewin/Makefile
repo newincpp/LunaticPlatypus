@@ -2,7 +2,6 @@ SRC	=Window.cpp \
 	 Shader.cpp \
 	 Uniform.cpp \
 	 Camera.cpp \
-	 Scene.cpp \
 	 Texture.cpp
 
 EXT     =cpp

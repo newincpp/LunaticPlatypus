@@ -6,7 +6,7 @@
 int main(int ac, char** av) {
     float x = 20;
     GLnewin::Window w(1920, 1080, false, "demo");
-    GLnewin::Scene sc;
+    GLnewin::Scene<GLnewin::IRenderable> sc;
     GLnewin::Mesh<GL_TRIANGLES>* tri;
 
     GLnewin::Mesh<GL_TRIANGLES> q = {

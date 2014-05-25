@@ -13,7 +13,7 @@
 #include "Mesh.hh"
 
 namespace GLnewin {
-    template <typename T>
+    template <typename T = IRenderable>
     class Scene : public IRenderable {
 	private:
 	    typedef T __Internal_;
