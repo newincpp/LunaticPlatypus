@@ -1,4 +1,4 @@
 GLnewin
 =======
 
-yet an other openGL based 3D engine (with randomness)
+A simple implementation of OpenGL 3.3 using X11 lib from scratch
