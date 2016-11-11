@@ -1,23 +1,32 @@
-SRC	=Window.cpp \
-	 Shader.cpp \
-	 Uniform.cpp \
-	 Camera.cpp \
-	 Texture.cpp
+SRC	= Camera.cpp \
+	   FrameBuffer.cpp \
+	   Importer.cpp \
+	   Mesh.cpp \
+	   OglCore.cpp \
+	   RenderTexture.cpp \
+	   shader.cpp \
+	   Uniform.cpp \
+	   main.cpp
 
-EXT     =cpp
-NAME	=GLnewin.a
-CXXFLAGS= -Wall -Wextra -W -std=c++0x -I./ -DGLEW_STATIC
-LDFLAGS	= ./libs/*.o # -lGL -lX11 -DGLEW_STATIC
+EXT=cpp
+NAME	=ogl
+DEFINE 	= -DGLEW_STATIC 
+DEBUG 	= -g 
+GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
+OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti -fno-exceptions
+INCLUDE=-I./../Obake/external -I./../Obake/external/EASTL -I./../Obake
+CXXFLAGS= -Wall -Wextra -W -std=c++11 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
+LIBS= -lGL -lglfw  ./libs/libGLEW.a ./libs/libassimp.a ./libs/libz.a
+LDFLAGS	= $(LIBS) $(OPTIM) $(DEBUG) $(LIBS)
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
 CXX	= clang++
-LINKER	= ar
+LINKER	= $(CXX)
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(LINKER) -cvq $(NAME) $(OBJS) $(LDFLAGS)
-	mv $(NAME) ../
+	$(LINKER) $(OBJS) $(LDFLAGS) -o $(NAME)
 
 clean:
 	$(RM) $(OBJS) *.swp *~ *#
@@ -28,4 +37,3 @@ fclean: clean
 re: make -B -j4
 
 .PHONY: all clean fclean re
-

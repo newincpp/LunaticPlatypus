@@ -1,71 +1,48 @@
-#include "glm/gtc/type_ptr.hpp"
 #include "Uniform.hh"
-
-//VECTORS
+#include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 template <>
-void GLnewin::Uniform<float>::upload() const noexcept  {
+void Uniform<float>::upload() {
     glUniform1f(_location, _value);
 }
 
 template <>
-void GLnewin::Uniform<glm::vec2>::upload() const noexcept  {
+void Uniform<int>::upload() {
+    glUniform1i(_location, _value);
+}
+
+template <>
+void Uniform<unsigned int>::upload() {
+    glUniform1ui(_location, _value);
+}
+
+template <>
+void Uniform<glm::vec2>::upload() {
     glUniform2f(_location, _value.x, _value.y);
 }
 
 template <>
-void GLnewin::Uniform<glm::vec3>::upload() const noexcept  {
+void Uniform<glm::vec3>::upload() {
     glUniform3f(_location, _value.x, _value.y, _value.z);
 }
 
 template <>
-void GLnewin::Uniform<glm::vec4>::upload() const noexcept  {
+void Uniform<glm::vec4>::upload() {
     glUniform4f(_location, _value.x, _value.y, _value.z, _value.w);
 }
 
-//MATRIX
-
 template <>
-void GLnewin::Uniform<glm::mat2>::upload() const noexcept  {
-     glUniformMatrix2fv(_location, 1, GL_FALSE, &_value[0][0]);
+void Uniform<glm::mat2>::upload() {
+    glUniformMatrix2fv(_location, 1, GL_FALSE, glm::value_ptr(_value));
 }
 
 template <>
-void GLnewin::Uniform<glm::mat3>::upload() const noexcept  {
-  glUniformMatrix3fv(_location, 1, GL_FALSE, &_value[0][0]);
+void Uniform<glm::mat3>::upload() {
+    glUniformMatrix3fv(_location, 1, GL_FALSE, glm::value_ptr(_value));
 }
 
 template <>
-void GLnewin::Uniform<glm::mat4>::upload() const noexcept  {
-  glUniformMatrix4fv(_location, 1, GL_FALSE, glm::value_ptr(_value));
-}
-
-template <>
-void GLnewin::Uniform<glm::mat2x3>::upload() const noexcept  {
-  glUniformMatrix2x3fv(_location, 1, GL_FALSE, &_value[0][0]);
-}
-
-template <>
-void GLnewin::Uniform<glm::mat3x2>::upload() const noexcept  {
-  glUniformMatrix3x2fv(_location, 1, GL_FALSE, &_value[0][0]);
-}
-
-template <>
-void GLnewin::Uniform<glm::mat2x4>::upload() const noexcept  {
-  glUniformMatrix2x4fv(_location, 1, GL_FALSE, &_value[0][0]);
-}
-
-template <>
-void GLnewin::Uniform<glm::mat4x2>::upload() const noexcept  {
-  glUniformMatrix4x2fv(_location, 1, GL_FALSE, &_value[0][0]);
-}
-
-template <>
-void GLnewin::Uniform<glm::mat3x4>::upload() const noexcept  {
-  glUniformMatrix3x4fv(_location, 1, GL_FALSE, &_value[0][0]);
-}
-
-template <>
-void GLnewin::Uniform<glm::mat4x3>::upload() const noexcept  {
-  glUniformMatrix4x3fv(_location, 1, GL_FALSE, &_value[0][0]);
+void Uniform<glm::mat4>::upload() {
+    glUniformMatrix4fv(_location, 1, GL_FALSE, glm::value_ptr(_value));
 }

@@ -1,44 +1,41 @@
 #include "Mesh.hh"
 
-template <unsigned int RENDERMODE>
-GLnewin::Mesh<RENDERMODE>::Mesh(std::initializer_list<GLfloat> l) : _size(l.size() / 3), _padding(3), _model(NULL) {
-    GLfloat g_vertex_buffer_data[_size * 3];
-    unsigned int i = 0;
-    for (GLfloat x : l) {
-	g_vertex_buffer_data[i] = x;
-	++i;
-    }
-    vertexbuffer = _GPUAlloc(g_vertex_buffer_data, _size * 3);
-    _autoconfVBO();
+Mesh::Mesh() : uMeshTransform(3, glm::mat4()) {
 }
 
-template <unsigned int RENDERMODE>
-GLnewin::Mesh<RENDERMODE>::Mesh(std::vector<GLfloat> data) : _size(data.size() / 3), _padding(3), vertexbuffer(_GPUAlloc(&data[0], data.size())), _model(NULL) {
-    _autoconfVBO();
+void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
+    glGenVertexArrays(1, &_vao);
+    glBindVertexArray(_vao);
+
+    glGenBuffers(1, &_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBufferData(GL_ARRAY_BUFFER, vbo_.size() * sizeof(__remove_reference__<decltype(vbo_)>::type::value_type), &(vbo_[0]), GL_STATIC_DRAW);
+
+    //vertex
+    glEnableVertexAttribArray(0); 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0); 
+    // Normal
+    glEnableVertexAttribArray(1); 
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    //Texture coordinates
+    glEnableVertexAttribArray(2); 
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat))); 
+    //BiTangent
+    //glEnableVertexAttribArray(3); 
+    //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat))); 
+
+    glGenBuffers(1, &_ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), GL_STATIC_DRAW);
+    size = ebo_.size();
 }
 
-template <unsigned int RENDERMODE>
-GLnewin::Mesh<RENDERMODE>::Mesh(GLfloat* data, unsigned int size) : _size(size / 3), _padding(3), vertexbuffer(_GPUAlloc(data, size)), _model(NULL) {
-    _autoconfVBO();
-}
+void Mesh::render() {
+    autoRelocate(uMeshTransform);
+    uMeshTransform.upload();
+    glBindVertexArray(_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
-template <unsigned int RENDERMODE>
-void GLnewin::Mesh<RENDERMODE>::bindMatrixModifier(const Uniform<glm::mat4>& n) {
-    if (_model) {
-	delete _model;
-    }
-    _model = new Uniform<glm::mat4>(n);
-}
-
-template <unsigned int RENDERMODE>
-void GLnewin::Mesh<RENDERMODE>::refreshModifier(const glm::mat4& n) {
-    (*_model) = n;
-}
-
-template <unsigned int RENDERMODE>
-void GLnewin::Mesh<RENDERMODE>::draw() const noexcept {
-    if (_model) {
-	_model->upload();
-    }
-    glDrawArrays(TYPE, 0, _size); // Starting from vertex 0; 3 vertices total -> 1 triangle
+    glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
 }

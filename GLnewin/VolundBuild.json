@@ -1,0 +1,53 @@
+{
+    "SharedLib":
+    {
+	"targetName"		: "OglRenderer",
+	"srcExtension"		: ".cpp",
+	"outFolder"		: "Bin",
+	"staticLibsDeps"	: ["Obake"],
+	"sharedLibsDeps"	: [],
+	"excludeSrc"		: [],
+	"srcFolders"		: ["."],
+	"headersFolders"	: ["."],
+	"internLibs"		: [],
+	"externIncludes"	: ["Obake/external/EASTL", "Obake/external/glm"],
+	"externLibs"		: [],
+	"compilerFlags"		: [],
+	"Windows":
+	{
+	    "externLibs"	: ["user32", "EASTL"],
+	    "compilerFlags"	: ["-DEA_COMPILER_NO_VARIADIC_TEMPLATES",  "-L./external/eastl"]
+	},
+	"Linux":
+	{
+	    "externLibs"	: ["xcb", "dl", "GL", "GLEW"],
+	    "compilerFlags"  	: ["Obake/external/EASTL/libEASTL.a", "./OglRenderer/libs/libassimp.a" , "./OglRenderer/libs/libz.a", "-march=native", "-std=c++11"]
+	}
+    },
+
+    "StaticLib":
+    {
+        "targetName"		: "OglRenderer",
+        "srcExtension"		: ".cpp",
+        "outFolder"		: "Bin",
+        "staticLibsDeps"	: ["Obake"],
+        "sharedLibsDeps"	: [],
+        "excludeSrc"		: [],
+        "srcFolders"		: ["."],
+        "headersFolders"	: ["."],
+        "internLibs"		: [],
+        "externIncludes"	: ["Obake/external/EASTL", "Obake/external/glm"],
+        "externLibs"		: [],
+        "compilerFlags"		: [],
+        "Windows":
+        {
+    	"externLibs"		: ["user32", "EASTL"],
+    	"compilerFlags"		: ["-DEA_COMPILER_NO_VARIADIC_TEMPLATES",  "-L./external/eastl"]
+        },
+        "Linux":
+        {
+    	"externLibs"		: ["xcb", "dl", "GL", "GLEW"],
+    	"compilerFlags"  	: ["Obake/external/EASTL/libEASTL.a", "./OglRenderer/libs/libassimp.a" , "./OglRenderer/libs/libz.a", "-march=native", "-std=c++11"]
+        }
+    }
+}

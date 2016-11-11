@@ -1,0 +1,210 @@
+{
+    "accessors": {
+        "Cube_buffer_accessor_0": {
+            "bufferView": "Cube_buffer_view_0",
+            "byteOffset": 0,
+            "byteStride": 24,
+            "componentType": 5126,
+            "count": 24,
+            "max": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "min": [
+                -1.0,
+                -1.0,
+                -1.0
+            ],
+            "type": "VEC3"
+        },
+        "Cube_buffer_accessor_1": {
+            "bufferView": "Cube_buffer_view_0",
+            "byteOffset": 12,
+            "byteStride": 24,
+            "componentType": 5126,
+            "count": 24,
+            "max": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "min": [
+                -1.0,
+                -1.0,
+                -1.0
+            ],
+            "type": "VEC3"
+        },
+        "Cube_buffer_accessor_2": {
+            "bufferView": "Cube_buffer_view_1",
+            "byteOffset": 0,
+            "byteStride": 2,
+            "componentType": 5123,
+            "count": 54,
+            "max": [
+                23
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        }
+    },
+    "asset": {
+        "version": "1.0"
+    },
+    "bufferViews": {
+        "Cube_buffer_view_0": {
+            "buffer": "Cube_buffer",
+            "byteLength": 576,
+            "byteOffset": 0,
+            "target": 34962
+        },
+        "Cube_buffer_view_1": {
+            "buffer": "Cube_buffer",
+            "byteLength": 108,
+            "byteOffset": 576,
+            "target": 34963
+        }
+    },
+    "buffers": {
+        "Cube_buffer": {
+            "byteLength": 684,
+            "type": "arraybuffer",
+            "uri": "data:text/plain;base64,AACAvwAAgL8AAIA/AAAAAAAAgL8AAAAAAACAvwAAgD8AAIC/AAAAAAAAgD8AAAAAAACAPwAAgD8AAIC/AACAPwAAAAAAAAAAAACAPwAAgL8AAIA/AAAAAAAAgL8AAAAAAACAPwAAgD8AAIC/AAAAAAAAgD8AAAAAAACAPwAAgD8AAIA/AACAPwAAAAAAAAAAAACAvwAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAgD8AAIA/AAAAAAAAgD8AAAAAAACAvwAAgD8AAIC/AAAAAAAAAAAAAIC/AACAPwAAgL8AAIC/AAAAAAAAgL8AAAAAAACAvwAAgL8AAIC/AACAvwAAAAAAAAAAAACAPwAAgL8AAIC/AAAAAAAAAAAAAIC/AACAvwAAgD8AAIC/AACAvwAAAAAAAAAAAACAvwAAgL8AAIC/AAAAAAAAAAAAAIC/AACAPwAAgL8AAIA/AACAPwAAAAAAAAAAAACAvwAAgL8AAIC/AAAAAAAAgL8AAAAAAACAvwAAgD8AAIA/AACAvwAAAAAAAAAAAACAPwAAgL8AAIA/AAAAAAAAAAAAAIA/AACAvwAAgD8AAIA/AAAAAAAAgD8AAAAAAACAPwAAgD8AAIC/AAAAAAAAAAAAAIC/AACAPwAAgD8AAIA/AAAAAAAAAAAAAIA/AACAvwAAgL8AAIA/AAAAAAAAAAAAAIA/AACAPwAAgL8AAIC/AACAPwAAAAAAAAAAAACAvwAAgL8AAIA/AACAvwAAAAAAAAAACgAXABAACgAQAAwACgAMAAoAAQASAAcAAQAHAAQAAQAEAAEAAgAFAA4AAgAOABYAAgAWAAIACQADAAAACQAAAA8ACQAPAAkACwANAAgACwAIABMACwATAAsAFQARABQAFQAUAAYAFQAGABUA"
+        }
+    },
+    "extras": {
+        "actions": {},
+        "lights": {
+            "Lamp": {
+                "point": {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "constantAttenuation": 1,
+                    "linearAttenuation": 0,
+                    "quadraticAttenuation": 0.03333335240683057
+                },
+                "type": "point"
+            }
+        }
+    },
+    "meshes": {
+        "Cube": {
+            "name": "Cube",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": "Cube_buffer_accessor_1",
+                        "POSITION": "Cube_buffer_accessor_0"
+                    },
+                    "indices": "Cube_buffer_accessor_2",
+                    "material": "",
+                    "mode": 4
+                }
+            ]
+        }
+    },
+    "nodes": {
+        "Camera": {
+            "camera": "Camera",
+            "children": [],
+            "matrix": [
+                0.6858805418014526,
+                0.7276337742805481,
+                -0.010816780850291252,
+                0.0,
+                -0.31737011671066284,
+                0.31246861815452576,
+                0.8953432440757751,
+                0.0,
+                0.6548618674278259,
+                -0.6106656193733215,
+                0.4452453553676605,
+                0.0,
+                7.481131553649902,
+                -6.5076398849487305,
+                5.34366512298584,
+                1.0
+            ],
+            "name": "Camera"
+        },
+        "Cube": {
+            "children": [],
+            "matrix": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "meshes": [
+                "Cube"
+            ],
+            "name": "Cube"
+        },
+        "Lamp": {
+            "children": [],
+            "extras": {
+                "light": "Lamp"
+            },
+            "matrix": [
+                -0.29086464643478394,
+                0.9551711678504944,
+                -0.05518905818462372,
+                0.0,
+                -0.7711008191108704,
+                -0.1998833566904068,
+                0.6045247316360474,
+                0.0,
+                0.5663931965827942,
+                0.21839119493961334,
+                0.7946722507476807,
+                0.0,
+                4.076245307922363,
+                1.0054539442062378,
+                5.903861999511719,
+                1.0
+            ],
+            "name": "Lamp"
+        }
+    },
+    "samplers": {
+        "default": {}
+    },
+    "scene": "Scene",
+    "scenes": {
+        "Scene": {
+            "extras": {
+                "active_camera": "Camera",
+                "background_color": [
+                    0.05087608844041824,
+                    0.05087608844041824,
+                    0.05087608844041824
+                ],
+                "frames_per_second": 24,
+                "hidden_nodes": []
+            },
+            "nodes": [
+                "Cube",
+                "Lamp",
+                "Camera"
+            ]
+        }
+    }
+}
