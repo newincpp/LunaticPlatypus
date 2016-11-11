@@ -4,12 +4,14 @@
 #include "Camera.hh"
 #include "Mesh.hh"
 
+#include <iostream>
+
 class Scene {
     public:
 	std::vector<Mesh> _meshes;
 	std::vector<Camera> _cameras;
 	unsigned int _activeCamera;
-	Scene() : _activeCamera(1) {
+	Scene() : _activeCamera(2) {
 	    _cameras.reserve(32);
 	}
 	void render() {

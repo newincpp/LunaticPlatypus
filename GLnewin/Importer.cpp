@@ -54,9 +54,12 @@ void Importer::load(std::string& file, Scene& s_) {
 	//_mainCamera.lookAt(glm::vec3(136.0f,231.0f , 218.0f+ 1));
 	mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f));
 	mainCamera.setPos(glm::vec3(136.0f, 231.0f, 218.0f));
+	//mainCamera.setPos(glm::vec3(-136.0f, 231.0f, 18.0f));
 	mainCamera.fieldOfview(1.623f);
 	mainCamera.clipPlane(glm::vec2(0.1f, 10000.0f));
 	mainCamera.upVector(glm::vec3(0.0f,1.0f,0.0f));
+	s_._cameras.emplace_back(s_._cameras[0]);
+	s_._cameras[1].setPos(glm::vec3(-136.0f, 231.0f, 18.0f));
     }
 }
 

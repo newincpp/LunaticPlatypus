@@ -17,6 +17,9 @@ class Camera {
 	FrameBuffer _gBuffer;
     public:
 	Camera();
+	Camera(const Camera&);
+	Camera(Camera&&);
+	void operator=(const Camera&&) = delete;
 	void lookAt(glm::vec3&&);
 	void setPos(glm::vec3&&);
 	void fieldOfview(float);

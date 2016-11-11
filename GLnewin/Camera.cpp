@@ -8,12 +8,40 @@ Camera::Camera() :
     _upVector(glm::vec3(0.0f, 1.0f, 0.0f)),
     _fov(1.745f),
     _clipPlane(0.1f, 1000.0f), _gBuffer() {
-    _gBuffer.addBuffer("gPosition");
-    _gBuffer.addBuffer("gNormal");
-    _gBuffer.addBuffer("gAlbedoSpec");
-    _gBuffer.addDepthBuffer("gDepth");
-    _gBuffer.enable();
-}
+	_gBuffer.addBuffer("gPosition");
+	_gBuffer.addBuffer("gNormal");
+	_gBuffer.addBuffer("gAlbedoSpec");
+	_gBuffer.addDepthBuffer("gDepth");
+	_gBuffer.enable();
+    }
+
+Camera::Camera(const Camera& c_) :
+    uCamera(c_.uCamera), 
+    _target(c_._target),
+    _position(c_._position),
+    _upVector(c_._upVector),
+    _fov(c_._fov),
+    _clipPlane(c_._clipPlane), _gBuffer() {
+	_gBuffer.addBuffer("gPosition");
+	_gBuffer.addBuffer("gNormal");
+	_gBuffer.addBuffer("gAlbedoSpec");
+	_gBuffer.addDepthBuffer("gDepth");
+	_gBuffer.enable();
+    }
+
+Camera::Camera(Camera&& c_) :
+    uCamera(c_.uCamera), 
+    _target(c_._target),
+    _position(c_._position),
+    _upVector(c_._upVector),
+    _fov(c_._fov),
+    _clipPlane(c_._clipPlane), _gBuffer() {
+	_gBuffer.addBuffer("gPosition");
+	_gBuffer.addBuffer("gNormal");
+	_gBuffer.addBuffer("gAlbedoSpec");
+	_gBuffer.addDepthBuffer("gDepth");
+	_gBuffer.enable();
+    }
 
 void Camera::setMatrix(glm::mat4&& m_) {
     uCamera = m_;

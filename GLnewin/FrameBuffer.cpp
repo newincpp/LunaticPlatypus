@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "FrameBuffer.hh"
 #include "OglCore.hh"
 
@@ -5,6 +7,7 @@ FrameBuffer::FrameBuffer() {
     glGenFramebuffers(1, &_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
     _rtt.reserve(15);
+    std::cout << "fbo:" << _fbo << std::endl;
 }
 
 void FrameBuffer::enable() {
@@ -16,7 +19,6 @@ void FrameBuffer::enable() {
 	    attachments[i] = _rtt[i].getAttachment();
 	}
 	glDrawBuffers(_rtt.size(), attachments);
-	checkGlError;
     }
 }
 void FrameBuffer::addBuffer(std::string&& name_, glm::vec2 resolution_) {
