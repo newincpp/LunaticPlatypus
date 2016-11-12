@@ -1,6 +1,6 @@
 #version 410 core
 
-uniform float uTime;
+layout(location = 0) uniform float uTime;
 //uniform mat4 uCamera;
 //uniform mat4 uMeshTransform;
 

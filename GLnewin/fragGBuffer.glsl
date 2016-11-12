@@ -1,8 +1,8 @@
-#version 410 core
+#version 430 core
 
-//uniform float uTime;
+layout(location = 0) uniform float uTime;
 //uniform mat4 uCamera;
-//uniform mat4 uMeshTransform;
+layout(location = 2) uniform mat4 uMeshTransform;
 
 in vec3 vInfVertexPos_;
 in vec3 vInfVertexNormal_;

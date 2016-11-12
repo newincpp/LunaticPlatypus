@@ -1,8 +1,6 @@
-#version 410 core
+#version 430 core
 
-uniform float uTime;
-//uniform mat4 uCamera;
-//uniform mat4 uMeshTransform;
+layout (location = 0) uniform float uTime;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;

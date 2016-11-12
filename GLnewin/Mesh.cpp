@@ -1,6 +1,6 @@
 #include "Mesh.hh"
 
-Mesh::Mesh() : uMeshTransform(3, glm::mat4()) {
+Mesh::Mesh() : uMeshTransform(2, glm::mat4()) {
 }
 
 void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
@@ -31,7 +31,7 @@ void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
 }
 
 void Mesh::render() {
-    autoRelocate(uMeshTransform);
+    //autoRelocate(uMeshTransform);
     uMeshTransform.upload();
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);

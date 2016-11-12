@@ -16,6 +16,7 @@ class Uniform {
 		GLint programId;
 		glGetIntegerv(GL_CURRENT_PROGRAM, &programId);
 		_location = glGetUniformLocation(programId, name_);
+		std::cout << "uniform: " << name_ << " " << _location << std::endl;
 	}
 #define autoRelocate(var) var._resetLocation(#var);
 };

@@ -56,6 +56,9 @@ void OglCore::init() {
     _s._meshes.push_back(m);
 
     checkGlError _renderTarget.uploadToGPU(vertices, elements);
+
+    _sgBuffer.use();
+    autoRelocate(uTime);
 }
 
 unsigned long OglCore::render() {
@@ -64,15 +67,15 @@ unsigned long OglCore::render() {
     uTime = time;
 
     _sgBuffer.use();
-    autoRelocate(uTime);
+    //autoRelocate(uTime);
     uTime.upload();
     _s.render();
     checkGlError;
 
     _sPostProc.use();
     _s.bindGBuffer(0);
-    autoRelocate(uTime);
-    uTime.upload();
+    //autoRelocate(uTime);
+    //uTime.upload();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _renderTarget.render();
     checkGlError;

@@ -2,7 +2,7 @@
 #include "Camera.hh"
 
 Camera::Camera() : 
-    uCamera(2, glm::mat4(1.0f)), 
+    uCamera(1, glm::mat4(1.0f)), 
     _target(glm::vec3(0.0f, 0.0f, 0.0f)),
     _position(glm::vec3(15.0f, 5.2f, 15.0f)),
     _upVector(glm::vec3(0.0f, 1.0f, 0.0f)),
@@ -63,7 +63,7 @@ void Camera::use() {
     _gBuffer.enable();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
-    autoRelocate(uCamera);
+    //autoRelocate(uCamera);
     uCamera.upload();
 }
 void Camera::unUse() {
