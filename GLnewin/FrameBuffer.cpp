@@ -6,7 +6,7 @@
 FrameBuffer::FrameBuffer() {
     glGenFramebuffers(1, &_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-    _rtt.reserve(15);
+    _rtt.reserve(4);
     std::cout << "fbo:" << _fbo << std::endl;
 }
 

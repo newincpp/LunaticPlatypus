@@ -59,7 +59,9 @@ void Importer::load(std::string& file, Scene& s_) {
 	mainCamera.clipPlane(glm::vec2(0.1f, 10000.0f));
 	mainCamera.upVector(glm::vec3(0.0f,1.0f,0.0f));
 	s_._cameras.emplace_back(s_._cameras[0]);
-	s_._cameras[1].setPos(glm::vec3(-136.0f, 231.0f, 18.0f));
+	for(unsigned int i = 0; i < 250; ++i) {
+	    s_._cameras.emplace_back(s_._cameras[0]);
+	}
     }
 }
 

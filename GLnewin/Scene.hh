@@ -11,8 +11,8 @@ class Scene {
 	std::vector<Mesh> _meshes;
 	std::vector<Camera> _cameras;
 	unsigned int _activeCamera;
-	Scene() : _activeCamera(2) {
-	    _cameras.reserve(32);
+	Scene() : _activeCamera(25) {
+	    _cameras.reserve(512);
 	}
 	void render() {
 	    for (unsigned int a = 0; a < _activeCamera; ++a) {
