@@ -7,6 +7,8 @@
 #include "assimp/scene.h"           // Output data structure
 #include "assimp/postprocess.h"     // Post processing fla
 
+#include "tiny_obj_loader.h"
+
 class Material {
 };
 
@@ -18,5 +20,7 @@ class Importer {
 	Importer(std::string file, Scene&);
 	inline glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from);
 	void genMesh(const aiScene* scene_, Scene&);
+
+	void genMesh(const tinyobj::shape_t&, const tinyobj::attrib_t&, Scene&);
 	void load(std::string& file, Scene&);
 };

@@ -1,3 +1,4 @@
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <iostream>
 #include "Importer.hh"
 
@@ -16,7 +17,92 @@ inline glm::mat4 Importer::aiMatrix4x4ToGlm(const aiMatrix4x4& from) {
     return to;
 }
 
+void Importer::load(std::string& file, Scene& s_) {
+    /*
+       std::vector<Mesh> Scene::_meshes;
+       std::vector<Camera> Scene::_cameras;
+       */
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
 
+    std::string err;
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, file.c_str())) {
+	std::cout << "the file is fucked: " << file << std::endl;
+    }
+    std::cout << "loaded with warning:\n" << err << std::endl;
+
+    // Loop over shapes
+    //for (size_t s = 0; s < shapes.size(); s++) {
+    s_._meshes.reserve(shapes.size());
+    for (tinyobj::shape_t object: shapes) {
+	std::cout << "loading: " << object.name << "\n";
+	genMesh(object, attrib, s_);
+	std::cout << "finished...\n";
+    }
+
+    std::cout << "generating cameras\n";
+    s_._cameras.emplace_back();
+    Camera& mainCamera = s_._cameras[0];
+    //_mainCamera.lookAt(glm::vec3(136.0f,231.0f , 218.0f+ 1));
+    mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f));
+    mainCamera.setPos(glm::vec3(136.0f, 231.0f, 218.0f));
+    //mainCamera.setPos(glm::vec3(-136.0f, 231.0f, 18.0f));
+    mainCamera.fieldOfview(1.623f);
+    mainCamera.clipPlane(glm::vec2(0.1f, 10000.0f));
+    mainCamera.upVector(glm::vec3(0.0f,1.0f,0.0f));
+    s_._cameras.emplace_back(s_._cameras[0]);
+    for(unsigned int i = 0; i < 250; ++i) {
+	s_._cameras.emplace_back(s_._cameras[0]);
+    }
+}
+
+void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& attrib, Scene& s_) {
+	// Loop over faces(polygon)
+	size_t index_offset = 0;
+	std::vector<GLfloat> vertexBuffer;
+	std::vector<GLuint> indiceBuffer;
+
+	vertexBuffer.reserve(object.mesh.num_face_vertices.size() * 8);
+	indiceBuffer.reserve(object.mesh.indices.size() * 3);
+	std::cout << "mesh size: " << object.mesh.num_face_vertices.size() * 8 << '\n';
+	for (size_t f = 0; f < object.mesh.num_face_vertices.size(); f++) {
+	    size_t fv = object.mesh.num_face_vertices[f];
+
+	    // Loop over vertices in the face.
+	    for (size_t v = 0; v < fv; v++) {
+		// access to vertex
+		tinyobj::index_t idx = object.mesh.indices[index_offset + v];
+
+		vertexBuffer.push_back(attrib.vertices[3*idx.vertex_index+0]);
+		vertexBuffer.push_back(attrib.vertices[3*idx.vertex_index+1]);
+		vertexBuffer.push_back(attrib.vertices[3*idx.vertex_index+2]);
+
+		vertexBuffer.push_back(attrib.normals[3*idx.normal_index+0]);
+		vertexBuffer.push_back(attrib.normals[3*idx.normal_index+1]);
+		vertexBuffer.push_back(attrib.normals[3*idx.normal_index+2]);
+
+		vertexBuffer.push_back(attrib.texcoords[2*idx.texcoord_index+0]);
+		vertexBuffer.push_back(attrib.texcoords[2*idx.texcoord_index+1]);
+
+
+		//printf("idx[%ld] = %d, %d, %d\n", mesh->v_indices.size(), idx.vertex_index, idx.normal_index, idx.texcoord_index);
+		if (idx.vertex_index != 0) {
+		    std::cout << idx.vertex_index << '\n';
+		    indiceBuffer.push_back(idx.vertex_index);
+		}
+	    }
+	    index_offset += fv;
+
+	    // per-face material
+	    object.mesh.material_ids[f];
+	}
+	s_._meshes.emplace_back();
+	s_._meshes[s_._meshes.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
+	s_._meshes[s_._meshes.size() - 1]._name = object.name;
+}
+
+/*
 void Importer::load(std::string& file, Scene& s_) {
     // Create an instance of the Importer class
     Assimp::Importer importer;
@@ -116,3 +202,4 @@ void Importer::genMesh(const aiScene* scene_, Scene& s_) {
 	}
     } 
 }
+*/

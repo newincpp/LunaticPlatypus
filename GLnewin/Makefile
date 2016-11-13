@@ -13,7 +13,7 @@ NAME	=ogl
 DEFINE 	= -DGLEW_STATIC 
 DEBUG 	= -g 
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
-OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti -fno-exceptions
+OPTIM= $(GLM_DEFINE) -march=native -O3 -fno-rtti -fno-exceptions
 INCLUDE=-I./../Obake/external -I./../Obake/external/EASTL -I./../Obake
 CXXFLAGS= -Wall -Wextra -W -std=c++11 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 LIBS= -lGL -lglfw  ./libs/libGLEW.a ./libs/libassimp.a ./libs/libz.a
