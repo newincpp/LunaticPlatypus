@@ -85,12 +85,7 @@ void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& 
 		vertexBuffer.push_back(attrib.texcoords[2*idx.texcoord_index+0]);
 		vertexBuffer.push_back(attrib.texcoords[2*idx.texcoord_index+1]);
 
-
-		//printf("idx[%ld] = %d, %d, %d\n", mesh->v_indices.size(), idx.vertex_index, idx.normal_index, idx.texcoord_index);
-		if (idx.vertex_index != 0) {
-		    std::cout << idx.vertex_index << '\n';
-		    indiceBuffer.push_back(idx.vertex_index);
-		}
+		indiceBuffer.push_back((index_offset + v) * 8);
 	    }
 	    index_offset += fv;
 
