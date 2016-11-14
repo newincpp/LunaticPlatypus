@@ -65,31 +65,49 @@ void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& 
 
 	vertexBuffer.reserve(object.mesh.num_face_vertices.size() * 8);
 	indiceBuffer.reserve(object.mesh.indices.size() * 3);
-	std::cout << "mesh size: " << object.mesh.num_face_vertices.size() * 8 << '\n';
+	std::cout << "mesh size: " << object.mesh.num_face_vertices.size() * 8 * 3 << '\n';
+	std::cout << "index size: " << object.mesh.indices.size() << '\n';
+	std::cout << "vertex size: " << attrib.vertices.size() << '\n';
+	std::cout << "normal size: " << attrib.normals.size() << '\n';
+	std::cout << "uv size: " << attrib.texcoords.size() << '\n';
+	std::cout << "all: " << attrib.texcoords.size() + attrib.normals.size() + attrib.vertices.size() << '\n';
 	for (size_t f = 0; f < object.mesh.num_face_vertices.size(); f++) {
 	    size_t fv = object.mesh.num_face_vertices[f];
 
 	    // Loop over vertices in the face.
 	    for (size_t v = 0; v < fv; v++) {
 		// access to vertex
+		if (object.mesh.indices.size() > index_offset + v) {
 		tinyobj::index_t idx = object.mesh.indices[index_offset + v];
 
+		if (idx.vertex_index < 0)
+			std::cout << "Vertex not used.\n";
 		vertexBuffer.push_back(attrib.vertices[3*idx.vertex_index+0]);
 		vertexBuffer.push_back(attrib.vertices[3*idx.vertex_index+1]);
 		vertexBuffer.push_back(attrib.vertices[3*idx.vertex_index+2]);
+		//std::cout << "v=" << attrib.vertices[idx.vertex_index+0] << ' ' << attrib.vertices[idx.vertex_index+1] << ' ' << attrib.vertices[idx.vertex_index+2] << '\n';
 
+		if (idx.normal_index < 0)
+			std::cout << "Normal not used.\n";
 		vertexBuffer.push_back(attrib.normals[3*idx.normal_index+0]);
 		vertexBuffer.push_back(attrib.normals[3*idx.normal_index+1]);
 		vertexBuffer.push_back(attrib.normals[3*idx.normal_index+2]);
+		//std::cout << "n=" << attrib.normals[idx.normal_index+0] << ' ' << attrib.normals[idx.normal_index+1] << ' ' << attrib.normals[idx.normal_index+2] << '\n';
 
+		if (idx.texcoord_index < 0)
+			std::cout << "UV not used.\n";
 		vertexBuffer.push_back(attrib.texcoords[2*idx.texcoord_index+0]);
 		vertexBuffer.push_back(attrib.texcoords[2*idx.texcoord_index+1]);
+		//std::cout << "u=" << attrib.texcoords[idx.texcoord_index+0] << ' ' << attrib.texcoords[idx.texcoord_index+1] << '\n';
 
 
 		//printf("idx[%ld] = %d, %d, %d\n", mesh->v_indices.size(), idx.vertex_index, idx.normal_index, idx.texcoord_index);
-		if (idx.vertex_index != 0) {
-		    std::cout << idx.vertex_index << '\n';
-		    indiceBuffer.push_back(idx.vertex_index);
+		//if (idx.vertex_index != 0) {
+		    //std::cout << (index_offset + v) * 8 << ' ' << vertexBuffer.size() << '\n';
+		    indiceBuffer.push_back((index_offset + v) * 8);
+		//}
+		} else {
+		    std::cout << "No more indices.\n";
 		}
 	    }
 	    index_offset += fv;
@@ -97,9 +115,12 @@ void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& 
 	    // per-face material
 	    object.mesh.material_ids[f];
 	}
+	std::cout << "vertex buffer size: " << vertexBuffer.size() << '\n';
+	std::cout << "index buffer size: " << indiceBuffer.size() << '\n';
 	s_._meshes.emplace_back();
 	s_._meshes[s_._meshes.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
 	s_._meshes[s_._meshes.size() - 1]._name = object.name;
+	std::cout << "Done.\n";
 }
 
 /*
