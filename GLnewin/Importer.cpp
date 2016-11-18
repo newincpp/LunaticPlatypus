@@ -47,8 +47,8 @@ void Importer::load(std::string& file, Scene& s_) {
     s_._cameras.emplace_back();
     Camera& mainCamera = s_._cameras[0];
     
-    mainCamera.lookAt(glm::vec3(.0f, -.7f, 8.4f)); // Nelo.obj
-    mainCamera.setPos(glm::vec3(-12.4f, -21.3, 11.9)); // Nelo.obj
+    mainCamera.lookAt(glm::vec3(.0f, 3.7f, 8.4f)); // Nelo.obj
+    mainCamera.setPos(glm::vec3(-9.3, 4.4f, 15.9)); // Nelo.obj
     //mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f)); // DemoCity.obj
     //mainCamera.setPos(glm::vec3(136.0f, 231.0f, 218.0f)); // DemoCity.obj
     //mainCamera.setPos(glm::vec3(-136.0f, 231.0f, 18.0f));
