@@ -17,7 +17,9 @@ inline glm::mat4 Importer::aiMatrix4x4ToGlm(const aiMatrix4x4& from) {
     return to;
 }
 
+#ifdef TINYOBJLOADER
 void Importer::load(std::string& file, Scene& s_) {
+    std::cout << "Import using tinyObjLoader\n";
     /*
        std::vector<Mesh> Scene::_meshes;
        std::vector<Camera> Scene::_cameras;
@@ -44,9 +46,11 @@ void Importer::load(std::string& file, Scene& s_) {
     std::cout << "generating cameras\n";
     s_._cameras.emplace_back();
     Camera& mainCamera = s_._cameras[0];
-    //_mainCamera.lookAt(glm::vec3(136.0f,231.0f , 218.0f+ 1));
-    mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f));
-    mainCamera.setPos(glm::vec3(136.0f, 231.0f, 218.0f));
+    
+    mainCamera.lookAt(glm::vec3(.0f, -.7f, 8.4f)); // Nelo.obj
+    mainCamera.setPos(glm::vec3(-12.4f, -21.3, 11.9)); // Nelo.obj
+    //mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f)); // DemoCity.obj
+    //mainCamera.setPos(glm::vec3(136.0f, 231.0f, 218.0f)); // DemoCity.obj
     //mainCamera.setPos(glm::vec3(-136.0f, 231.0f, 18.0f));
     mainCamera.fieldOfview(1.623f);
     mainCamera.clipPlane(glm::vec2(0.1f, 10000.0f));
@@ -97,8 +101,11 @@ void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& 
 	s_._meshes[s_._meshes.size() - 1]._name = object.name;
 }
 
-/*
+#else
+
 void Importer::load(std::string& file, Scene& s_) {
+    std::cout << "Import using Assimp\n";
+
     // Create an instance of the Importer class
     Assimp::Importer importer;
     // And have it read the given file with some example postprocessing
@@ -132,10 +139,11 @@ void Importer::load(std::string& file, Scene& s_) {
 	mainCamera.upVector(glm::vec3(c->mUp[0], c->mUp[1], c->mUp[2]));
     } else {
 	std::cout << "no Camera Detected\n";
-	//_mainCamera.lookAt(glm::vec3(136.0f,231.0f , 218.0f+ 1));
-	mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f));
-	mainCamera.setPos(glm::vec3(136.0f, 231.0f, 218.0f));
-	//mainCamera.setPos(glm::vec3(-136.0f, 231.0f, 18.0f));
+	mainCamera.lookAt(glm::vec3(.0f, 3.7f, 8.4f)); // Nelo.obj
+	mainCamera.setPos(glm::vec3(-9.3, 4.4f, 15.9)); // Nelo.obj
+
+	//mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f)); // DemoCity.obj
+	//mainCamera.setPos(glm::vec3(136.0f, 231.0f, 218.0f)); //DemoCity.obj
 	mainCamera.fieldOfview(1.623f);
 	mainCamera.clipPlane(glm::vec2(0.1f, 10000.0f));
 	mainCamera.upVector(glm::vec3(0.0f,1.0f,0.0f));
@@ -197,4 +205,4 @@ void Importer::genMesh(const aiScene* scene_, Scene& s_) {
 	}
     } 
 }
-*/
+#endif
