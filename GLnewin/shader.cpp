@@ -44,6 +44,17 @@ void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
 	++i;
     }
     glLinkProgram(_programId);
+
+    GLint linkStatus;
+    glGetProgramiv(_programId, GL_LINK_STATUS, &linkStatus);
+    if (!linkStatus) {
+	std::cout << "failed to Link the shader\n";
+	GLint InfoLogLength;
+	glGetProgramiv(_programId, GL_INFO_LOG_LENGTH, &InfoLogLength);
+	char ErrorMessage[InfoLogLength];
+	glGetProgramInfoLog(_programId, InfoLogLength, NULL, ErrorMessage);
+	std::cout << "\033[31mfailed to Link with error:\"" << ErrorMessage << std::endl << "-------------------\033[0m" << std::endl;
+    }
     glUseProgram(_programId);
 }
 
