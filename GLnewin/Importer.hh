@@ -19,8 +19,12 @@ class Importer {
 	//Camera _mainCamera;
 	Importer(std::string file, Scene&);
 	inline glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from);
-	void genMesh(const aiScene* scene_, Scene&);
 
+#ifdef TINYOBJLOADER
 	void genMesh(const tinyobj::shape_t&, const tinyobj::attrib_t&, Scene&);
+#else
+	void genMesh(const aiScene* scene_, Scene&);
+#endif
+
 	void load(std::string& file, Scene&);
 };

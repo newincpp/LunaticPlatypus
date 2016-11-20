@@ -49,8 +49,8 @@ void OglCore::init() {
     _sPostProc.link({"outColour"});
 
 
-    //import("./DemoCity.fbx");
-    Importer iscene("./DemoCity.obj", _s);
+    //Importer iscene("./DemoCity.obj", _s);
+    Importer iscene("./nelo.obj", _s);
     Mesh m;
     m.uploadToGPU(vertices, elements);
     _s._meshes.push_back(m);
