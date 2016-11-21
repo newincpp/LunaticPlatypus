@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <streambuf>
+#include <imgui.h>
 #include "Uniform.hh"
 
 #include "glew.h"
@@ -18,6 +19,7 @@ class Shader {
 	    GLint compileStatus;
 	    glGetShaderiv(id_, GL_COMPILE_STATUS, &compileStatus);
 	    if (compileStatus) {
+		ImGui::Text("%s succesfully compiled", filename_.c_str());
 		std::cout << "\033[32m\"" << filename_ << "\" succesfully compiled\033[0m\n";
 		return true;
 	    }
@@ -25,6 +27,8 @@ class Shader {
 	    glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	    char ErrorMessage[InfoLogLength];
 	    glGetShaderInfoLog(id_, InfoLogLength, NULL, ErrorMessage);
+
+	    ImGui::Text("%s failed to compile\n\t%s", filename_.c_str(), ErrorMessage);
 	    std::cout << "\033[31mfailed to compile \"" <<  filename_ << "\"\033[0m\n" << 
 		"your shader:\n" << 
 		src_ << '\n' <<
