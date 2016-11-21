@@ -6,9 +6,13 @@
 #include "assimp/Importer.hpp"      // C++ importer interface
 #include "assimp/scene.h"           // Output data structure
 #include "assimp/postprocess.h"     // Post processing fla
-#include "Alembic/Abc/IObject.h"
 
+#ifdef TINYOBJLOADER
 #include "tiny_obj_loader.h"
+#elif defined(ALEMBIC)
+#include "Alembic/Abc/IObject.h"
+#endif
+
 
 class Material {
 };

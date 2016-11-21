@@ -18,13 +18,13 @@ SRC+=$(IMGUI)
 
 EXT=cpp
 NAME	=ogl
-DEFINE 	= -DGLEW_STATIC -DALEMBIC
+DEFINE 	= -DGLEW_STATIC -DTINYOBJLOADER
 #DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti -fno-exceptions
-INCLUDE= -I./imgui -I./Alembic/OpenEXR
+INCLUDE= -I./imgui -I./Alembic/OpenEXR -I./
 CXXFLAGS= -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
-LIBS= -lGL -lglfw  ./libs/libGLEW.a ./libs/libassimp.a ./libs/libz.a ./libs/libAlembic.a ./libs/libHalf.a -lhdf5
+LIBS= -lGL -lglfw  ./libs/libGLEW.a ./libs/libassimp.a ./libs/libz.a ./libs/libAlembic.a ./libs/libHalf.a 
 LDFLAGS	= $(LIBS) $(OPTIM) $(DEBUG) $(LIBS)
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f

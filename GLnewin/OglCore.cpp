@@ -64,7 +64,12 @@ void OglCore::init() {
 
     //Importer iscene("./DemoCity.obj", _s);
     //Importer iscene("./nelo.obj", _s);
+#if defined(ALEMBIC)
     Importer iscene("./cubeTestMateriaux.abc", _s);
+#else
+    Importer iscene("./nelo.obj", _s);
+#endif
+
     Mesh m;
     m.uploadToGPU(vertices, elements);
     _s._meshes.push_back(m);
@@ -84,14 +89,13 @@ unsigned long OglCore::render() {
 
     ImGui::NewFrame();
 
-    ImGui::Begin("Scene Render"); 
     _sgBuffer.use();
     //autoRelocate(uTime);
     uTime.upload();
     checkGlError;
     _s.render();
     checkGlError;
-    ImGui::End();
+
 
     _sPostProc.use();
     _s.bindGBuffer(0);
@@ -101,7 +105,7 @@ unsigned long OglCore::render() {
     _renderTarget.render();
     checkGlError;
 
-
+    ImGui::Text("\nApplication average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::Render();
 
     std::chrono::time_point<std::chrono::high_resolution_clock> endFrame = std::chrono::high_resolution_clock::now();

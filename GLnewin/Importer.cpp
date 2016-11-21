@@ -1,6 +1,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <iostream>
 #include <map>
+#if defined(ALEMBIC)
 #include "Alembic/AbcGeom/All.h"
 #include "Alembic/AbcCoreAbstract/All.h"
 #include "Alembic/AbcCoreFactory/All.h"
@@ -9,6 +10,7 @@
 #include "Alembic/AbcMaterial/IMaterial.h"
 #include "Alembic/AbcMaterial/MaterialAssignment.h"
 #include "Alembic/Util/PlainOldDataType.h"
+#endif
 #include "Importer.hh"
 
 Importer::Importer(std::string file, Scene& s_) {
