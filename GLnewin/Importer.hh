@@ -6,6 +6,7 @@
 #include "assimp/Importer.hpp"      // C++ importer interface
 #include "assimp/scene.h"           // Output data structure
 #include "assimp/postprocess.h"     // Post processing fla
+#include "Alembic/Abc/IObject.h"
 
 #include "tiny_obj_loader.h"
 
@@ -22,6 +23,8 @@ class Importer {
 
 #ifdef TINYOBJLOADER
 	void genMesh(const tinyobj::shape_t&, const tinyobj::attrib_t&, Scene&);
+#elif defined(ALEMBIC)
+	void visitObject(Alembic::Abc::IObject iObj, std::string const &iIndent, Scene& s_);
 #else
 	void genMesh(const aiScene* scene_, Scene&);
 #endif

@@ -54,7 +54,8 @@ void OglCore::init() {
 
 
     //Importer iscene("./DemoCity.obj", _s);
-    Importer iscene("./nelo.obj", _s);
+    //Importer iscene("./nelo.obj", _s);
+    Importer iscene("./cubeTestMateriaux.abc", _s);
     Mesh m;
     m.uploadToGPU(vertices, elements);
     _s._meshes.push_back(m);
@@ -82,6 +83,7 @@ unsigned long OglCore::render() {
     _sgBuffer.use();
     //autoRelocate(uTime);
     uTime.upload();
+    checkGlError;
     _s.render();
     checkGlError;
 

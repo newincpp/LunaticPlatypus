@@ -1,7 +1,14 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <iostream>
-#include <functional>
 #include <map>
+#include "Alembic/AbcGeom/All.h"
+#include "Alembic/AbcCoreAbstract/All.h"
+#include "Alembic/AbcCoreFactory/All.h"
+#include "Alembic/Util/All.h"
+#include "Alembic/Abc/TypedPropertyTraits.h"
+#include "Alembic/AbcMaterial/IMaterial.h"
+#include "Alembic/AbcMaterial/MaterialAssignment.h"
+#include "Alembic/Util/PlainOldDataType.h"
 #include "Importer.hh"
 
 Importer::Importer(std::string file, Scene& s_) {
@@ -32,15 +39,15 @@ void Importer::load(std::string& file, Scene& s_) {
 
     std::string err;
     if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, file.c_str())) {
-	std::cout << "the file is fucked: " << file << std::endl;
+	std::cout << "the file is fucked: " << file << '\n';
     }
-    std::cout << "loaded with warning:\n" << err << std::endl;
+    std::cout << "loaded with warning:\n" << err << '\n';
 
     // Loop over shapes
     //for (size_t s = 0; s < shapes.size(); s++) {
     s_._meshes.reserve(shapes.size());
     for (tinyobj::shape_t object: shapes) {
-	std::cout << "loading: " << object.name << "\n";
+	std::cout << "loading: " << object.name << '\n';
 	genMesh(object, attrib, s_);
 	std::cout << "finished...\n";
     }
@@ -125,6 +132,204 @@ void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& 
 	s_._meshes.emplace_back();
 	s_._meshes[s_._meshes.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
 	s_._meshes[s_._meshes.size() - 1]._name = object.name;
+}
+
+#elif defined(ALEMBIC)
+
+void Importer::visitObject(Alembic::Abc::IObject iObj, std::string const &iIndent, Scene& s_) {
+	// Object has a name, a full name, some meta data,
+	// and then it has a compound property full of properties.
+
+	std::vector<GLfloat> vertexBuffer;
+	std::vector<GLuint> indiceBuffer;
+	std::string path = iObj.getFullName();
+
+	if (path != "/") {
+		std::cout << "Object name=" << path << '\n';
+	}
+	const Alembic::Abc::MetaData &md = iObj.getMetaData();
+
+	if (Alembic::AbcGeom::ICurves::matches(md)) {
+		std::cout << "Curves not implemented yet\n";
+		//Alembic::AbcGeom::ICurves curves(iObj);
+		//Alembic::AbcGeom::ICurvesSchema cs = curves.getSchema();
+		//cs.getPositionsProperty(); //IP3fArrayProperty
+		//cs.getNumVerticesProperty(); //IInt32ArrayProperty
+		//cs.getUVsParam(); //IV2fGeomParam
+		//cs.getNormalsParam(); //IN3fGeomParam ==IV3f
+	} else if (Alembic::AbcGeom::INuPatch::matches(md)) {
+		std::cout << "NuPatch not implemented yet\n";
+	} else if (Alembic::AbcGeom::IPoints::matches(md)) {
+		std::cout << "Points not implemented yet\n";
+		//Alembic::AbcGeom::IPoints points(iObj);
+		//Alembic::AbcGeom::IPointsSchema ps = points.getSchema();
+		//for (size_t i = 0; i < ps.getNumSamples(); i++) {
+		//	Alembic::AbcGeom::IPointsSchema::Sample s;
+		//	ps.get(s, i);
+		//	s.getPositions(); //P3fArraySamplePtr
+		//	s.getIds(); //UInt64ArraySamplePtr
+		//}
+	} else if (Alembic::AbcGeom::IPolyMesh::matches(md)) {
+		std::cout << "PolyMesh\n";
+		Alembic::AbcGeom::IPolyMesh mesh(iObj);
+		Alembic::AbcGeom::IPolyMeshSchema ms = mesh.getSchema();
+		Alembic::AbcGeom::IV2fGeomParam uvParam = ms.getUVsParam();
+		Alembic::AbcGeom::IN3fGeomParam normalsParam = ms.getNormalsParam();
+		Imath::Vec3<glm::float32> const *normals = NULL;
+		Imath::Vec2<glm::float32> const *uv = NULL;
+		for (size_t i = 0; i < ms.getNumSamples(); i++) {
+			Alembic::AbcGeom::IPolyMeshSchema::Sample s;
+			ms.get(s, i);
+			Alembic::Abc::P3fArraySamplePtr positionsPtr = s.getPositions(); //P3fArraySamplePtr == 3 float32
+			Imath::Vec3<glm::float32> const *vertex = positionsPtr->get();
+			if (normalsParam.valid()) {
+			    normals = normalsParam.getIndexedValue(i).getVals()->get();
+			} else {
+			    normals = NULL;
+			}
+			if (uvParam.valid()) {
+			    uv = uvParam.getIndexedValue(i).getVals()->get();
+			} else {
+			    uv = NULL;
+			}
+			//std::cout << "Positions: ";
+			for (size_t j = 0; j < positionsPtr->size(); j++) {
+			    vertexBuffer.push_back((*vertex).x);
+			    //std:: cout << "\nv= " << vertexBuffer.back();
+			    vertexBuffer.push_back((*vertex).y);
+			    //std:: cout << ' ' << vertexBuffer.back();
+			    vertexBuffer.push_back((*vertex).z);
+			    //std:: cout << ' ' << vertexBuffer.back();
+			    vertex++;
+			    if (normals != NULL) {
+				//std::cout << " n= " << normals[j].x << ' ' << normals[j].y << ' ' << normals[j].z;
+				vertexBuffer.push_back(normals[j].x);
+				vertexBuffer.push_back(normals[j].y);
+				vertexBuffer.push_back(normals[j].z);
+			    } else {
+				//std::cout << " n= 1 1 1";
+				vertexBuffer.push_back(1.0f);
+				vertexBuffer.push_back(1.0f);
+				vertexBuffer.push_back(1.0f);
+			    }
+			    if (uv != NULL) { //TODO: check
+				//std::cout << " uv= " << uv[j].x << ' ' << uv[j].y;
+				vertexBuffer.push_back(uv[j].x);
+				vertexBuffer.push_back(uv[j].y);
+			    } else {
+				//std::cout << " uv= 0 0";
+				vertexBuffer.push_back(0.0f);
+				vertexBuffer.push_back(0.0f);
+			    }
+			}
+			//std::cout << '\n';
+			Alembic::Abc::Int32ArraySamplePtr indicesPtr = s.getFaceIndices(); //Int32ArraySamplePtr
+			glm::int32 const *indice = indicesPtr->get();
+			Alembic::Abc::Int32ArraySamplePtr countPtr = s.getFaceCounts(); //Int32ArraySamplePtr
+			glm::int32 const *nbIndicesInFace = countPtr->get();
+			if (*nbIndicesInFace > 3) {
+				std::cout << "WARNING: Triangulate your mesh if you want to avoid problems, quads are trianglulated naively and ngons are not implemented.\n";
+				for (size_t j = 0; j < indicesPtr->size(); j += *nbIndicesInFace) {
+					for (int k = *nbIndicesInFace - 3; k >= 0; k--) {
+						indiceBuffer.push_back(*indice);
+						indiceBuffer.push_back(*(indice + 1 + k));
+						indiceBuffer.push_back(*(indice + 2 + k));
+						//std::cout << *indice << ' ' << *(indice + 1) << ' ' << *(indice + 2 + k) << ' ';
+					}
+					indice += *nbIndicesInFace;
+				}
+			} else {
+				for (size_t j = 0; j < indicesPtr->size(); j++) {
+					//std::cout << *indice << ' ';
+					indiceBuffer.push_back(*indice);
+					indice++;
+				}
+			}
+			//std::cout << '\n';
+		}
+		s_._meshes.emplace_back();
+		std::cout << "\nUPLOAD " << path << '\n';
+		for (size_t k = 0; k < vertexBuffer.size(); k += 8) {
+		    std::cout << "v= " << vertexBuffer[k] << ' '
+				       << vertexBuffer[k + 1] << ' '
+				       << vertexBuffer[k + 2] << ' ' <<
+				 "n= " << vertexBuffer[k + 3] << ' '
+				       << vertexBuffer[k + 4] << ' '
+				       << vertexBuffer[k + 5] << ' ' <<
+				"uv= " << vertexBuffer[k + 6] << ' '
+				       << vertexBuffer[k + 7] << '\n';
+		}
+		for (size_t k = 0; k < indiceBuffer.size(); k += 3) {
+		    std::cout << "f= " << indiceBuffer[k] << ' '
+				       << indiceBuffer[k + 1] << ' '
+				       << indiceBuffer[k + 2] << '\n';
+		}
+		s_._meshes[s_._meshes.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
+		s_._meshes[s_._meshes.size() - 1]._name = path;
+	} else if (Alembic::AbcGeom::ISubDSchema::matches(md)) {
+		std::cout << "ISubDSchema not implemented yet\n";
+		//Alembic::AbcGeom::ISubD mesh(iObj);
+		//Alembic::AbcGeom::ISubDSchema ms = mesh.getSchema();
+		//for (size_t i = 0; i < ms.getNumSamples(); i++) {
+		//	Alembic::AbcGeom::ISubDSchema::Sample s;
+		//	ms.get(s, i);
+		//	s.getPositions(); //P3fArraySamplePtr
+		//	s.getFaceIndices(); //Int32ArraySamplePtr
+		//	s.getFaceCounts(); //Int32ArraySamplePtr
+		//}
+		//ms.getUVsParam(); //IV2fGeomParam
+		//Box3d bnds = getBounds( iObj, seconds );
+		//std::cout << path << " " << bnds.min << " " << bnds.max << std::endl;
+	}
+
+	// now the child objects
+	for (size_t i = 0 ; i < iObj.getNumChildren() ; i++) {
+		visitObject(Alembic::Abc::IObject(iObj, iObj.getChildHeader(i).getName()), iIndent, s_);
+	}
+}
+
+void Importer::load(std::string& file, Scene& s_) {
+    std::cout << "Import using Alembic\n";
+
+    // Create an instance of the Importer class
+    Alembic::AbcCoreFactory::IFactory factory;
+    factory.setPolicy(Alembic::Abc::ErrorHandler::kQuietNoopPolicy);
+    Alembic::AbcCoreFactory::IFactory::CoreType coreType;
+    Alembic::Abc::IArchive archive = factory.getArchive(file, coreType);
+
+    if (archive) {
+	    std::cout  << "AbcEcho for "
+		    << Alembic::AbcCoreAbstract::GetLibraryVersion ()
+		    << '\n';
+
+	    std::string appName;
+	    std::string libraryVersionString;
+	    Alembic::Util::uint32_t libraryVersion;
+	    std::string whenWritten;
+	    std::string userDescription;
+	    GetArchiveInfo (archive,
+			    appName,
+			    libraryVersionString,
+			    libraryVersion,
+			    whenWritten,
+			    userDescription);
+
+	    if (appName != "") {
+		    std::cout << "  file written by: " << appName << '\n';
+		    std::cout << "  using Alembic : " << libraryVersionString << '\n';
+		    std::cout << "  written on : " << whenWritten << '\n';
+		    std::cout << "  user description : " << userDescription << '\n';
+		    std::cout << '\n';
+	    } else {
+		    std::cout << file << '\n';
+		    std::cout << "  (file doesn't have any ArchiveInfo)"
+			    << '\n';
+		    std::cout << '\n';
+	    }
+	    visitObject(archive.getTop(), "", s_);
+    } else {
+	    std::cout << "archive is null :C " << file << '\n';
+    }
 }
 
 #else
