@@ -41,7 +41,7 @@
 // for the major.
 #define ALEMBIC_LIBRARY_VERSION 1 * 10000 + 7 * 100 + 0
 
-/* #undef ALEMBIC_WITH_HDF5 */
+#define ALEMBIC_WITH_HDF5
 
 /* #undef ALEMBIC_LIB_USES_BOOST */
 
