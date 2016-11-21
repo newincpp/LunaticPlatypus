@@ -3,6 +3,7 @@
 #include <vector>
 #include "Camera.hh"
 #include "Mesh.hh"
+#include <imgui.h>
 
 #include <iostream>
 
@@ -15,6 +16,7 @@ class Scene {
 	    _cameras.reserve(512);
 	}
 	void render() {
+	    ImGui::Text("camera in use: %d", _activeCamera);
 	    for (unsigned int a = 0; a < _activeCamera; ++a) {
 		_cameras[a].use();
 		for (Mesh& m : _meshes) {

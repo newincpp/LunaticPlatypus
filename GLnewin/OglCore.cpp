@@ -22,6 +22,15 @@ void getGlError(const char* file_, unsigned long line_) {
 
 
 void OglCore::init() {
+    ImGuiIO& io = ImGui::GetIO();
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    io.DisplaySize.x = 1920.0f;
+    io.DisplaySize.y = 1080.0f;
+    io.RenderDrawListsFn = ImGui_RenderDrawLists;
+    ImGui::NewFrame();
+
     _beginTime = std::chrono::high_resolution_clock::now();
 
     checkGlError glEnable(GL_DEPTH_TEST);
@@ -40,17 +49,17 @@ void OglCore::init() {
 	2, 3, 0
     };
 
+    ImGui::Begin("gBuffer shader"); 
     _sgBuffer.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
     _sgBuffer.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
     _sgBuffer.link({"gPosition", "gNormal", "gAlbedoSpec"});
+    ImGui::End();
 
-    //_srender.add("./frag.glsl", GL_FRAGMENT_SHADER);
-    //_srender.add("./vert.glsl", GL_VERTEX_SHADER);
-    //_srender.link({"outColour"});
-
+    ImGui::Begin("PostProc shader"); 
     _sPostProc.add("./postProcess.glsl",GL_FRAGMENT_SHADER);
     _sPostProc.add("./postProcessVert.glsl",GL_VERTEX_SHADER);
     _sPostProc.link({"outColour"});
+    ImGui::End();
 
 
     //Importer iscene("./DemoCity.obj", _s);
@@ -64,6 +73,8 @@ void OglCore::init() {
 
     _sgBuffer.use();
     autoRelocate(uTime);
+
+    ImGui::Render();
 }
 
 unsigned long OglCore::render() {
@@ -71,21 +82,16 @@ unsigned long OglCore::render() {
     GLfloat time = std::chrono::duration_cast<std::chrono::milliseconds>(beginFrame - _beginTime).count();
     uTime = time;
 
-    ImGuiIO& io = ImGui::GetIO();
-    unsigned char* pixels;
-    int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-    io.DisplaySize.x = 1920.0f;
-    io.DisplaySize.y = 1080.0f;
-    io.RenderDrawListsFn = ImGui_RenderDrawLists;
     ImGui::NewFrame();
 
+    ImGui::Begin("Scene Render"); 
     _sgBuffer.use();
     //autoRelocate(uTime);
     uTime.upload();
     checkGlError;
     _s.render();
     checkGlError;
+    ImGui::End();
 
     _sPostProc.use();
     _s.bindGBuffer(0);
@@ -95,9 +101,6 @@ unsigned long OglCore::render() {
     _renderTarget.render();
     checkGlError;
 
-    ImGui::Begin("My window"); 
-    ImGui::Text("Hello World");
-    ImGui::End();
 
     ImGui::Render();
 
