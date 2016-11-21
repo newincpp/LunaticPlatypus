@@ -18,17 +18,17 @@ class Shader {
 	    GLint compileStatus;
 	    glGetShaderiv(id_, GL_COMPILE_STATUS, &compileStatus);
 	    if (compileStatus) {
-		std::cout << "\033[32msuccesfully compiled\033[0m" << std::endl;
+		std::cout << "\033[32m\"" << filename_ << "\" succesfully compiled\033[0m\n";
 		return true;
 	    }
 	    GLint InfoLogLength;
 	    glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	    char ErrorMessage[InfoLogLength];
 	    glGetShaderInfoLog(id_, InfoLogLength, NULL, ErrorMessage);
-	    std::cout << "\033[31mfailed to compile \"" <<  filename_ << "\"\033[0m" << std::endl <<
-		"your shader:" << std::endl << 
-		src_ << std::endl <<
-		"error log:" << std::endl << ErrorMessage << std::endl << "-------------------\033[0m" << std::endl;
+	    std::cout << "\033[31mfailed to compile \"" <<  filename_ << "\"\033[0m\n" << 
+		"your shader:\n" << 
+		src_ << '\n' <<
+		"error log:\n" << ErrorMessage << std::endl << "-------------------\033[0m\n";
 	    return false;
 	}
 
