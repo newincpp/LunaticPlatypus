@@ -10,8 +10,8 @@ SRC	= Camera.cpp \
 
 EXT=cpp
 NAME	=ogl
-DEFINE 	= -DGLEW_STATIC 
-#DEBUG 	= -g 
+DEFINE 	= -DGLEW_STATIC -DTINYOBJLOADER
+#DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O3 -fno-rtti -fno-exceptions
 INCLUDE=-I./../Obake/external -I./../Obake/external/EASTL -I./../Obake

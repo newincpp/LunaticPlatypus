@@ -4,10 +4,10 @@ layout(location = 0) uniform float uTime;
 //uniform mat4 uCamera;
 layout(location = 2) uniform mat4 uMeshTransform;
 
-in vec3 vInfVertexPos_;
-in vec3 vInfVertexNormal_;
-in vec2 vInfUvCoord_;
-in vec2 vInfDepth_;
+layout(location = 0) in vec3 vInfVertexPos_;
+layout(location = 1) in vec3 vInfVertexNormal_;
+layout(location = 2) in vec2 vInfUvCoord_;
+layout(location = 3) in vec2 vInfDepth_;
 
 out vec3 gPosition;
 out vec3 gNormal;

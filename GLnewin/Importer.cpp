@@ -1,5 +1,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <iostream>
+#include <functional>
+#include <map>
 #include "Importer.hh"
 
 Importer::Importer(std::string file, Scene& s_) {
@@ -46,7 +48,7 @@ void Importer::load(std::string& file, Scene& s_) {
     std::cout << "generating cameras\n";
     s_._cameras.emplace_back();
     Camera& mainCamera = s_._cameras[0];
-    
+
     mainCamera.lookAt(glm::vec3(.0f, 3.7f, 8.4f)); // Nelo.obj
     mainCamera.setPos(glm::vec3(-9.3, 4.4f, 15.9)); // Nelo.obj
     //mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f)); // DemoCity.obj
@@ -61,6 +63,17 @@ void Importer::load(std::string& file, Scene& s_) {
     }
 }
 
+void printVertex(std::vector<float> const &vertex) {
+	std::cout << vertex[0] << ' ' <<
+		vertex[1] << ' ' <<
+		vertex[2] << ' ' <<
+		vertex[3] << ' ' <<
+		vertex[4] << ' ' <<
+		vertex[5] << ' ' <<
+		vertex[6] << ' ' <<
+		vertex[7] << ' ' << '\n';
+}
+
 void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& attrib, Scene& s_) {
 	// Loop over faces(polygon)
 	size_t index_offset = 0;
@@ -69,12 +82,7 @@ void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& 
 
 	vertexBuffer.reserve(object.mesh.num_face_vertices.size() * 8);
 	indiceBuffer.reserve(object.mesh.indices.size() * 3);
-	std::cout << "mesh size: " << object.mesh.num_face_vertices.size() * 8 * 3 << '\n';
-	std::cout << "index size: " << object.mesh.indices.size() << '\n';
-	std::cout << "vertex size: " << attrib.vertices.size() << '\n';
-	std::cout << "normal size: " << attrib.normals.size() << '\n';
-	std::cout << "uv size: " << attrib.texcoords.size() << '\n';
-	std::cout << "all: " << attrib.texcoords.size() + attrib.normals.size() + attrib.vertices.size() << '\n';
+	std::map<std::vector<float>, int> uniqueVertices; //to easily compare vertices (the vector inside is always 8 values: vertex, normals, uvs) and access their indices (should become unordered but problem of hashes)
 	for (size_t f = 0; f < object.mesh.num_face_vertices.size(); f++) {
 	    size_t fv = object.mesh.num_face_vertices[f];
 
@@ -82,29 +90,31 @@ void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& 
 	    for (size_t v = 0; v < fv; v++) {
 		// access to vertex
 		if (object.mesh.indices.size() > index_offset + v) {
-		tinyobj::index_t idx = object.mesh.indices[index_offset + v];
-
-		if (idx.vertex_index < 0)
-			std::cout << "Vertex not used.\n";
-		vertexBuffer.push_back(attrib.vertices[3*idx.vertex_index+0]);
-		vertexBuffer.push_back(attrib.vertices[3*idx.vertex_index+1]);
-		vertexBuffer.push_back(attrib.vertices[3*idx.vertex_index+2]);
-		//std::cout << "v=" << attrib.vertices[idx.vertex_index+0] << ' ' << attrib.vertices[idx.vertex_index+1] << ' ' << attrib.vertices[idx.vertex_index+2] << '\n';
-
-		if (idx.normal_index < 0)
-			std::cout << "Normal not used.\n";
-		vertexBuffer.push_back(attrib.normals[3*idx.normal_index+0]);
-		vertexBuffer.push_back(attrib.normals[3*idx.normal_index+1]);
-		vertexBuffer.push_back(attrib.normals[3*idx.normal_index+2]);
-		//std::cout << "n=" << attrib.normals[idx.normal_index+0] << ' ' << attrib.normals[idx.normal_index+1] << ' ' << attrib.normals[idx.normal_index+2] << '\n';
-
-		if (idx.texcoord_index < 0)
-			std::cout << "UV not used.\n";
-		vertexBuffer.push_back(attrib.texcoords[2*idx.texcoord_index+0]);
-		vertexBuffer.push_back(attrib.texcoords[2*idx.texcoord_index+1]);
-		//std::cout << "u=" << attrib.texcoords[idx.texcoord_index+0] << ' ' << attrib.texcoords[idx.texcoord_index+1] << '\n';
-
-		indiceBuffer.push_back((index_offset + v) * 8);
+			tinyobj::index_t idx = object.mesh.indices[index_offset + v];
+			std::vector<float> vertex = { attrib.vertices[3*idx.vertex_index+0], attrib.vertices[3*idx.vertex_index+1], attrib.vertices[3*idx.vertex_index+2],
+				attrib.normals[3*idx.normal_index+0], attrib.normals[3*idx.normal_index+1], attrib.normals[3*idx.normal_index+2] };
+			if (idx.texcoord_index < 0) {
+				//push useless uv because we always upload 8 values and if there's no uv it does shitty things
+				vertex.push_back(0.0f);
+				vertex.push_back(0.0f);
+			} else {
+				vertex.push_back(attrib.texcoords[2*idx.texcoord_index+0]);
+				vertex.push_back(attrib.texcoords[2*idx.texcoord_index+1]);
+			}
+			if (uniqueVertices.count(vertex) <= 0) {
+				//push a new vertex if we never encountered it before (to the unordered map AND the buffer)
+				uniqueVertices[vertex] = vertexBuffer.size() / 8.0f;
+				vertexBuffer.push_back(vertex[0]);
+				vertexBuffer.push_back(vertex[1]);
+				vertexBuffer.push_back(vertex[2]);
+				vertexBuffer.push_back(vertex[3]);
+				vertexBuffer.push_back(vertex[4]);
+				vertexBuffer.push_back(vertex[5]);
+				vertexBuffer.push_back(vertex[6]);
+				vertexBuffer.push_back(vertex[7]);
+			}
+			//push indice of vertex
+			indiceBuffer.push_back(uniqueVertices[vertex]);
 		}
 	    }
 	    index_offset += fv;
@@ -112,12 +122,9 @@ void Importer::genMesh(const tinyobj::shape_t& object, const tinyobj::attrib_t& 
 	    // per-face material
 	    object.mesh.material_ids[f];
 	}
-	std::cout << "vertex buffer size: " << vertexBuffer.size() << '\n';
-	std::cout << "index buffer size: " << indiceBuffer.size() << '\n';
 	s_._meshes.emplace_back();
 	s_._meshes[s_._meshes.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
 	s_._meshes[s_._meshes.size() - 1]._name = object.name;
-	std::cout << "Done.\n";
 }
 
 #else
@@ -128,10 +135,10 @@ void Importer::load(std::string& file, Scene& s_) {
     // Create an instance of the Importer class
     Assimp::Importer importer;
     // And have it read the given file with some example postprocessing
-    // Usually - if speed is not the most important aspect for you - you'll 
+    // Usually - if speed is not the most important aspect for you - you'll
     // propably to request more postprocessing than we do in this example.
-    const aiScene* scene = importer.ReadFile(file, 
-	    aiProcess_CalcTangentSpace       | 
+    const aiScene* scene = importer.ReadFile(file,
+	    aiProcess_CalcTangentSpace       |
 	    aiProcess_Triangulate            |
 	    aiProcess_JoinIdenticalVertices  |
 	    aiProcess_SortByPType);
@@ -175,10 +182,10 @@ void Importer::load(std::string& file, Scene& s_) {
 
 void Importer::genMesh(const aiScene* scene_, Scene& s_) {
     s_._meshes.reserve(scene_->mNumMeshes);
-    for(unsigned int m = 0 ; m < scene_->mNumMeshes ; ++m) { 
+    for(unsigned int m = 0 ; m < scene_->mNumMeshes ; ++m) {
 	std::vector<GLfloat> vertexBuffer;
 	std::vector<GLuint> indiceBuffer;
-	aiMesh* mesh = scene_->mMeshes[m]; 
+	aiMesh* mesh = scene_->mMeshes[m];
 	vertexBuffer.reserve(mesh->mNumVertices * 8);
 	indiceBuffer.reserve(mesh->mNumFaces * 3);
 
@@ -222,6 +229,6 @@ void Importer::genMesh(const aiScene* scene_, Scene& s_) {
 	if (n) {
 	s_._meshes[s_._meshes.size() - 1].uMeshTransform = aiMatrix4x4ToGlm(n->mTransformation);
 	}
-    } 
+    }
 }
 #endif
