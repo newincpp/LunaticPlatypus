@@ -3,6 +3,8 @@
 #include "OglCore.hh"
 #include "Importer.hh"
 
+#include <imgui.h>
+
 void getGlError(const char* file_, unsigned long line_) {
     GLenum e = glGetError();
     if (e != GL_NO_ERROR) {
@@ -17,6 +19,8 @@ void getGlError(const char* file_, unsigned long line_) {
     }
 }
 
+
+
 void OglCore::init() {
     _beginTime = std::chrono::high_resolution_clock::now();
 
@@ -24,16 +28,16 @@ void OglCore::init() {
     glCullFace(GL_BACK);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     std::vector<GLfloat> vertices = {
-    	//vertexPos		//normal		//uvCoord
-        -1.0f,  1.0f,5.5f, 	0.0f,0.0f,1.0f, 	0.0f,1.0f, // Top-left
-        1.0f,  1.0f, 5.5f, 	0.0f,0.0f,1.0f, 	1.0f,1.0f, // Top-right
-        1.0f, -1.0f, 5.5f, 	0.0f,0.0f,1.0f, 	1.0f,0.0f, // Bottom-right
-        -1.0f, -1.0f, 5.5f, 	0.0f,0.0f,1.0f, 	0.0f,0.0f  // Bottom-left
+	//vertexPos		//normal		//uvCoord
+	-1.0f,  1.0f,5.5f, 	0.0f,0.0f,1.0f, 	0.0f,1.0f, // Top-left
+	1.0f,  1.0f, 5.5f, 	0.0f,0.0f,1.0f, 	1.0f,1.0f, // Top-right
+	1.0f, -1.0f, 5.5f, 	0.0f,0.0f,1.0f, 	1.0f,0.0f, // Bottom-right
+	-1.0f, -1.0f, 5.5f, 	0.0f,0.0f,1.0f, 	0.0f,0.0f  // Bottom-left
     };
 
     std::vector<GLuint> elements = {
-        0, 1, 2,
-        2, 3, 0
+	0, 1, 2,
+	2, 3, 0
     };
 
     _sgBuffer.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
@@ -66,6 +70,15 @@ unsigned long OglCore::render() {
     GLfloat time = std::chrono::duration_cast<std::chrono::milliseconds>(beginFrame - _beginTime).count();
     uTime = time;
 
+    ImGuiIO& io = ImGui::GetIO();
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    io.DisplaySize.x = 1920.0f;
+    io.DisplaySize.y = 1080.0f;
+    io.RenderDrawListsFn = ImGui_RenderDrawLists;
+    ImGui::NewFrame();
+
     _sgBuffer.use();
     //autoRelocate(uTime);
     uTime.upload();
@@ -80,6 +93,13 @@ unsigned long OglCore::render() {
     _renderTarget.render();
     checkGlError;
 
+    ImGui::Begin("My window"); 
+    ImGui::Text("Hello World");
+    ImGui::End();
+
+    ImGui::Render();
+
     std::chrono::time_point<std::chrono::high_resolution_clock> endFrame = std::chrono::high_resolution_clock::now();
     return std::chrono::duration_cast<std::chrono::nanoseconds>(endFrame-beginFrame).count();
 }
+

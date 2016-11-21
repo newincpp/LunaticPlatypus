@@ -1,20 +1,28 @@
+IMGUI	= imgui/imgui.cpp \
+	  imgui/imgui_demo.cpp \
+	  imgui/imgui_draw.cpp \
+	  imgui/imguiImplementation.cpp
+
 SRC	= Camera.cpp \
 	   FrameBuffer.cpp \
 	   Importer.cpp \
 	   Mesh.cpp \
 	   OglCore.cpp \
 	   RenderTexture.cpp \
+	   Texture.cpp \
 	   shader.cpp \
 	   Uniform.cpp \
 	   main.cpp
+
+SRC+=$(IMGUI)
 
 EXT=cpp
 NAME	=ogl
 DEFINE 	= -DGLEW_STATIC -DTINYOBJLOADER
 #DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
-OPTIM= $(GLM_DEFINE) -march=native -O3 -fno-rtti -fno-exceptions
-INCLUDE=-I./../Obake/external -I./../Obake/external/EASTL -I./../Obake
+OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti -fno-exceptions
+INCLUDE= -I./imgui
 CXXFLAGS= -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 LIBS= -lGL -lglfw  ./libs/libGLEW.a ./libs/libassimp.a ./libs/libz.a
 LDFLAGS	= $(LIBS) $(OPTIM) $(DEBUG) $(LIBS)

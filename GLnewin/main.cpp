@@ -13,14 +13,10 @@ class MinimalWindow {
 	    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 	    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	    getGlError(__FILE__, __LINE__);
 
 	    _window = glfwCreateWindow(1920, 1024, "OpenGL", nullptr, nullptr); // Windowed
-	    getGlError(__FILE__, __LINE__);
 	    //GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
 	    glfwMakeContextCurrent(_window);
-	    getGlError(__FILE__, __LINE__);
-	    //glewExperimental = GL_TRUE;
 	    GLenum err = glewInit();
 	    glGetError();
 	    if (GLEW_OK != err) {
@@ -33,7 +29,6 @@ class MinimalWindow {
 	    std::cout << "Renderer: " << glGetString(GL_RENDERER) << '\n';
 	    std::cout << "Shader Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
 	    _c.init();
-	    getGlError(__FILE__, __LINE__);
 	}
 	void loop() {
 
