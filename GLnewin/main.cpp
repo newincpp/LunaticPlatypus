@@ -34,16 +34,12 @@ class MinimalWindow {
 
 	    while(!glfwWindowShouldClose(_window))
 	    {
-		//std::chrono::time_point<std::chrono::high_resolution_clock> begin = std::chrono::high_resolution_clock::now();
 		_c.render();
 
 		glfwSwapBuffers(_window);
-		//std::chrono::time_point<std::chrono::high_resolution_clock> end = std::chrono::high_resolution_clock::now();
 		glfwPollEvents();
 		if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		    glfwSetWindowShouldClose(_window, GL_TRUE);
-		//std::cout << "GPU: " << rendertime << "ns\t\t" << 1000000000.0/double(rendertime) << "fps (theorical)\n"; 
-		//std::cout << "frametime: " << std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count() << "ms\t\t" << 1000.0/double(std::chrono::duration_cast<std::chrono::milliseconds>(end-begin).count()) << "fps\n\n"; 
 	    }
 	}
 	~MinimalWindow() {

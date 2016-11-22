@@ -105,10 +105,10 @@ unsigned long OglCore::render() {
     _renderTarget.render();
     checkGlError;
 
-    ImGui::Text("\nApplication average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    std::chrono::time_point<std::chrono::high_resolution_clock> endFrame = std::chrono::high_resolution_clock::now();
+    ImGui::Text("\nApplication average %ld ms/frame (%.1f FPS)", std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count(), 1000.0/double(std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count()));
     ImGui::Render();
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> endFrame = std::chrono::high_resolution_clock::now();
     return std::chrono::duration_cast<std::chrono::nanoseconds>(endFrame-beginFrame).count();
 }
 

@@ -18,14 +18,14 @@ SRC+=$(IMGUI)
 
 EXT=cpp
 NAME	=ogl
-DEFINE 	= -DGLEW_STATIC -DALEMBIC
+DEFINE 	= -DGLEW_STATIC -DTINYOBJLOADER
 #DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti #-fno-exceptions
-INCLUDE= -I./imgui -I./Alembic/OpenEXR -I./
+INCLUDE= -I./imgui -I./Alembic/OpenEXR -I./ -I./Alembic
 CXXFLAGS= -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
-LIBS= -lGL -lglfw  ./libs/libGLEW.a ./libs/libassimp.a ./libs/libz.a ./libs/libAlembic.a ./libs/libHalf.a ./libs/libhdf5.a -ldl
-LDFLAGS	= $(LIBS) $(OPTIM) $(DEBUG) $(LIBS)
+LIBS= -lGL -lglfw  ./libs/libGLEW.a  ./libs/libAlembic.a ./libs/libHalf.a ./libs/libhdf5.a -ldl ./libs/libz.a
+LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS)
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
 CXX	= clang++
@@ -34,7 +34,7 @@ LINKER	= $(CXX)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(LINKER) $(OBJS) $(LDFLAGS) -o $(NAME)
+	$(LINKER)  $(OBJS) -o $(NAME) $(LDFLAGS)
 
 clean:
 	$(RM) $(OBJS) *.swp *~ *#

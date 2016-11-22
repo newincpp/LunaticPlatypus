@@ -2,14 +2,14 @@
 #include <iostream>
 #include <map>
 #if defined(ALEMBIC)
-#include "Alembic/AbcGeom/All.h"
-#include "Alembic/AbcCoreAbstract/All.h"
-#include "Alembic/AbcCoreFactory/All.h"
-#include "Alembic/Util/All.h"
-#include "Alembic/Abc/TypedPropertyTraits.h"
-#include "Alembic/AbcMaterial/IMaterial.h"
-#include "Alembic/AbcMaterial/MaterialAssignment.h"
-#include "Alembic/Util/PlainOldDataType.h"
+#include <Alembic/AbcGeom/All.h>
+#include <Alembic/AbcCoreAbstract/All.h>
+#include <Alembic/AbcCoreFactory/All.h>
+#include <Alembic/Util/All.h>
+#include <Alembic/Abc/TypedPropertyTraits.h>
+#include <Alembic/AbcMaterial/IMaterial.h>
+#include <Alembic/AbcMaterial/MaterialAssignment.h>
+#include <Alembic/Util/PlainOldDataType.h>
 #endif
 #include "Importer.hh"
 
@@ -62,7 +62,6 @@ void Importer::load(std::string& file, Scene& s_) {
     mainCamera.setPos(glm::vec3(-9.3, 4.4f, 15.9)); // Nelo.obj
     //mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f)); // DemoCity.obj
     //mainCamera.setPos(glm::vec3(136.0f, 231.0f, 218.0f)); // DemoCity.obj
-    //mainCamera.setPos(glm::vec3(-136.0f, 231.0f, 18.0f));
     mainCamera.fieldOfview(1.623f);
     mainCamera.clipPlane(glm::vec2(0.1f, 10000.0f));
     mainCamera.upVector(glm::vec3(0.0f,1.0f,0.0f));
