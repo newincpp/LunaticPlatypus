@@ -46,7 +46,6 @@ void Importer::load(std::string& file, Scene& s_) {
     std::cout << "loaded with warning:\n" << err << '\n';
 
     // Loop over shapes
-    //for (size_t s = 0; s < shapes.size(); s++) {
     s_._meshes.reserve(shapes.size());
     for (tinyobj::shape_t object: shapes) {
 	std::cout << "loading: " << object.name << '\n';
@@ -65,10 +64,9 @@ void Importer::load(std::string& file, Scene& s_) {
     mainCamera.fieldOfview(1.623f);
     mainCamera.clipPlane(glm::vec2(0.1f, 10000.0f));
     mainCamera.upVector(glm::vec3(0.0f,1.0f,0.0f));
-    s_._cameras.emplace_back(s_._cameras[0]);
-    for(unsigned int i = 0; i < 250; ++i) {
-	s_._cameras.emplace_back(s_._cameras[0]);
-    }
+    //for(unsigned int i = 0; i < 250; ++i) {
+    //    s_._cameras.emplace_back(s_._cameras[0]);
+    //}
 }
 
 void printVertex(std::vector<float> const &vertex) {
