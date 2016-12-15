@@ -12,19 +12,20 @@ SRC	= Camera.cpp \
 	   Texture.cpp \
 	   shader.cpp \
 	   Uniform.cpp \
+	   Scene.cpp \
 	   main.cpp
 
 SRC+=$(IMGUI)
 
 EXT=cpp
 NAME	=ogl
-DEFINE 	= -DGLEW_STATIC -DTINYOBJLOADER
-#DEBUG 	= -g
+DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC #-DTINYOBJLOADER
+DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti #-fno-exceptions
 INCLUDE= -I./imgui -I./Alembic/OpenEXR -I./ -I./Alembic
 CXXFLAGS= -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
-LIBS= -lGL -lglfw  ./libs/libGLEW.a  ./libs/libAlembic.a ./libs/libHalf.a ./libs/libhdf5.a -ldl ./libs/libz.a
+LIBS= -lGL -lglfw  ./libs/libGLEW.a ./libs/libassimp.a ./libs/libAlembic.a ./libs/libHalf.a ./libs/libhdf5.a -ldl ./libs/libz.a 
 LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS)
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f

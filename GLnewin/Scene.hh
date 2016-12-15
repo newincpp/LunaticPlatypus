@@ -3,29 +3,19 @@
 #include <vector>
 #include "Camera.hh"
 #include "Mesh.hh"
-#include <imgui.h>
 
 #include <iostream>
 
 class Scene {
+    private:
+	char _sceneName[256];
+	bool _mod;
     public:
 	std::vector<Mesh> _meshes;
 	std::vector<Camera> _cameras;
 	unsigned int _activeCamera;
-	Scene() : _activeCamera(1) {
-	    _cameras.reserve(512);
-	}
-	void render() {
-	    ImGui::Text("camera in use: %d", _activeCamera);
-	    for (unsigned int a = 0; a < _activeCamera; ++a) {
-		_cameras[a].use();
-		for (Mesh& m : _meshes) {
-		    m.render();
-		}
-		_cameras[a].unUse();
-	    }
-	}
-	void bindGBuffer(unsigned int camera_) {
-	    _cameras[camera_].bindFramebuffer();
-	}
+	Scene() ;
+	void update();
+	void render();
+	void bindGBuffer(unsigned int camera_);
 };

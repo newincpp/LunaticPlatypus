@@ -200,3 +200,39 @@ void ImGui_RenderDrawLists(ImDrawData* draw_data) {
     glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
     glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
 }
+
+// --- GLFW specific code ---
+
+#include <GLFW/glfw3.h>
+#include <iostream>
+
+void ImGui_ImplGlfwGL3_MouseButtonCallback(GLFWwindow* w_, int button, int action, int) {
+    ImGuiIO& io = ImGui::GetIO();
+    if (action == GLFW_PRESS && button >= 0 && button < 3) {
+	io.MouseDown[button] = true;
+    } else {
+	io.MouseDown[button] = false;
+    }
+    double mouse_x, mouse_y;
+    glfwGetCursorPos(w_, &mouse_x, &mouse_y);
+    io.MousePos = ImVec2((float)mouse_x, (float)mouse_y);
+}
+
+void ImGui_ImplGlfwGL3_KeyCallback(GLFWwindow*, int key, int, int action, int) {
+    ImGuiIO& io = ImGui::GetIO();
+    if (action == GLFW_PRESS)
+	io.KeysDown[key] = true;
+    if (action == GLFW_RELEASE)
+	io.KeysDown[key] = false;
+
+    io.KeyCtrl = io.KeysDown[GLFW_KEY_LEFT_CONTROL] || io.KeysDown[GLFW_KEY_RIGHT_CONTROL];
+    io.KeyShift = io.KeysDown[GLFW_KEY_LEFT_SHIFT] || io.KeysDown[GLFW_KEY_RIGHT_SHIFT];
+    io.KeyAlt = io.KeysDown[GLFW_KEY_LEFT_ALT] || io.KeysDown[GLFW_KEY_RIGHT_ALT];
+    io.KeySuper = io.KeysDown[GLFW_KEY_LEFT_SUPER] || io.KeysDown[GLFW_KEY_RIGHT_SUPER];
+}
+
+void ImGui_ImplGlfwGL3_CharCallback(GLFWwindow*, unsigned int c) {
+    ImGuiIO& io = ImGui::GetIO();
+    if (c > 0 && c < 0x10000)
+	io.AddInputCharacter((unsigned short)c);
+}

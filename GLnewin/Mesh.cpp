@@ -28,6 +28,16 @@ void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), GL_STATIC_DRAW);
     size = ebo_.size();
+
+    //std::cout << "vertex[" << vbo_.size() << "] = {\n";
+    //for (GLfloat v : vbo_) {
+    //    std::cout << v << ", ";
+    //}
+    //std::cout << "};\nindex[" << ebo_.size() << "] = {\n";
+    //for (GLint v : ebo_) {
+    //    std::cout << v << ", ";
+    //}
+    //std::cout << "};\n";
 }
 
 void Mesh::render() {

@@ -27,4 +27,3 @@ class OglCore {
 	void renderScene();
 	unsigned long render();
 };
-

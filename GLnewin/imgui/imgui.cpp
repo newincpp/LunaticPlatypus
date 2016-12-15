@@ -9824,4 +9824,10 @@ void ImGui::ShowMetricsWindow(bool* p_open)
 #include "imgui_user.inl"
 #endif
 
+bool ImGui::IsItemActivePreviousFrame() {
+    if (GImGui->ActiveIdPreviousFrame)
+	return GImGui->ActiveIdPreviousFrame == GImGui->CurrentWindow->DC.LastItemId;
+    return false;
+}
+
 //-----------------------------------------------------------------------------
