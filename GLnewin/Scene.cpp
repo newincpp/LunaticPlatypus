@@ -4,7 +4,8 @@
 
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
-Scene::Scene() :_sceneName(STRINGIZE(DEFAULT_SCENE)), _mod(false), _activeCamera(1) {
+
+Scene::Scene() :_sceneName(STRINGIZE(DEFAULT_SCENE)), _mod(false), _fw(nullptr), _activeCamera(1) {
     _fb.reserve(8);
     _cameras.reserve(512);
     std::cout << _sceneName << '\n';
@@ -16,11 +17,17 @@ void Scene::update() {
 	_mod = true;
     }
     if (ImGui::IsItemActivePreviousFrame() && !ImGui::IsItemActive() && ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_Enter]) && _mod) {
-	_meshes.clear();
-	_cameras.clear();
-	Importer iscene(_sceneName, *this);
+	reset();
+	_fw = new FileWatcher(_sceneName);
 	_mod = false;
     } 
+
+    if (_fw) {
+        if (_fw->isModified()) {
+	    reset();
+            std::cout << "mod!\n";
+        }
+    }
 }
 
 void Scene::render() {
@@ -36,4 +43,10 @@ void Scene::render() {
 
 void Scene::bindGBuffer(unsigned int camera_) {
     _cameras[camera_].bindFramebuffer();
+}
+
+void Scene::reset() {
+    _meshes.clear();
+    _cameras.clear();
+    Importer iscene(_sceneName, *this);
 }
