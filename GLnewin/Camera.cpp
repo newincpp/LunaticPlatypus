@@ -1,11 +1,12 @@
+#include <imgui.h>
 #include <iostream>
 #include "Camera.hh"
 
 Camera::Camera() : 
     uCamera(1, glm::mat4(1.0f)), 
-    _target(glm::vec3(0.0f, 0.0f, 0.0f)),
-    _position(glm::vec3(15.0f, 5.2f, 15.0f)),
-    _upVector(glm::vec3(0.0f, 1.0f, 0.0f)),
+    _target(0.0f, 0.0f, 0.0f),
+    _position(15.0f, 5.2f, 15.0f),
+    _upVector(0.0f, 1.0f, 0.0f),
     _fov(1.745f),
     _clipPlane(0.1f, 1000.0f), _gBuffer() {
 	_gBuffer.addBuffer("gPosition");
@@ -64,6 +65,14 @@ void Camera::use() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
     //autoRelocate(uCamera);
+    //ImGui::Begin("Camera Controls");
+    ImGui::InputFloat3("Position", glm::value_ptr(_position));
+    ImGui::InputFloat3("Target", glm::value_ptr(_target));
+    ImGui::InputFloat3("upVector", glm::value_ptr(_upVector));
+    ImGui::InputFloat2("clipPlane", glm::value_ptr(_clipPlane));
+    ImGui::InputFloat("fov", &_fov);
+    uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt(_position, _target, _upVector);
+    //ImGui::End();
     uCamera.upload();
 }
 void Camera::unUse() {
