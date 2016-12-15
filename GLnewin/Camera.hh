@@ -14,9 +14,9 @@ class Camera {
 	glm::vec3 _upVector;
 	float _fov;
 	glm::vec2 _clipPlane;
-	FrameBuffer _gBuffer;
+	FrameBuffer& _gBuffer;
     public:
-	Camera();
+	Camera(FrameBuffer&);
 	Camera(const Camera&);
 	Camera(Camera&&);
 	void operator=(const Camera&&) = delete;

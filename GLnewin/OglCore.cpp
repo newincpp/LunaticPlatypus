@@ -18,8 +18,6 @@ void getGlError(const char* file_, unsigned long line_) {
     }
 }
 
-
-
 void OglCore::init() {
     _beginTime = std::chrono::high_resolution_clock::now();
 
@@ -47,14 +45,16 @@ void OglCore::init() {
     _sPostProc.add("./postProcessVert.glsl",GL_VERTEX_SHADER);
     _sPostProc.link({"outColour"});
 
-
-    //Importer iscene("./DemoCity.obj", _s);
-    //Importer iscene("./nelo.obj", _s);
-
     Mesh m;
+    _s._fb.emplace_back();
+    _s._fb[0].addBuffer("gPosition");
+    _s._fb[0].addBuffer("gNormal");
+    _s._fb[0].addBuffer("gAlbedoSpec");
+    _s._fb[0].addDepthBuffer("gDepth");
+    _s._fb[0].enable();
     m.uploadToGPU(vertices, elements);
     _s._meshes.push_back(m);
-    _s._cameras.emplace_back();
+    _s._cameras.emplace_back(_s._fb[0]);
 
     _renderTarget.uploadToGPU(vertices, elements);
 

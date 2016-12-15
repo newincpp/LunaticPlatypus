@@ -5,6 +5,7 @@
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 Scene::Scene() :_sceneName(STRINGIZE(DEFAULT_SCENE)), _mod(false), _activeCamera(1) {
+    _fb.reserve(8);
     _cameras.reserve(512);
     std::cout << _sceneName << '\n';
 }

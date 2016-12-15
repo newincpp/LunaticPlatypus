@@ -11,6 +11,7 @@ class Scene {
 	char _sceneName[256];
 	bool _mod;
     public:
+	std::vector<FrameBuffer> _fb;
 	std::vector<Mesh> _meshes;
 	std::vector<Camera> _cameras;
 	unsigned int _activeCamera;

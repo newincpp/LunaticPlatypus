@@ -45,7 +45,7 @@ void Importer::load(std::string& file, Scene& s_) {
     }
 
     std::cout << "generating cameras\n";
-    s_._cameras.emplace_back();
+    s_._cameras.emplace_back(s_._fb[0]);
     Camera& mainCamera = s_._cameras[0];
 
     mainCamera.lookAt(glm::vec3(.0f, 3.7f, 8.4f)); // Nelo.obj
@@ -317,7 +317,7 @@ void Importer::visitObject(Alembic::Abc::IObject iObj, std::string const &iInden
 	    //for (size_t i = 0; i < ms.getNumSamples(); i++) {
 		    Alembic::AbcGeom::CameraSample s;
 		    ms.get(s, 0);
-		    s_._cameras.emplace_back();
+		    s_._cameras.emplace_back(s_._fb[0]);
 		    Camera& mainCamera = s_._cameras[s_._cameras.size() - 1];
 
 		    mainCamera.lookAt(glm::vec3(.0f, 5.0f, .0f)); // cube.abc
@@ -394,7 +394,7 @@ void Importer::load(std::string& file, Scene& s_) {
 	    std::cout << "archive is null :C " << file << '\n';
     }
     //std::cout << "number of meshes:" << s_._meshes.size() << '\n';
-    s_._cameras.emplace_back();
+    s_._cameras.emplace_back(s_._fb[0]);
     Camera& mainCamera = s_._cameras[s_._cameras.size() - 1];
 
     mainCamera.lookAt(glm::vec3(.0f, .0f, .0f)); // cube.abc
@@ -440,7 +440,7 @@ void Importer::load(std::string& file, Scene& s_) {
     }
     genMesh(scene, s_);
     //scene->mCameras[0]->GetCameraMatrix(m);
-    s_._cameras.emplace_back();
+    s_._cameras.emplace_back(s_._fb[0]);
     Camera& mainCamera = s_._cameras[0];
     /*if (scene->mNumCameras) {
 	aiCamera* c = scene->mCameras[0];

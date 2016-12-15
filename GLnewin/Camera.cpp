@@ -2,18 +2,13 @@
 #include <iostream>
 #include "Camera.hh"
 
-Camera::Camera() : 
+Camera::Camera(FrameBuffer& fb_) : 
     uCamera(1, glm::mat4(1.0f)), 
     _target(0.0f, 0.0f, 0.0f),
     _position(15.0f, 5.2f, 15.0f),
     _upVector(0.0f, 1.0f, 0.0f),
     _fov(1.745f),
-    _clipPlane(0.1f, 1000.0f), _gBuffer() {
-	_gBuffer.addBuffer("gPosition");
-	_gBuffer.addBuffer("gNormal");
-	_gBuffer.addBuffer("gAlbedoSpec");
-	_gBuffer.addDepthBuffer("gDepth");
-	_gBuffer.enable();
+    _clipPlane(0.1f, 1000.0f), _gBuffer(fb_) {
     }
 
 Camera::Camera(const Camera& c_) :
@@ -22,12 +17,7 @@ Camera::Camera(const Camera& c_) :
     _position(c_._position),
     _upVector(c_._upVector),
     _fov(c_._fov),
-    _clipPlane(c_._clipPlane), _gBuffer() {
-	//_gBuffer.addBuffer("gPosition", glm::vec2(64,64));
-	//_gBuffer.addBuffer("gNormal", glm::vec2(64,64));
-	_gBuffer.addBuffer("gAlbedoSpec", glm::vec2(64,64));
-	_gBuffer.addDepthBuffer("gDepth", glm::vec2(64,64));
-	_gBuffer.enable();
+    _clipPlane(c_._clipPlane), _gBuffer(c_._gBuffer) {
     }
 
 Camera::Camera(Camera&& c_) :
@@ -36,12 +26,7 @@ Camera::Camera(Camera&& c_) :
     _position(c_._position),
     _upVector(c_._upVector),
     _fov(c_._fov),
-    _clipPlane(c_._clipPlane), _gBuffer() {
-	//_gBuffer.addBuffer("gPosition", glm::vec2(64,64));
-	//_gBuffer.addBuffer("gNormal", glm::vec2(64,64));
-	_gBuffer.addBuffer("gAlbedoSpec", glm::vec2(32,32));
-	_gBuffer.addDepthBuffer("gDepth", glm::vec2(64,64));
-	_gBuffer.enable();
+    _clipPlane(c_._clipPlane), _gBuffer(c_._gBuffer) {
     }
 
 void Camera::setMatrix(glm::mat4&& m_) {
