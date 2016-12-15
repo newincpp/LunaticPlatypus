@@ -54,8 +54,9 @@ void OglCore::init() {
     Mesh m;
     m.uploadToGPU(vertices, elements);
     _s._meshes.push_back(m);
+    _s._cameras.emplace_back();
 
-    checkGlError _renderTarget.uploadToGPU(vertices, elements);
+    _renderTarget.uploadToGPU(vertices, elements);
 
     _sgBuffer.use();
     autoRelocate(uTime);

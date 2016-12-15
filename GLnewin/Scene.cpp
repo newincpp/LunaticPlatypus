@@ -29,7 +29,7 @@ void Scene::update() {
 
 void Scene::render() {
     ImGui::Text("camera in use: %d", _activeCamera);
-    for (unsigned int a = 0; a < _activeCamera; ++a) {
+    for (unsigned int a = 0; a < _activeCamera && a < _cameras.size(); ++a) {
 	_cameras[a].use();
 	for (Mesh& m : _meshes) {
 	    m.render();
