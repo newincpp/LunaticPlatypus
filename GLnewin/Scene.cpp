@@ -17,12 +17,7 @@ void Scene::update() {
     if (ImGui::IsItemActivePreviousFrame() && !ImGui::IsItemActive() && ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_Enter]) && _mod) {
 	_meshes.clear();
 	_cameras.clear();
-#if defined(ALEMBIC)
-	Importer iscene("./cubeTestMateriaux.abc", *this);
-#else
-	//Importer iscene("./nelo.obj", _s);
 	Importer iscene(_sceneName, *this);
-#endif
 	_mod = false;
     } 
 }
