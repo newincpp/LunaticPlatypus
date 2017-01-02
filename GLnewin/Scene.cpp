@@ -8,7 +8,6 @@
 Scene::Scene() :_sceneName(STRINGIZE(DEFAULT_SCENE)), _mod(false), _fw(nullptr), _activeCamera(1) {
     _fb.reserve(8);
     _cameras.reserve(512);
-    std::cout << _sceneName << '\n';
 }
 
 void Scene::update() {

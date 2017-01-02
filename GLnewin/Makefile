@@ -14,29 +14,38 @@ SRC	= Camera.cpp \
 	   Uniform.cpp \
 	   Scene.cpp \
 	   fileWatcher.cpp \
-	   main.cpp
 
 SRC+=$(IMGUI)
 
 EXT=cpp
-NAME	=ogl
+NAME	=LunaticPlatipus
 DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC -DTINYOBJLOADER
 DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti #-fno-exceptions
 INCLUDE= -I./imgui -I./Alembic/OpenEXR -I./ -I./Alembic
 CXXFLAGS= -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
-LIBS= -lGL -lglfw  ./libs/libGLEW.a ./libs/libassimp.a ./libs/libAlembic.a ./libs/libHalf.a ./libs/libhdf5.a -ldl ./libs/libz.a -pthread
+#LIBS= ./libs/libGLEW.a ./libs/libassimp.a ./libs/libAlembic.a ./libs/libHalf.a ./libs/libhdf5.a ./libs/libz.a 
 LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS)
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
 CXX	= clang++
 LINKER	= $(CXX)
+INSTALL = ../demo
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(LINKER)  $(OBJS) -o $(NAME) $(LDFLAGS)
+	ar -cvq lib$(NAME).a $(OBJS) ./libs/Objectsoup/*.o
+
+#$(LINKER)  $(OBJS) -o $(NAME) $(LDFLAGS)
+
+extractLibs:
+	cd libs ; ls ; ./extractObject.sh
+
+install:
+	cp lib$(NAME).a $(INSTALL)
+	cp Makefile.base $(INSTALL)/Makefile
 
 clean:
 	$(RM) $(OBJS) *.swp *~ *#

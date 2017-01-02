@@ -3,7 +3,6 @@
 #include <fstream>
 #include <vector>
 #include <streambuf>
-#include <imgui.h>
 #include "Uniform.hh"
 
 #include "glew.h"

@@ -15,6 +15,9 @@ out vec3 gAlbedoSpec;
 //out float gDepth;
 
 void main() {
+    //if (gl_FragCoord.x > 500) {
+    //    discard;
+    //}
     // Store the fragment position vector in the first gbuffer texture
     gPosition = vInfVertexPos_;
     // Also store the per-fragment normals into the gbuffer
