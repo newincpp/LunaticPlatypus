@@ -5,10 +5,16 @@
 #include "glew.h"
 #include <glm/glm.hpp>
 
+enum {
+    DEPTH,
+    COLOR
+};
+
 template <GLuint MODE>
 class RenderTexture {
     private:
     	GLenum _genttachmentEnum(unsigned short);
+	void _TexImage2D(glm::vec2& resolution_);
     public:
 	GLuint _id;
 	GLuint _attachment;
@@ -49,7 +55,7 @@ void RenderTexture<MODE>::init(unsigned short attachment_, std::string&& name_, 
     _name = std::move(name_);
     glGenTextures(1, &_id);
     glBindTexture(GL_TEXTURE_2D, _id);
-    glTexImage2D(GL_TEXTURE_2D, 0, MODE, resolution_.x, resolution_.y, 0, MODE, GL_UNSIGNED_BYTE, NULL);
+    _TexImage2D(resolution_);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);

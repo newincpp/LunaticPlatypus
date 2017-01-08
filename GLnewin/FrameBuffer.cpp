@@ -32,7 +32,7 @@ void FrameBuffer::addDepthBuffer(std::string&& name_, glm::vec2 resolution_) {
 }
 void FrameBuffer::bindGBuffer() {
     unsigned int i = 0;
-    for (RenderTexture<GL_RGB>& rtt: _rtt) {
+    for (RenderTexture<COLOR>& rtt: _rtt) {
 	rtt.bind(i);
 	++i;
     }

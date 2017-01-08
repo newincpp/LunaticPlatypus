@@ -63,7 +63,8 @@ void main() {
     float c = (2.0 * near) / (far + near - z * (far - near));  // convert to linear values 
     vec3 cd = vec3(c);
     outColour = cn + cp + ca + cd;
-    outColour = texture(gNormal, TexCoords).rgb;
+    outColour = abs(texture(gNormal, TexCoords).rgb);
+
 //    float r = step(0.99f, simplexNoise2(TexCoords * 30.0));
 //    r = rand(TexCoords.xy * 100.0f);
 //
