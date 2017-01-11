@@ -18,7 +18,7 @@ void main() {
     gl_Position = uCamera * uMeshTransform * vec4(vertexPos_ + displacement, 1.0);
 
     vInfVertexPos_ = (uMeshTransform * vec4(vertexPos_ + displacement, 1.0)).xyz;
-    vInfVertexNormal_ = (vec4(vertexNormal_, 1.0)).xyz;
+    vInfVertexNormal_ = normalize((uCamera * vec4(vertexNormal_, 1.0)).xyz);
     //vInfVertexNormal_ = vertexNormal_;
     vInfUvCoord_ = uvCoord_;
 }  

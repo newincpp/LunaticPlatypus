@@ -55,6 +55,7 @@ void OglCore::init() {
     m.uploadToGPU(vertices, elements);
     _s._meshes.push_back(m);
     _s._cameras.emplace_back(_s._fb[0]);
+    _s.reset();
 
     _renderTarget.uploadToGPU(vertices, elements);
 

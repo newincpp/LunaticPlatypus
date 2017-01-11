@@ -15,6 +15,10 @@ float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
+vec2 Rand2D_bad() {
+    return vec2(rand(TexCoords), rand(gl_FragCoord.xy/1000.0));
+}
+
 vec3 permute(vec3 x0,vec3 p) { 
     vec3 x1 = mod(x0 * p.y, p.x);
     return floor(  mod( (x1 + p.z) *x0, p.x ));
@@ -52,6 +56,10 @@ float simplexNoise2(vec2 v)
     return 1.66666* 70.*dot(m * m, g);
 }
 
+float ssao() {
+    return 1.0;
+}
+
 void main() { 
     vec2 distCoord = TexCoords * 2.0f;
     vec3 cp = texture(gPosition, distCoord).rgb;
@@ -63,7 +71,7 @@ void main() {
     float c = (2.0 * near) / (far + near - z * (far - near));  // convert to linear values 
     vec3 cd = vec3(c);
     outColour = cn + cp + ca + cd;
-    outColour = abs(texture(gNormal, TexCoords).rgb);
+    outColour = texture(gNormal,TexCoords).rgb;
 
 //    float r = step(0.99f, simplexNoise2(TexCoords * 30.0));
 //    r = rand(TexCoords.xy * 100.0f);

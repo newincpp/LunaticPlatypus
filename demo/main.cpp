@@ -29,7 +29,6 @@ class MinimalWindow {
 	    std::cout << "Renderer: " << glGetString(GL_RENDERER) << '\n';
 	    std::cout << "Shader Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
 
-
 	    ImGuiIO& io = ImGui::GetIO();
 	    int w, h;
 	    int display_w, display_h;
@@ -63,7 +62,6 @@ class MinimalWindow {
 	    glfwSetMouseButtonCallback(_window, ImGui_ImplGlfwGL3_MouseButtonCallback);
 	    glfwSetKeyCallback(_window, ImGui_ImplGlfwGL3_KeyCallback);
 	    glfwSetCharCallback(_window, ImGui_ImplGlfwGL3_CharCallback);
-
 
 	    _c.init();
 	}

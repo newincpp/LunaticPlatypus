@@ -13,6 +13,7 @@ SRC	= Camera.cpp \
 	   shader.cpp \
 	   Uniform.cpp \
 	   Scene.cpp \
+	   node.cpp \
 	   fileWatcher.cpp \
 
 SRC+=$(IMGUI)
@@ -39,7 +40,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	rm lib$(NAME).a
-	ar -cvq lib$(NAME).a $(OBJS) ./libs/Objectsoup/*.o
+	ar -cvq lib$(NAME).a $(OBJS) ./libs/Objectsoup/*.o > /dev/null
 
 #$(LINKER)  $(OBJS) -o $(NAME) $(LDFLAGS)
 
