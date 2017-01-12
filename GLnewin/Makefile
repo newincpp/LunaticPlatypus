@@ -41,7 +41,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(RM) lib$(NAME).a
-	ar -cvq lib$(NAME).a $(OBJS) ./libs/Objectsoup/*.o > /dev/null
+	ar -cvqs lib$(NAME).a $(OBJS) ./libs/Objectsoup/Alembic/*.o ./libs/Objectsoup/*.o > /dev/null
 
 extractLibs:
 	cd libs ; ls ; ./extractObject.sh
