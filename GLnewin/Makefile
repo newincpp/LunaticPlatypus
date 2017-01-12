@@ -20,9 +20,9 @@ SRC+=$(IMGUI)
 
 EXT=cpp
 NAME	=LunaticPlatipus
-#DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC -DALEMBIC 
-DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC -DTINYOBJLOADER
-#DEFINE 	= -DDEFAULT_SCENE=nelo.dae -DGLEW_STATIC
+#DEFINE 	= -DDEFAULT_SCENE=nelo.abc -DGLEW_STATIC -DALEMBIC 
+#DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC -DTINYOBJLOADER
+DEFINE 	= -DDEFAULT_SCENE=nelo.dae -DGLEW_STATIC
 DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti #-fno-exceptions
@@ -41,8 +41,6 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	rm lib$(NAME).a
 	ar -cvq lib$(NAME).a $(OBJS) ./libs/Objectsoup/*.o > /dev/null
-
-#$(LINKER)  $(OBJS) -o $(NAME) $(LDFLAGS)
 
 extractLibs:
 	cd libs ; ls ; ./extractObject.sh
