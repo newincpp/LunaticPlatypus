@@ -18,6 +18,10 @@ void getGlError(const char* file_, unsigned long line_) {
     }
 }
 
+OglCore::OglCore() : uTime(1, 0.0f), _uPostPRocessTexture(2) { 
+    init();
+}
+
 void OglCore::init() {
     _beginTime = std::chrono::high_resolution_clock::now();
 
@@ -61,6 +65,7 @@ void OglCore::init() {
 
     _sgBuffer.use();
     autoRelocate(uTime);
+    std::cout << "OpenGL renderer initialized" << std::endl;
 }
 
 unsigned long OglCore::render() {

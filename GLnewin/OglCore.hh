@@ -22,7 +22,7 @@ class OglCore {
 	DrawBuffer _s;
 	Mesh _renderTarget;
     public:
-	OglCore() : uTime(1, 0.0f), _uPostPRocessTexture(2) { }
+	OglCore();
 	void init();
 	void renderScene();
 	unsigned long render();
