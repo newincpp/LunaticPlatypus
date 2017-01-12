@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-class Scene {
+class DrawBuffer {
     private:
 	char _sceneName[256];
 	bool _mod;
@@ -17,7 +17,7 @@ class Scene {
 	std::vector<Mesh> _meshes;
 	std::vector<Camera> _cameras;
 	unsigned int _activeCamera;
-	Scene() ;
+	DrawBuffer() ;
 	void update();
 	void render();
 	void bindGBuffer(unsigned int camera_);

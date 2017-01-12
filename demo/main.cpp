@@ -66,9 +66,7 @@ class MinimalWindow {
 	    _c.init();
 	}
 	void loop() {
-
-	    while(!glfwWindowShouldClose(_window))
-	    {
+	    while(!glfwWindowShouldClose(_window)) {
 		_c.render();
 
 		glfwSwapBuffers(_window);

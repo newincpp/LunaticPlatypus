@@ -1,16 +1,16 @@
-#include "Scene.hh"
+#include "DrawBuffer.hh"
 #include "Importer.hh"
 #include <imgui.h>
 
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
-Scene::Scene() :_sceneName(STRINGIZE(DEFAULT_SCENE)), _mod(false), _fw(nullptr), _activeCamera(1) {
+DrawBuffer::DrawBuffer() :_sceneName(STRINGIZE(DEFAULT_SCENE)), _mod(false), _fw(nullptr), _activeCamera(1) {
     _fb.reserve(8);
     _cameras.reserve(512);
 }
 
-void Scene::update() {
+void DrawBuffer::update() {
     ImGuiIO& io = ImGui::GetIO();
     if (ImGui::InputText("scene: ", _sceneName, 256)) {
 	_mod = true;
@@ -29,7 +29,7 @@ void Scene::update() {
     }
 }
 
-void Scene::render() {
+void DrawBuffer::render() {
     ImGui::Text("camera in use: %d", _activeCamera);
     for (unsigned int a = 0; a < _activeCamera && a < _cameras.size(); ++a) {
 	_cameras[a].use();
@@ -40,11 +40,11 @@ void Scene::render() {
     }
 }
 
-void Scene::bindGBuffer(unsigned int camera_) {
+void DrawBuffer::bindGBuffer(unsigned int camera_) {
     _cameras[camera_].bindFramebuffer();
 }
 
-void Scene::reset() {
+void DrawBuffer::reset() {
     _meshes.clear();
     _cameras.clear();
     Importer iscene(_sceneName, *this);

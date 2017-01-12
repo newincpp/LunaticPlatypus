@@ -6,7 +6,7 @@
 #include "shader.hh"
 #include "glew.h"
 #include "Uniform.hh"
-#include "Scene.hh"
+#include "DrawBuffer.hh"
 
 #define checkGlError getGlError(__FILE__, __LINE__);
 void getGlError(const char* file_, unsigned long line_);
@@ -19,7 +19,7 @@ class OglCore {
 	Shader _sgBuffer;
 	Shader _srender;
 	Shader _sPostProc;
-	Scene _s;
+	DrawBuffer _s;
 	Mesh _renderTarget;
     public:
 	OglCore() : uTime(1, 0.0f), _uPostPRocessTexture(2) { }
