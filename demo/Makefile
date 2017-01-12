@@ -17,7 +17,7 @@ INSTALL = ../demo
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(LINKER)  $(OBJS) -o $(NAME) $(LDFLAGS)
+	$(LINKER)  $(OBJS) -o $(NAME) $(LDFLAGS) -v
 
 clean:
 	$(RM) $(OBJS) *.swp *~ *#

@@ -19,6 +19,7 @@ class MinimalWindow {
 	    _window = glfwCreateWindow(1920, 1024, "OpenGL", nullptr, nullptr); // Windowed
 	    //GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
 	    glfwMakeContextCurrent(_window);
+	    glewExperimental=true;
 	    GLenum err = glewInit();
 	    glGetError();
 	    if (GLEW_OK != err) {
