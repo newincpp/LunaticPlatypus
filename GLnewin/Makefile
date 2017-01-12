@@ -39,7 +39,7 @@ INSTALL = ../demo
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	rm lib$(NAME).a
+	$(RM) lib$(NAME).a
 	ar -cvq lib$(NAME).a $(OBJS) ./libs/Objectsoup/*.o > /dev/null
 
 extractLibs:

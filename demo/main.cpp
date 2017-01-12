@@ -11,6 +11,7 @@ class MinimalWindow {
 	GLFWwindow* _window;
 	OglCore& _c;
 	MinimalWindow(OglCore& c_) : _c(c_) {
+	    glewExperimental = true;
 	    glfwInit();
 	    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
