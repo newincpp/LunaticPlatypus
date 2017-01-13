@@ -2,16 +2,11 @@ SRC	= main.cpp
 
 EXT=cpp
 NAME	=demo
-LUNATICPLATIPUSDIR=../GLnewin
+LUNATICPLATYPUSDIR=../GLnewin
 OPTIM= -march=native -O2 -fno-rtti #-fno-exceptions
-INCLUDE=-I$(LUNATICPLATIPUSDIR)/ -I$(LUNATICPLATIPUSDIR)/imgui/ -I$(LUNATICPLATIPUSDIR)/glm
+INCLUDE=-I$(LUNATICPLATYPUSDIR)/ -I$(LUNATICPLATYPUSDIR)/imgui/ -I$(LUNATICPLATYPUSDIR)/glm
 CXXFLAGS= -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
-LIBS= -lGL -lglfw -ldl -pthread \
-      libLunaticPlatipus.a \
-      $(LUNATICPLATIPUSDIR)/libs/libHalf.a \
-      $(LUNATICPLATIPUSDIR)/libs/libhdf5.a \
-      /usr/lib/libIex.a  \
-      $(LUNATICPLATIPUSDIR)/libs/libAlembic.a
+LIBS= -lGL -lglfw -ldl -pthread libLunaticPlatypus.a
 LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS)
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f

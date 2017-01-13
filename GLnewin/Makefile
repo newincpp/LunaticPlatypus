@@ -20,10 +20,10 @@ SRC	= Camera.cpp \
 SRC+=$(IMGUI)
 
 EXT=cpp
-NAME	=LunaticPlatipus
+NAME	=LunaticPlatypus
 #DEFINE 	= -DDEFAULT_SCENE=nelo.abc -DGLEW_STATIC -DALEMBIC 
-#DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC -DTINYOBJLOADER
-DEFINE 	= -DDEFAULT_SCENE=nelo.dae -DGLEW_STATIC
+DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC -DTINYOBJLOADER
+#DEFINE 	= -DDEFAULT_SCENE=nelo.dae -DGLEW_STATIC
 DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti #-fno-exceptions
@@ -41,7 +41,8 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(RM) lib$(NAME).a
-	ar -cvqs lib$(NAME).a $(OBJS) ./libs/Objectsoup/Alembic/*.o ./libs/Objectsoup/*.o > /dev/null
+	ar -cvq lib$(NAME).a $(OBJS) ./libs/Objectsoup/Alembic/*.o ./libs/Objectsoup/*.o > /dev/null
+	ranlib lib$(NAME).a
 
 extractLibs:
 	cd libs ; ls ; ./extractObject.sh

@@ -73,3 +73,9 @@ WindowHandle::~WindowHandle() {
 
 Heart::Heart() {
 }
+
+int main()
+{
+    Heart p;
+    p.run();
+}

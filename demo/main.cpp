@@ -1,7 +1,11 @@
 #include <PlatipusHeart.hh>
+#include <iostream>
 
-int main()
-{
-    Heart p;
-    p.run();
-}
+class MyGame : public IGame {
+    public:
+	virtual void init() {}
+	virtual void update() {}
+	virtual void deInit() {}
+};
+
+SetGameClass(MyGame)

@@ -10,9 +10,19 @@ class WindowHandle {
 	~WindowHandle();
 };
 
+class IGame {
+    public:
+	virtual void init() = 0;
+	virtual void update() = 0;
+	virtual void deInit() = 0;
+};
+
 class GameLogic {
     public:
-	void update(){};
+	static IGame* _endUserLogic;
+	GameLogic() { if(_endUserLogic) { _endUserLogic->init(); } }
+	void update() { if(_endUserLogic) {_endUserLogic->update(); } }
+	~GameLogic() { if(_endUserLogic) { _endUserLogic->deInit(); } }
 };
 
 class Heart {
@@ -31,3 +41,5 @@ class Heart {
 	    }
 	}
 };
+
+#define SetGameClass(GameClass) IGame* GameLogic::_endUserLogic = new GameClass();
