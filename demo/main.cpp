@@ -1,4 +1,4 @@
-#include <PlatipusHeart.hh>
+#include <PlatypusHeart.hh>
 #include <iostream>
 
 class MyGame : public IGame {

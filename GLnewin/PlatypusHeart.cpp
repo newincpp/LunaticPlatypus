@@ -1,4 +1,4 @@
-#include "PlatipusHeart.hh"
+#include "PlatypusHeart.hh"
 #include "imgui/imgui.h"
 
 WindowHandle::WindowHandle() {

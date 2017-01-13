@@ -14,7 +14,7 @@ SRC	= Camera.cpp \
 	   Uniform.cpp \
 	   DrawBuffer.cpp \
 	   node.cpp \
-	   PlatipusHeart.cpp \
+	   PlatypusHeart.cpp \
 	   fileWatcher.cpp
 
 SRC+=$(IMGUI)
