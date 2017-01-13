@@ -8,10 +8,6 @@
 #include <iostream>
 
 class DrawBuffer {
-    private:
-	char _sceneName[256];
-	bool _mod;
-	FileWatcher* _fw;
     public:
 	std::vector<FrameBuffer> _fb;
 	std::vector<Mesh> _meshes;
@@ -21,5 +17,5 @@ class DrawBuffer {
 	void update();
 	void render();
 	void bindGBuffer(unsigned int camera_);
-	void reset();
+	void reset(std::string&);
 };

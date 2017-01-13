@@ -1,6 +1,12 @@
 #include "OglCore.hh"
 #include "GLFW//glfw3.h"
 #include "node.hh"
+#include "fileWatcher.hh"
+
+#include "imgui/imgui.h"
+
+#define STRINGIZE2(s) #s
+#define STRINGIZE(s) STRINGIZE2(s)
 
 class WindowHandle {
     public:
@@ -19,8 +25,10 @@ class IGame {
 
 class GameLogic {
     public:
+	std::string sceneFileName;
 	static IGame* _endUserLogic;
-	GameLogic() { if(_endUserLogic) { _endUserLogic->init(); } }
+
+	GameLogic() : sceneFileName(STRINGIZE(DEFAULT_SCENE)) { if(_endUserLogic) { _endUserLogic->init(); } }
 	void update() { if(_endUserLogic) {_endUserLogic->update(); } }
 	~GameLogic() { if(_endUserLogic) { _endUserLogic->deInit(); } }
 };
@@ -31,15 +39,11 @@ class Heart {
 	OglCore _renderer;
 	Graph _scene;
 	GameLogic _game;
+
+	FileWatcher* _fw;
     public:
 	Heart();
-	void run() {
-	    while (_win.exec()) {
-		_renderer.render();
-		_game.update();
-		_scene.update();
-	    }
-	}
+	void run();
 };
 
 #define SetGameClass(GameClass) IGame* GameLogic::_endUserLogic = new GameClass();

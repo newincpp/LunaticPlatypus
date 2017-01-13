@@ -23,6 +23,7 @@ class OglCore {
 	Mesh _renderTarget;
     public:
 	OglCore();
+	inline DrawBuffer& getDrawBuffer() { return _s; }
 	void init();
 	void renderScene();
 	unsigned long render();

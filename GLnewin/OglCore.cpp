@@ -59,7 +59,6 @@ void OglCore::init() {
     m.uploadToGPU(vertices, elements);
     _s._meshes.push_back(m);
     _s._cameras.emplace_back(_s._fb[0]);
-    _s.reset();
 
     _renderTarget.uploadToGPU(vertices, elements);
 
@@ -73,7 +72,6 @@ unsigned long OglCore::render() {
     GLfloat time = std::chrono::duration_cast<std::chrono::milliseconds>(beginFrame - _beginTime).count();
     uTime = time;
 
-    ImGui::NewFrame();
     _s.update();
 
     _sgBuffer.use();
@@ -94,7 +92,6 @@ unsigned long OglCore::render() {
 
     std::chrono::time_point<std::chrono::high_resolution_clock> endFrame = std::chrono::high_resolution_clock::now();
     ImGui::Text("\nApplication average %ld ms/frame (%.1f FPS)", std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count(), 1000.0/double(std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count()));
-    ImGui::Render();
 
     return std::chrono::duration_cast<std::chrono::nanoseconds>(endFrame-beginFrame).count();
 }
