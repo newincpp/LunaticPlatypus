@@ -3,6 +3,8 @@
 layout(location = 0) uniform float uTime;
 layout(location = 1) uniform mat4 uCamera;
 layout(location = 2) uniform mat4 uMeshTransform;
+layout(location = 3) uniform mat4 uView;
+layout(location = 4) uniform mat4 uProjection;
 
 layout(location = 0) in vec3 vertexPos_;
 layout(location = 1) in vec3 vertexNormal_;
@@ -18,7 +20,8 @@ void main() {
     gl_Position = uCamera * uMeshTransform * vec4(vertexPos_ + displacement, 1.0);
 
     vInfVertexPos_ = (uMeshTransform * vec4(vertexPos_ + displacement, 1.0)).xyz;
-    //vInfVertexNormal_ = normalize((uCamera * vec4(vertexNormal_, 1.0)).xyz);
-    vInfVertexNormal_ = vertexNormal_;
+    vec4 truc = transpose(inverse(uView)) * vec4(vertexNormal_, 1.0);
+    //vInfVertexNormal_ = vertexNormal_;
+    vInfVertexNormal_ = truc.xyz;
     vInfUvCoord_ = uvCoord_;
 }  

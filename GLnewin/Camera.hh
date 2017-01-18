@@ -8,6 +8,8 @@
 class Camera {
     public:
 	Uniform<glm::mat4> uCamera;
+	Uniform<glm::mat4> uView;
+	Uniform<glm::mat4> uProjection;
     private:
 	glm::vec3 _target;
 	glm::vec3 _position;

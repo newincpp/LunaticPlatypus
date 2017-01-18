@@ -4,15 +4,19 @@
 
 Camera::Camera(FrameBuffer& fb_) : 
     uCamera(1, glm::mat4(1.0f)), 
+    uView(3, glm::mat4(1.0f)), 
+    uProjection(4, glm::mat4(1.0f)), 
     _target(0.0f, 0.0f, 0.0f),
     _position(15.0f, 5.2f, 15.0f),
     _upVector(0.0f, 1.0f, 0.0f),
     _fov(1.745f),
-    _clipPlane(0.1f, 1000.0f), _gBuffer(fb_) {
+    _clipPlane(0.1f, 100.0f), _gBuffer(fb_) {
     }
 
 Camera::Camera(const Camera& c_) :
     uCamera(c_.uCamera), 
+    uView(c_.uView),
+    uProjection(c_.uProjection),
     _target(c_._target),
     _position(c_._position),
     _upVector(c_._upVector),
@@ -22,6 +26,8 @@ Camera::Camera(const Camera& c_) :
 
 Camera::Camera(Camera&& c_) :
     uCamera(c_.uCamera), 
+    uView(c_.uView),
+    uProjection(c_.uProjection),
     _target(c_._target),
     _position(c_._position),
     _upVector(c_._upVector),
@@ -56,6 +62,10 @@ void Camera::use() {
     ImGui::InputFloat3("upVector", glm::value_ptr(_upVector));
     ImGui::InputFloat2("clipPlane", glm::value_ptr(_clipPlane));
     ImGui::InputFloat("fov", &_fov);
+    uView = glm::lookAt(_position, _target, _upVector);
+    uView.upload();
+    uProjection = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y);
+    uProjection.upload();
     uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt(_position, _target, _upVector);
     //ImGui::End();
     uCamera.upload();
