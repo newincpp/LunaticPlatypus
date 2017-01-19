@@ -1,6 +1,7 @@
 #include "PlatypusHeart.hh"
 #include "imgui/imgui.h"
 #include <cassert>
+#include <chrono>
 
 Heart::Heart() {
     if (_game == nullptr) {
@@ -16,8 +17,15 @@ Heart::Heart() {
 void Heart::run() {
     bool mod = false;
     char imguistr[512] = "";
+    std::chrono::time_point<std::chrono::high_resolution_clock> endFrame;
+    std::chrono::time_point<std::chrono::high_resolution_clock> beginFrame;
+
     while (_win.exec()) {
 	ImGui::NewFrame();
+	endFrame = std::chrono::high_resolution_clock::now();
+	ImGui::Text("\nApplication average %ld ms/frame (%.1f FPS)", std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count(), 1000.0/double(std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count()));
+	beginFrame = std::chrono::high_resolution_clock::now();
+
 	_renderer.render();
 	_game->update();
 

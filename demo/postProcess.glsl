@@ -43,7 +43,7 @@ float height = resolution.y; //texture height
 //general stuff
 
 //user variables
-int samples = 64; //ao sample count //64
+int samples = 16; //ao sample count //64
 float radius = 5.0; //ao radius //5.0
 
 float aoclamp = 0.125; //depth clamp - reduces haloing at screen edges
@@ -163,7 +163,7 @@ float ssaoAlone(void)
 	float l = 0.0;
 	float z = 1.0 - dz/2.0;
 
-	for (int i = 0; i < 64; i++)
+	for (int i = 0; i < samples; i++)
 	{
 		if (i > samples) break;
 		float r = sqrt(1.0 - z);
@@ -367,11 +367,9 @@ void main() {
     float c = (2.0 * near) / (far + near - z * (far - near));  // convert to linear values 
     vec3 cd = vec3(c);
     //outColour = cn + cp + ca + cd;
-    //outColour = vec3(ssaoAlone());
-    outColour = vec3( ssaoAlone());
-    //outColour = vec3(ssaoI());
+    //outColour = vec3( ssaoAlone());
     //ssaoI();
-    //outColour = cd;
+    outColour = texture(gNormal, TexCoords).xyz * ssaoAlone();
 
 //    float r = step(0.99f, simplexNoise2(TexCoords * 30.0));
 //    r = rand(TexCoords.xy * 100.0f);

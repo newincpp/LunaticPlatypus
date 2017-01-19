@@ -26,5 +26,5 @@ class OglCore {
 	inline DrawBuffer& getDrawBuffer() { return _s; }
 	void init();
 	void renderScene();
-	unsigned long render();
+	void render();
 };

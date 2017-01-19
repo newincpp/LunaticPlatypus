@@ -67,7 +67,7 @@ void OglCore::init() {
     std::cout << "OpenGL renderer initialized" << std::endl;
 }
 
-unsigned long OglCore::render() {
+void OglCore::render() {
     std::chrono::time_point<std::chrono::high_resolution_clock> beginFrame = std::chrono::high_resolution_clock::now();
     GLfloat time = std::chrono::duration_cast<std::chrono::milliseconds>(beginFrame - _beginTime).count();
     uTime = time;
@@ -89,10 +89,5 @@ unsigned long OglCore::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _renderTarget.render();
     checkGlError;
-
-    std::chrono::time_point<std::chrono::high_resolution_clock> endFrame = std::chrono::high_resolution_clock::now();
-    ImGui::Text("\nApplication average %ld ms/frame (%.1f FPS)", std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count(), 1000.0/double(std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count()));
-
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(endFrame-beginFrame).count();
 }
 
