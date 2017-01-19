@@ -12,7 +12,7 @@ class Heart {
     public:
 	class IGamelogic {
 	    public:
-		Heart* _lunaticPlatipus;
+		Heart* _lunaticPlatypus;
 		std::string _scene;
 		virtual void update() = 0;
 	};
@@ -24,7 +24,7 @@ class Heart {
     public:
 	static IGamelogic* _game;
 	Heart();
-	OglCore& getRenderer();
+	inline OglCore& getRenderer() { return _renderer; }
 	void loadScene();
 	void run();
 };

@@ -8,7 +8,7 @@ Heart::Heart() {
 	std::cout << "SetGameClass() macro has not been called I will now assert\n";
     }
     assert(_game != nullptr);
-    _game->_lunaticPlatipus = this;
+    _game->_lunaticPlatypus = this;
     _game->_scene = STRINGIZE(DEFAULT_SCENE);
     std::cout << "default scene: " << _game->_scene << "\n";
     _renderer.getDrawBuffer().reset(_game->_scene);
