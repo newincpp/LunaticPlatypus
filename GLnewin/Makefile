@@ -14,6 +14,7 @@ SRC	= Camera.cpp \
 	   Uniform.cpp \
 	   DrawBuffer.cpp \
 	   node.cpp \
+	   WindowHandle.cpp \
 	   PlatypusHeart.cpp \
 	   fileWatcher.cpp
 

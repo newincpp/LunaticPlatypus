@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include "imgui.h"
 
-static int          g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
+static unsigned int          g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
 static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;
 static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
 static unsigned int g_VboHandle = 0, g_VaoHandle = 0, g_ElementsHandle = 0;
@@ -10,8 +10,9 @@ static GLuint       g_FontTexture = 0;
 void ImGui_ImplGlfwGL3_CreateDeviceObjects()
 {
     // Backup GL state
-    GLint last_texture, last_array_buffer, last_vertex_array;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+    GLuint last_texture;
+    GLint last_array_buffer, last_vertex_array;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*)&last_texture);
     glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
     glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
 
@@ -82,8 +83,8 @@ void ImGui_ImplGlfwGL3_CreateDeviceObjects()
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bits (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
 	// Upload texture to graphics system
-	GLint last_texture;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	GLuint last_texture;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*)&last_texture);
 	glGenTextures(1, &g_FontTexture);
 	glBindTexture(GL_TEXTURE_2D, g_FontTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

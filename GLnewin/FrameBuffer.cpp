@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "FrameBuffer.hh"
-#include "OglCore.hh"
 
 FrameBuffer::FrameBuffer() {
     glGenFramebuffers(1, &_fbo);

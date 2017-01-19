@@ -1,5 +1,5 @@
 #include "OglCore.hh"
-#include "GLFW//glfw3.h"
+#include "WindowHandle.hh"
 #include "node.hh"
 #include "fileWatcher.hh"
 
@@ -8,42 +8,24 @@
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
-class WindowHandle {
-    public:
-	GLFWwindow* _window;
-	WindowHandle();
-	bool exec();
-	~WindowHandle();
-};
-
-class IGame {
-    public:
-	virtual void init() = 0;
-	virtual void update() = 0;
-	virtual void deInit() = 0;
-};
-
-class GameLogic {
-    public:
-	std::string sceneFileName;
-	static IGame* _endUserLogic;
-
-	GameLogic() : sceneFileName(STRINGIZE(DEFAULT_SCENE)) { if(_endUserLogic) { _endUserLogic->init(); } }
-	void update() { if(_endUserLogic) {_endUserLogic->update(); } }
-	~GameLogic() { if(_endUserLogic) { _endUserLogic->deInit(); } }
-};
-
 class Heart {
+    public:
+	class IGamelogic {
+	    public:
+		Heart* _lunaticPlatipus;
+		std::string _scene;
+		virtual void update() = 0;
+	};
     private:
 	WindowHandle _win;
 	OglCore _renderer;
 	Graph _scene;
-	GameLogic _game;
-
 	FileWatcher* _fw;
     public:
+	static IGamelogic* _game;
 	Heart();
+	OglCore& getRenderer();
+	void loadScene();
 	void run();
 };
-
-#define SetGameClass(GameClass) IGame* GameLogic::_endUserLogic = new GameClass();
+#define SetGameClass(GameClass) Heart::IGamelogic* Heart::_game = new GameClass();
