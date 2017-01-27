@@ -14,7 +14,7 @@ class MyGame : public Heart::IGamelogic {
 	    //std::cout << elapsed_seconds.count() << std::endl;
 	    if ((unsigned int)elapsed_seconds.count() == 3 && !done) {
 		_scene = "dieDrache.obj";
-		_lunaticPlatipus->loadScene();
+		_lunaticPlatypus->loadScene();
 		std::cout << "YAY" << std::endl;
 		done = true;
 	    }
