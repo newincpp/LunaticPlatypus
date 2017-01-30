@@ -2,7 +2,7 @@
 
 layout(location = 0) uniform float uTime;
 //uniform mat4 uCamera;
-layout(location = 2) uniform mat4 uMeshTransform;
+layout(location = 1) uniform mat4 uMeshTransform;
 
 layout(location = 0) in vec3 vInfVertexPos_;
 layout(location = 1) in vec3 vInfVertexNormal_;

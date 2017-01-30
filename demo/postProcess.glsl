@@ -1,10 +1,9 @@
 #version 430 core
 
 layout (location = 0) uniform float uTime;
-layout(location = 1) uniform mat4 uCamera;
-layout (location = 2) uniform mat4 uMeshTransform;
-layout(location = 3) uniform mat4 uView;
-layout(location = 4) uniform mat4 uProjection;
+layout (location = 1) uniform mat4 uMeshTransform;
+layout(location = 2) uniform mat4 uView;
+layout(location = 3) uniform mat4 uProjection;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;

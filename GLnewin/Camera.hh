@@ -7,7 +7,6 @@
 
 class Camera {
     public:
-	Uniform<glm::mat4> uCamera;
 	Uniform<glm::mat4> uView;
 	Uniform<glm::mat4> uProjection;
     private:

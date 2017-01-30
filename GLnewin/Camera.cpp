@@ -2,10 +2,9 @@
 #include <iostream>
 #include "Camera.hh"
 
-Camera::Camera(FrameBuffer& fb_) : 
-    uCamera(1, glm::mat4(1.0f)), 
-    uView(3, glm::mat4(1.0f)), 
-    uProjection(4, glm::mat4(1.0f)), 
+Camera::Camera(FrameBuffer& fb_) :
+    uView(2, glm::mat4(1.0f)),
+    uProjection(3, glm::mat4(1.0f)),
     _target(0.0f, 0.0f, 0.0f),
     _position(15.0f, 5.2f, 15.0f),
     _upVector(0.0f, 1.0f, 0.0f),
@@ -14,7 +13,6 @@ Camera::Camera(FrameBuffer& fb_) :
     }
 
 Camera::Camera(const Camera& c_) :
-    uCamera(c_.uCamera), 
     uView(c_.uView),
     uProjection(c_.uProjection),
     _target(c_._target),
@@ -25,7 +23,6 @@ Camera::Camera(const Camera& c_) :
     }
 
 Camera::Camera(Camera&& c_) :
-    uCamera(c_.uCamera), 
     uView(c_.uView),
     uProjection(c_.uProjection),
     _target(c_._target),
@@ -36,7 +33,6 @@ Camera::Camera(Camera&& c_) :
     }
 
 void Camera::setMatrix(glm::mat4&& m_) {
-    uCamera = m_;
     glm::vec4 p = m_ * glm::vec4(0.0f,0.0f,0.0f,1.0f) ;
     std::cout << "setMatrix pos: " << p[0] << ' ' << p[1] << ' ' << p[2] << '\n';
 }
@@ -66,9 +62,6 @@ void Camera::use() {
     uView.upload();
     uProjection = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y);
     uProjection.upload();
-    uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt(_position, _target, _upVector);
-    //ImGui::End();
-    uCamera.upload();
 }
 void Camera::unUse() {
     _gBuffer.disable();
@@ -79,15 +72,12 @@ void Camera::bindFramebuffer() {
 void Camera::fieldOfview(float fov_) {
     _fov = fov_;
     std::cout << "fov: " << _fov << '\n';
-    //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
 }
 void Camera::clipPlane(glm::vec2&& clip_) {
     _clipPlane = clip_;
     std::cout << "clip: " << _clipPlane[0] << ' ' << _clipPlane[1] << '\n';
-    //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
 }
 void Camera::upVector(glm::vec3&& up_) {
     _upVector = glm::normalize(up_);
     std::cout << "up: " << _upVector[0] << ' ' << _upVector[1] << ' ' << _upVector[2] << '\n';
-    //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
 }
