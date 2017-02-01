@@ -57,6 +57,8 @@ install:
 project:
 	make -C ../demo -$(MAKEFLAGS)
 
+full: extractLibs $(NAME) install project
+
 clean:
 	$(RM) $(OBJS) *.swp *~ *#
 
