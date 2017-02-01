@@ -38,6 +38,8 @@ CXX	= clang++
 LINKER	= $(CXX)
 INSTALL = ../demo
 
+RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+
 all: $(NAME)
 
 $(NAME): $(OBJS)
@@ -51,6 +53,11 @@ extractLibs:
 install:
 	cp lib$(NAME).a $(INSTALL)
 	cp Makefile.base $(INSTALL)/Makefile
+
+project:
+	@echo -'$(MAKEFLAGS)'
+	make -C ../demo -$(MAKEFLAGS)
+	#@echo $(words $(MAKEFLAGS))
 
 clean:
 	$(RM) $(OBJS) *.swp *~ *#

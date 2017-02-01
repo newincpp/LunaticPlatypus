@@ -55,7 +55,8 @@ WindowHandle::WindowHandle() {
     int width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
     glfwSetMouseButtonCallback(_window, ImGui_ImplGlfwGL3_MouseButtonCallback);
-    glfwSetKeyCallback(_window, ImGui_ImplGlfwGL3_KeyCallback);
+    //glfwSetKeyCallback(_window, ImGui_ImplGlfwGL3_KeyCallback);
+    glfwSetKeyCallback(_window, WindowHandle::keyCallback);
     glfwSetCharCallback(_window, ImGui_ImplGlfwGL3_CharCallback);
     std::cout << "glfw initialized" << std::endl;
 }
@@ -72,3 +73,6 @@ WindowHandle::~WindowHandle() {
     glfwTerminate();
 }
 
+void WindowHandle::keyCallback(GLFWwindow* w_, int key_, int scanCode_, int keyStatus_, int modsKey_) {
+    ImGui_ImplGlfwGL3_KeyCallback(w_, key_, scanCode_, keyStatus_, modsKey_);
+}
