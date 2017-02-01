@@ -55,9 +55,7 @@ install:
 	cp Makefile.base $(INSTALL)/Makefile
 
 project:
-	@echo -'$(MAKEFLAGS)'
 	make -C ../demo -$(MAKEFLAGS)
-	#@echo $(words $(MAKEFLAGS))
 
 clean:
 	$(RM) $(OBJS) *.swp *~ *#
