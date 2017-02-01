@@ -26,8 +26,8 @@ NAME	=LunaticPlatypus
 DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC -DTINYOBJLOADER
 #DEFINE 	= -DDEFAULT_SCENE=nelo.dae -DGLEW_STATIC
 DEBUG 	= -g
-GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
-OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti #-fno-exceptions
+#GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
+OPTIM= $(GLM_DEFINE) -O2 -fno-rtti #-fno-exceptions
 INCLUDE= -I./imgui -I./Alembic/OpenEXR -I./ -I./Alembic
 CXXFLAGS= -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 #LIBS= ./libs/libGLEW.a ./libs/libassimp.a ./libs/libAlembic.a ./libs/libHalf.a ./libs/libhdf5.a ./libs/libz.a 
