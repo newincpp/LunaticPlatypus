@@ -50,6 +50,11 @@ void OglCore::init() {
     _sPostProc.link({"outColour"});
 
     Mesh m;
+    glGenTextures(1, &fractalTex);
+    glBindTexture(GL_TEXTURE_2D, fractalTex);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8UI, 1920, 1080);
+    checkGlError;
+    glBindTexture(GL_TEXTURE_2D, 0);
     _s._fb.emplace_back();
     _s._fb[0].addBuffer("gPosition");
     _s._fb[0].addBuffer("gNormal");
@@ -74,11 +79,15 @@ void OglCore::render() {
 
     _s.update();
 
+    glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8UI);
+    checkGlError;
     _sgBuffer.use();
+    checkGlError;
     //autoRelocate(uTime);
     uTime.upload();
     checkGlError;
     _s.render();
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
 
 

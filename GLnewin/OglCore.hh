@@ -21,6 +21,7 @@ class OglCore {
 	Shader _sPostProc;
 	DrawBuffer _s;
 	Mesh _renderTarget;
+	GLuint fractalTex;
     public:
 	OglCore();
 	inline DrawBuffer& getDrawBuffer() { return _s; }
