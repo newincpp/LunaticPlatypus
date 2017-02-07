@@ -12,4 +12,6 @@ Importer::Importer(std::string file, DrawBuffer& s_) {
 #include "ImporterAlembic.cpp"
 #elif defined(ASSIMP)
 #include "ImporterAssimp.cpp"
+#else
+#error "You have to define which importer implementation you want"
 #endif
