@@ -36,11 +36,10 @@ DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O2 -fno-rtti #-fno-exceptions
 INCLUDE= -I./imgui  -I./ 
-CXXFLAGS= -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
+CXXFLAGS= -Wall -Wextra -W -std=c++11 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 LIBS:= ./libs/$(LIBFOLDER)/Objectsoup/libGLEW/*.o \
     ./libs/$(LIBFOLDER)/Objectsoup/libglfw3/*.o
     
-
 LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS)
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
@@ -56,6 +55,7 @@ ifeq ($(IMPORTER),ALEMBIC)
     LIBS+=./libs/$(LIBFOLDER)/Objectsoup/libAlembic/*.o \
 	  ./libs/$(LIBFOLDER)/Objectsoup/libHalf/*.o \
 	  ./libs/$(LIBFOLDER)/Objectsoup/libhdf5/*.o \
+	  ./libs/$(LIBFOLDER)/Objectsoup/libIex/*.o \
 	  ./libs/$(LIBFOLDER)/Objectsoup/libz/*.o
     INCLUDE+=-I./Alembic/OpenEXR -I./Alembic
 endif

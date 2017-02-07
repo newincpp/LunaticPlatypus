@@ -1,3 +1,4 @@
+#define TINYOBJLOADER_IMPLEMENTATION		
 #include <iostream>
 #include <map>
 #include "Importer.hh"
