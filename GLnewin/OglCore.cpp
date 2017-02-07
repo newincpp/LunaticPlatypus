@@ -50,6 +50,19 @@ void OglCore::init() {
     _sPostProc.link({"outColour"});
 
     Mesh m;
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &fractalTex);
+    glBindTexture(GL_TEXTURE_2D, fractalTex);
+
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+
+    //glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16UI, 512, 512); // int
+    glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA16F, 512, 512); // float
+    checkGlError;
+    glBindTexture(GL_TEXTURE_2D, 0);
     _s._fb.emplace_back();
     _s._fb[0].addBuffer("gPosition");
     _s._fb[0].addBuffer("gNormal");
@@ -74,11 +87,16 @@ void OglCore::render() {
 
     _s.update();
 
+    //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
+    glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
+    checkGlError;
     _sgBuffer.use();
+    checkGlError;
     //autoRelocate(uTime);
     uTime.upload();
     checkGlError;
     _s.render();
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
 
 
@@ -88,6 +106,7 @@ void OglCore::render() {
     //uTime.upload();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _renderTarget.render();
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
 }
 

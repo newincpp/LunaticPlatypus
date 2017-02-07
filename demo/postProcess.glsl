@@ -10,6 +10,9 @@ uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 uniform sampler2D gDepth;
 
+uniform layout(binding=1, rgba16f) image2D uFractalTexture; // float
+//uniform layout(binding=1, rgba16ui) uimage2D uFractalTexture; // int
+
 in vec2 TexCoords;
 
 out vec3 outColour;
@@ -42,7 +45,7 @@ float height = resolution.y; //texture height
 //general stuff
 
 //user variables
-int samples = 16; //ao sample count //64
+int samples = 64; //ao sample count //64
 float radius = 5.0; //ao radius //5.0
 
 float aoclamp = 0.125; //depth clamp - reduces haloing at screen edges
@@ -61,68 +64,93 @@ float lumInfluence = 0.7; //how much luminance affects occlusion
 
 //--------------------------------------------------------
 
-vec2 randomFromUv(vec2 coord) //generating noise/pattern texture for dithering
-{
-	float noiseX = ((fract(1.0-coord.s*(width/2.0))*0.25)+(fract(coord.t*(height/2.0))*0.75))*2.0-1.0;
-	float noiseY = ((fract(1.0-coord.s*(width/2.0))*0.75)+(fract(coord.t*(height/2.0))*0.25))*2.0-1.0;
+vec2 randomFromUv(vec2 coord) { //generating noise/pattern texture for dithering
+	float noiseX = ((fract(1.0 - coord.s * (width / 2.0)) * 0.25) + (fract(coord.t * (height / 2.0)) * 0.75)) * 2.0 - 1.0;
+	float noiseY = ((fract(1.0 - coord.s * (width / 2.0)) * 0.75) + (fract(coord.t * (height / 2.0)) * 0.25)) * 2.0 - 1.0;
 
-	if (noise)
-	{
-		noiseX = clamp(fract(sin(dot(coord ,vec2(12.9898,78.233))) * 43758.5453),0.0,1.0)*2.0-1.0;
-		noiseY = clamp(fract(sin(dot(coord ,vec2(12.9898,78.233)*2.0)) * 43758.5453),0.0,1.0)*2.0-1.0;
-	}
-	return vec2(noiseX,noiseY)*noiseamount;
+	//if (noise) {
+	//	noiseX = clamp(fract(sin(dot(coord, vec2(12.9898, 78.233))) * 43758.5453), 0.0, 1.0) * 2.0 - 1.0;
+	//	noiseY = clamp(fract(sin(dot(coord, vec2(12.9898, 78.233) * 2.0)) * 43758.5453), 0.0, 1.0) * 2.0 - 1.0;
+	//}
+	return vec2(noiseX, noiseY) * noiseamount;
 }
 
-float doMist()
-{
-	float zdepth = texture2D(gDepth,TexCoords.xy).x;
+float doMist() {
+	float zdepth = texture2D(gDepth, TexCoords.xy).x;
 	float depth = -zFar * zNear / (zdepth * (zFar - zNear) - zFar);
-	return clamp((depth-miststart)/mistend,0.0,1.0);
+	return clamp((depth - miststart) / mistend, 0.0, 1.0);
 }
 
-float readDepth(vec2 coord)
-{
-	if (TexCoords.x<0.0||TexCoords.y<0.0) return 1.0;
-	else {
-		float z_b = texture2D(gDepth, coord ).x;
-		float z_n = 2.0 * z_b - 1.0;
-		return (2.0 * zNear) / (zFar + zNear - z_n * (zFar-zNear));
+float readDepth(vec2 coord) {
+	if (TexCoords.x < 0.0 || TexCoords.y < 0.0) {
+	    return 1.0;
 	}
+	float z_b = texture2D(gDepth, coord).x;
+	float z_n = 2.0 * z_b - 1.0;
+	return (2.0 * zNear) / (zFar + zNear - z_n * (zFar - zNear));
 }
 
 int compareDepthsFar(float depth1, float depth2) {
-	float garea = 2.0; //gauss bell width
-	float diff = (depth1 - depth2)*100.0; //depth difference (0-100)
+	//float garea = 2.0; //gauss bell width
+	float diff = (depth1 - depth2) * 100.0; //depth difference (0-100)
 	//reduce left bell width to avoid self-shadowing
-	if (diff<gdisplace)
-	{
-		return 0;
-	} else {
-		return 1;
-	}
+	return diff < gdisplace ? 0 : 1;
+	//if (diff<gdisplace) {
+	//	return 0;
+	//} else {
+	//	return 1;
+	//}
 }
 
-float compareDepths(float depth1, float depth2)
-{
+float compareDepths(float depth1, float depth2) {
 	float garea = 2.0; //gauss bell width
-	float diff = (depth1 - depth2)*100.0; //depth difference (0-100)
+	float diff = (depth1 - depth2) * 100.0; //depth difference (0-100)
 	//reduce left bell width to avoid self-shadowing
-	if (diff<gdisplace)
-	{
-		garea = diffarea;
-	}
+	garea = diff < gdisplace ? diffarea : garea;
+	//if (diff < gdisplace) {
+	//	garea = diffarea;
+	//}
 
-	float gauss = pow(2.7182,-2.0*(diff-gdisplace)*(diff-gdisplace)/(garea*garea));
-	return gauss;
+	return pow(2.7182, -2.0 * pow((diff - gdisplace) / garea, 2.0));
 }
 
-float calAO(float depth,float dw, float dh)
-{
-	float dd = (1.0-depth)*radius;
+float directionMultiplier(float coord, float texCoord, float normal, float cn) {
+    return coord - texCoord < 0 ? (normal - cn > 0 ? 0.0 : 1.0) : normal - cn > 0 ? 1.0 : 0.0;
+}
+
+float dotDirection(vec3 a, vec3 b) {
+    return sign(a.x * -b.y + a.y * b.x);
+}
+
+//9ms
+float normalStuff(vec3 normal, vec2 coord) {
+    //float mul = //directionMultiplier(coord.x, TexCoords.x, normal.x, cn.x);
+    //directionMultiplier(coord.x, TexCoords.x, normal.z, cn.z) *
+    //directionMultiplier(coord.x, TexCoords.x, normal.y, cn.y);
+    vec3 cn = texture2D(gNormal, coord).xyz;
+    float mul = 1.0;
+    vec3 c = cross(cn, normal);
+    float angle = (atan(length(c), dot(normal, cn)));
+    angle = (dot(cn, normal));
+    mul = angle > 0 ? angle < PI/2.0 ? 1.0 : 0.0 : 0.0;
+    //angle = degrees(angle);
+    angle = 0.0;
+    //angle = radians(angle);
+
+
+    mul = dot(c, vec3(.0, .0, 1.0)) > 0 ? 1.0 : 0.0;
+    c = cross(normal, cn);
+    mul += dot(c, vec3(.0, .0, 1.0)) > 0 ? 1.0 : 0.0;
+    //mul = dotDirection(normal, cn);
+    return 1.0 - abs(dot(cn, normal));
+    return (1.0 - angle) * mul;
+}
+
+float calAO(float depth, float dw, float dh, vec3 normal) {
+	float dd = (1.0 - depth) * radius;
 
 	float temp = 0.0;
-	float temp2 = 0.0;
+	//float temp2 = 0.0;
 	float coordw = TexCoords.x + dw*dd;
 	float coordh = TexCoords.y + dh*dd;
 	float coordw2 = TexCoords.x - dw*dd;
@@ -131,74 +159,66 @@ float calAO(float depth,float dw, float dh)
 	vec2 coord = vec2(coordw , coordh);
 	vec2 coord2 = vec2(coordw2, coordh2);
 
-	float cd = readDepth(coord);
+	float cd = readDepth(coord); //11ms
+	temp = compareDepths(depth, cd) * normalStuff(normal, coord);
+	//DEPTH EXTRAPOLATION: 5ms
 	int far = compareDepthsFar(depth, cd);
-	temp = compareDepths(depth, cd);
-	//DEPTH EXTRAPOLATION:
-	if (far > 0)
-	{
-		temp2 = compareDepths(readDepth(coord2),depth);
-		temp += (1.0-temp)*temp2;
+	if (far > 0) {
+	    temp += (1.0 - temp) * compareDepths(readDepth(coord2), depth) * normalStuff(normal, coord2);
 	}
 
 	return temp;
 }
 
-float ssaoAlone(void)
-{
+float ssaoAlone() {
 	vec2 noise = randomFromUv(TexCoords);
 	float depth = readDepth(TexCoords);
+	vec3 normal = texture2D(gNormal, TexCoords).xyz;
 
-	float w = (1.0 / width)/clamp(depth,aoclamp,1.0)+(noise.x*(1.0-noise.x));
-	float h = (1.0 / height)/clamp(depth,aoclamp,1.0)+(noise.y*(1.0-noise.y));
+	float w = (1.0 / width) / clamp(depth, aoclamp, 1.0) + (noise.x * (1.0 - noise.x));
+	float h = (1.0 / height) / clamp(depth, aoclamp, 1.0) + (noise.y * (1.0 - noise.y));
 
-	float pw = 0.0;
-	float ph = 0.0;
+	//float pw = 0.0;
+	//float ph = 0.0;
 
 	float ao = 0.0;
 
 	float dl = PI * (3.0 - sqrt(5.0));
 	float dz = 1.0 / float(samples);
 	float l = 0.0;
-	float z = 1.0 - dz/2.0;
+	float z = 1.0 - dz / 2.0;
 
-	for (int i = 0; i < samples; i++)
-	{
-		if (i > samples) break;
+	for (int i = 0; i < samples; i++) {
+		//if (i > samples) break;
 		float r = sqrt(1.0 - z);
 
-		pw = cos(l) * r;
-		ph = sin(l) * r;
-		ao += calAO(depth,pw*w,ph*h);
-		z = z - dz;
-		l = l + dl;
+		//pw = cos(l) * r;
+		//ph = sin(l) * r;
+		ao += calAO(depth, cos(l) * r * w, sin(l) * r * h, normal);
+		z -= dz;
+		l += dl;
 	}
 
+	//ao /= float(samples);
+	//ao *= strength;
+	ao = 1.0 - ao / float(samples) * strength;
 
-	ao /= float(samples);
-	ao *= strength;
-	ao = 1.0-ao;
-
-	if (mist)
-	{
-		ao = mix(ao, 1.0, doMist());
-	}
+	//ao = mist ? mix(ao, 1.0, doMist()) : ao;
 
 	/*
-	   vec3 color = texture2D(bgl_RenderedTexture,TexCoords).rgb;
-	   vec3 lumcoeff = vec3(0.299,0.587,0.114);
+	   vec3 color = texture2D(bgl_RenderedTexture, TexCoords).rgb;
+	   vec3 lumcoeff = vec3(0.299, 0.587, 0.114);
 	   float lum = dot(color.rgb, lumcoeff);
 	   vec3 luminance = vec3(lum, lum, lum);
-	   vec3 final = vec3(color*mix(vec3(ao),vec3(1.0),luminance*lumInfluence));//mix(color*ao, white, luminance)
-	   if (onlyAO)
-	   {
-	   final = vec3(mix(vec3(ao),vec3(1.0),luminance*lumInfluence)); //ambient occlusion only
+	   vec3 final = vec3(color * mix(vec3(ao), vec3(1.0), luminance * lumInfluence));//mix(color*ao, white, luminance)
+	   if (onlyAO) {
+	   final = vec3(mix(vec3(ao), vec3(1.0), luminance * lumInfluence)); //ambient occlusion only
 	   }
 	 */
-	//vec3 final = vec3(depth/1.0);
+	//vec3 final = vec3(depth / 1.0);
 	//vec3 final = vec3(depth);
 
-	//gl_FragColor = vec4(final,1.0);
+	//gl_FragColor = vec4(final, 1.0);
 	return ao;
 
 }
@@ -211,13 +231,12 @@ vec2 Rand2D_bad() {
     return vec2(rand(TexCoords), rand(gl_FragCoord.xy/1000.0));
 }
 
-vec3 permute(vec3 x0,vec3 p) { 
+vec3 permute(vec3 x0, vec3 p) { 
     vec3 x1 = mod(x0 * p.y, p.x);
-    return floor(  mod( (x1 + p.z) *x0, p.x ));
+    return floor(mod((x1 + p.z) * x0, p.x));
 }
 
-float simplexNoise2(vec2 v)
-{
+float simplexNoise2(vec2 v) {
     const vec4 pParam = vec4( 17.0*17.0, 34.0, 1.0, 7.0);
     const vec2 C = vec2(0.211324865405187134, // (3.0-sqrt(3.0))/6.;
 	    0.366025403784438597); // 0.5*(sqrt(3.0)-1.);
@@ -322,53 +341,58 @@ float ssao1() {
 }
 
 float ssao() {
-    //float count = 16.0;
-    //float bias = 0.1;
-    //
-    //vec4 norz = texture2D(gNormal, TexCoords);
-    //vec4 d = texture2D(gDepth, TexCoords);
-    //norz.w = d.x;
-    //float depth = norz.w;
-    //float radius = 0.1;
-    //float scale = radius / depth;
-    //
+    float count = 16.0;
+    float bias = 0.1;
+    
+    vec4 norz = texture2D(gNormal, TexCoords);
+    float depth = texture2D(gDepth, TexCoords).x;
+    float radius = 0.1;
+    float scale = radius / depth;
+    
     float ao = 0.0;
-    //for(int i = 0; i < count; i++) {
-    //	vec2 randUv = TexCoords + float(i) / float(count + 1);
-    //	//vec3 randNor = texture2D(iChannel1, randUv).xyz * 2.0 - 1.0;
-    //	vec3 randNor = vec3(rand(randUv) * 2.0 - 1.0, rand(randUv.yx) * 2.0 - 1.0, rand(randUv + 1.0) * 2.0 - 1.0);
-    //	if (dot(norz.xyz, randNor) < 0.0)
-    //	    randNor *= -1.0;
+    for(int i = 0; i < count; i++) {
+	vec2 randUv = randomFromUv(TexCoords + float(i) / float(count + 1));
+	//float w = (1.0 / width) / clamp(depth, aoclamp, 1.0) + (noise.x * (1.0 - noise.x));
+	//float h = (1.0 / height) / clamp(depth, aoclamp, 1.0) + (noise.y * (1.0 - noise.y));
+    	//vec2 randUv = TexCoords + float(i) / float(count + 1);
+    	//vec3 randNor = texture2D(iChannel1, randUv).xyz * 2.0 - 1.0;
+    	vec3 randNor = vec3(mod(rand(randUv), 2.0) - 1.0, mod(rand(randUv.yx), 2.0) - 1.0, mod(rand(randUv + 1.0), 2.0) - 1.0);
+    	if (dot(norz.xyz, randNor) < 0.0)
+    	    randNor *= -1.0;
 
-    //	vec2 off = randNor.xy * scale;
-    //	vec4 sampleNorz = texture2D(gNormal, TexCoords + off);
-    //	d = texture2D(gDepth, TexCoords + off);
-    //	sampleNorz.w = d.x;
-    //	float depthDelta = depth - sampleNorz.w;
-    //
-    //	vec3 sampleDir = vec3(randNor.xy * radius, depthDelta);
-    //	//outColour = vec3(depthDelta);
-    //	float occ = max(0.0, dot(normalize(norz.xyz), normalize(sampleDir)) - bias) / (length(sampleDir) + 1.0);
-    //	ao += 1.0 - occ;
-    //}
-    //ao /= float(count);
+    	vec2 off = randNor.xy * scale;
+    	vec4 sampleNorz = texture2D(gNormal, TexCoords + off);
+    	depth = texture2D(gDepth, TexCoords + off).x;
+    	float depthDelta = depth - depth;
+    
+    	vec3 sampleDir = vec3(randNor.xy * radius, depthDelta);
+    	//outColour = vec3(depthDelta);
+    	float occ = max(0.0, dot(normalize(norz.xyz), normalize(sampleDir)) - bias) / (length(sampleDir) + 1.0);
+    	ao += 1.0 - occ;
+    }
+    ao /= float(count);
     return ao;
 }
 
 void main() { 
     vec2 distCoord = TexCoords * 2.0f;
     vec3 cp = texture(gPosition, distCoord).rgb;
-    vec3 cn = texture(gNormal, distCoord - vec2(1.0f,0.0f)).rgb;
-    vec3 ca = texture(gAlbedoSpec, distCoord - vec2(0.0f,1.0f)).rgb;
-    float z = texture(gDepth, distCoord - vec2(1.0f,1.0f)).r;
+    vec3 cn = texture(gNormal, distCoord - vec2(1.0f, 0.0f)).rgb;
+    vec3 ca = texture(gAlbedoSpec, distCoord - vec2(0.0f, 1.0f)).rgb;
+    float z = texture(gDepth, distCoord - vec2(1.0f, 1.0f)).r;
     float near = 0.1;                                // the near plane
     float far = 100.0;                               // the far plane
     float c = (2.0 * near) / (far + near - z * (far - near));  // convert to linear values 
     vec3 cd = vec3(c);
     //outColour = cn + cp + ca + cd;
-    //outColour = vec3( ssaoAlone());
+    //outColour = vec3(ssaoAlone());
     //ssaoI();
-    outColour = texture(gNormal, TexCoords).xyz * ssaoAlone();
+    //outColour = abs(texture(gNormal, TexCoords).xyz) * ssaoAlone();
+    outColour = vec3(ssaoAlone());
+    //ivec2 plop = ivec2(TexCoords.x * 1920, TexCoords.y * 1080);
+    ivec2 plop = ivec2(distCoord * imageSize(uFractalTexture));
+    outColour = imageLoad(uFractalTexture, plop).xyz + cn + ca + c;
+    imageStore(uFractalTexture, plop, uvec4(0.0));
 
 //    float r = step(0.99f, simplexNoise2(TexCoords * 30.0));
 //    r = rand(TexCoords.xy * 100.0f);
