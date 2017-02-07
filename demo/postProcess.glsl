@@ -10,8 +10,8 @@ uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 uniform sampler2D gDepth;
 
-uniform layout(binding=1, rgba16f) image2D uFractalTexture;
-//uniform layout(binding=1, rgba16ui) uimage2D uFractalTexture;
+uniform layout(binding=1, rgba16f) image2D uFractalTexture; // float
+//uniform layout(binding=1, rgba16ui) uimage2D uFractalTexture; // int
 
 in vec2 TexCoords;
 
@@ -390,8 +390,8 @@ void main() {
     //outColour = abs(texture(gNormal, TexCoords).xyz) * ssaoAlone();
     outColour = vec3(ssaoAlone());
     //ivec2 plop = ivec2(TexCoords.x * 1920, TexCoords.y * 1080);
-    ivec2 plop = ivec2(distCoord.x * 1920, distCoord.y * 1080);
-    outColour = imageLoad(uFractalTexture, plop).xyz / 255.0f + cn + ca + c;
+    ivec2 plop = ivec2(distCoord * imageSize(uFractalTexture));
+    outColour = imageLoad(uFractalTexture, plop).xyz + cn + ca + c;
     imageStore(uFractalTexture, plop, uvec4(0.0));
 
 //    float r = step(0.99f, simplexNoise2(TexCoords * 30.0));

@@ -59,8 +59,8 @@ void OglCore::init() {
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 
-    //glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16UI, 1920, 1080); // me
-    glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA16F, 1920, 1080); // matias
+    //glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16UI, 512, 512); // int
+    glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA16F, 512, 512); // float
     checkGlError;
     glBindTexture(GL_TEXTURE_2D, 0);
     _s._fb.emplace_back();
@@ -87,8 +87,8 @@ void OglCore::render() {
 
     _s.update();
 
-    //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // me
-    glBindImageTexture( 0, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // matias
+    //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
+    glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
     checkGlError;
     _sgBuffer.use();
     checkGlError;

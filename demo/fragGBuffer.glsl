@@ -13,8 +13,8 @@ out vec3 gPosition;
 out vec3 gNormal;
 out vec3 gAlbedoSpec;
 //out float gDepth;
-uniform layout(binding=1, rgba16f) writeonly image2D uFractalTexture;
-//uniform layout(binding=1, rgba16ui) writeonly uimage2D uFractalTexture;
+uniform layout(binding=1, rgba16f) writeonly image2D uFractalTexture; // float
+//uniform layout(binding=1, rgba16ui) writeonly uimage2D uFractalTexture; // int
 
 void main() {
     //if (gl_FragCoord.x > 500) {
@@ -27,8 +27,7 @@ void main() {
     // And the diffuse per-fragment color
     gAlbedoSpec.rgb = vec3(vInfUvCoord_, 0.0f);
     //gDepth = 1.0f;
-    ivec2 plop = ivec2(gl_FragCoord.x, gl_FragCoord.y);
+    ivec2 plop = ivec2((gl_FragCoord.xy / vec2(1920.0f, 1080.0f)) * vec2(imageSize(uFractalTexture)));
 
-    gNormal = abs(gNormal * 255);
-    imageStore(uFractalTexture, plop, uvec4(gNormal, 1.0));
+    imageStore(uFractalTexture, plop, vec4(gNormal, 1.0));
 }
