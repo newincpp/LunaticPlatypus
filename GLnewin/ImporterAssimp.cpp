@@ -1,3 +1,4 @@
+#warning "using assimp"
 inline glm::mat4 Importer::aiMatrix4x4ToGlm(const aiMatrix4x4& from) {
     glm::mat4 to;
 

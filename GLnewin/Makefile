@@ -60,7 +60,9 @@ ifeq ($(IMPORTER),ALEMBIC)
     INCLUDE+=-I./Alembic/OpenEXR -I./Alembic
 endif
 ifeq ($(IMPORTER),ASSIMP)
-    LIBS+= ./libs/$(LIBFOLDER)/Objectsoup/libassimp/*.o
+    DEFINE+=-DASSIMP
+    LIBS+= ./libs/$(LIBFOLDER)/Objectsoup/libassimp/*.o \
+	   ./libs/$(LIBFOLDER)/Objectsoup/libz/*.o
 endif
 
 RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -70,7 +72,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(RM) lib$(NAME).a
-	ar -cvq lib$(NAME).a $(OBJS) $(LIBS)
+	ar -cvq lib$(NAME).a $(OBJS) $(LIBS) > /dev/null
 	ranlib lib$(NAME).a
 
 extractLibs:

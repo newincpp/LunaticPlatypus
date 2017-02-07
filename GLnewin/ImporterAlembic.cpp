@@ -1,3 +1,4 @@
+#warning "using alembic"
 #include <Alembic/AbcGeom/All.h>
 #include <Alembic/AbcCoreAbstract/All.h>
 #include <Alembic/AbcCoreFactory/All.h>
