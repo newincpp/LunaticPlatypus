@@ -8,8 +8,6 @@ class MyGame : public Heart::IGamelogic {
 	bool done;
 	MyGame() : done(false) {
 	    start = std::chrono::system_clock::now();
-	    _event.bind("keyboard", [](){ std::cout << "keyboard pressed !\n"; });
-	    _event.bind("keyboard", [](){ std::cout << "nope\n"; });
 	}
 	virtual void update() {
 	    std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - start;

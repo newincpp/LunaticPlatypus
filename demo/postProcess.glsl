@@ -45,8 +45,8 @@ float height = resolution.y; //texture height
 //general stuff
 
 //user variables
-int samples = 64; //ao sample count //64
-float radius = 5.0; //ao radius //5.0
+int samples = 16; //ao sample count //64
+float radius = 4.0; //ao radius //5.0
 
 float aoclamp = 0.125; //depth clamp - reduces haloing at screen edges
 bool noise = true; //use noise instead of pattern for sample dithering
@@ -387,19 +387,10 @@ void main() {
     //outColour = cn + cp + ca + cd;
     //outColour = vec3(ssaoAlone());
     //ssaoI();
-    //outColour = abs(texture(gNormal, TexCoords).xyz) * ssaoAlone();
-    outColour = vec3(ssaoAlone());
+    //outColour = vec3(ssaoAlone());
     //ivec2 plop = ivec2(TexCoords.x * 1920, TexCoords.y * 1080);
     ivec2 plop = ivec2(distCoord * imageSize(uFractalTexture));
-    outColour = imageLoad(uFractalTexture, plop).xyz + cn + ca + c;
-    imageStore(uFractalTexture, plop, uvec4(0.0));
-
-//    float r = step(0.99f, simplexNoise2(TexCoords * 30.0));
-//    r = rand(TexCoords.xy * 100.0f);
-//
-//
-//    float dx = 15*(0.005);
-//    float dy = 15*(0.005);
-//    vec2 coord = vec2(dx*floor(TexCoords.x/dx), dy*floor(TexCoords.y/dy));
-//    outColour = texture2D(gPosition, coord).rgb;
+    //outColour = imageLoad(uFractalTexture, plop).xyz + cn + ca + c;
+    //imageStore(uFractalTexture, plop, uvec4(0.0));
+    outColour = abs(texture(gNormal, TexCoords).xyz) * ssaoAlone();
 }

@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <sys/inotify.h>
 
+#include <poll.h>
+
 #include "fileWatcher.hh"
 
 
@@ -11,13 +13,18 @@ FileWatcher::FileWatcher(const char* f_) : _still(true) {
 
     if (_fd < 0 ) {
 	std::cout << "file \"" << f_ << "\" is not valid\n";
+	return;
     }
     _wd = inotify_add_watch(_fd, f_, IN_MODIFY);
 
     t = std::thread([this]() {
+	    struct pollfd pfd = { _fd, POLLIN, 0 };
 	    while (_still) {
-		_length = read(_fd, _buffer, 4096);
-		std::cout << "change detected\n";
+	    	int ret = poll(&pfd, 1, 100);
+		if (ret > 0) {
+			_length = read(_fd, _buffer, 4096);
+			std::cout << "change detected\n";
+		}
 	    }
 	    std::cout << "end\n";
     });
@@ -36,6 +43,9 @@ bool FileWatcher::isModified() {
 
 FileWatcher::~FileWatcher() {
     _still = false;
-    inotify_rm_watch(_fd, _wd);
-    close(_fd);
+    t.join();
+    if (_fd < 0) {
+	inotify_rm_watch(_fd, _wd);
+	close(_fd);
+    }
 }

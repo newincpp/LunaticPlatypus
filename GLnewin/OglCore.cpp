@@ -27,6 +27,7 @@ void OglCore::init() {
 
     checkGlError glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     std::vector<GLfloat> vertices = {
 	//vertexPos		//normal		//uvCoord
@@ -37,8 +38,8 @@ void OglCore::init() {
     };
 
     std::vector<GLuint> elements = {
-	0, 1, 2,
-	2, 3, 0
+	0, 2, 1,
+	0, 3, 2
     };
 
     _sgBuffer.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
@@ -100,6 +101,7 @@ void OglCore::render() {
     checkGlError;
 
 
+    //glDisable(GL_CULL_FACE);
     _sPostProc.use();
     _s.bindGBuffer(0);
     //autoRelocate(uTime);
