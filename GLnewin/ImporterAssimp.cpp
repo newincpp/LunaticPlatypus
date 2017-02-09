@@ -35,11 +35,9 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
     Camera& mainCamera = s_._cameras[0];
     if (scene->mNumCameras) {
 	aiCamera* c = scene->mCameras[0];
-	std::cout << "position: " << scene->mCameras[0]->mPosition[0] << ' ' << scene->mCameras[0]->mPosition[1] << ' ' << scene->mCameras[0]->mPosition[2] << '\n';
-	//c->GetCameraMatrix(m);
-	//_mainCamera.setMatrix(aiMatrix4x4ToGlm(m));
+	std::cout << "position: " << c->mPosition[0] << ' ' << c->mPosition[1] << ' ' << c->mPosition[2] << '\n';
 
-	mainCamera.lookAt(glm::vec3(c->mLookAt[0], c->mLookAt[1], c->mLookAt[2]));
+	mainCamera.lookAt(glm::vec3(c->mLookAt[2] * 1000.0f, c->mLookAt[1] * 1000.0f, c->mLookAt[0] * 1000.0f));
 	mainCamera.setPos(glm::vec3(c->mPosition[0] / 1.0f, c->mPosition[1] / 1.0f, c->mPosition[2] / 1.0f));
 	//_mainCamera.fieldOfview(c->mHorizontalFOV);
 	mainCamera.fieldOfview(1.571f);
