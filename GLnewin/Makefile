@@ -76,7 +76,7 @@ $(NAME): $(OBJS)
 	ranlib lib$(NAME).a
 
 extractLibs:
-	cd libs/$(LIBFOLDER); ./extractObject.sh
+	cd libs/ ; ./extractObject.sh $(LIBFOLDER)
 
 install:
 	cp lib$(NAME).a $(INSTALL)

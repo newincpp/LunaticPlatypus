@@ -1,4 +1,5 @@
 #libAlembic.a  libassimp.a  libGLEW.a  libHalf.a  libhdf5.a  libz.a
+cd $1
 FILES=`ls *.a`
 rm -Rf Objectsoup
 mkdir -p Objectsoup
