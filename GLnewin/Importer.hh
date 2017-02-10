@@ -1,3 +1,4 @@
+#pragma once
 #include <stack>
 #include "Mesh.hh"
 #include "Camera.hh"
@@ -8,10 +9,12 @@
 #include "tiny_obj_loader.h"
 #elif defined(ALEMBIC)
 #include "Alembic/Abc/IObject.h"
+#elif defined(ASSIMP)
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/postprocess.h"
 #else
-#include "assimp/Importer.hpp"      // C++ importer interface
-#include "assimp/scene.h"           // Output data structure
-#include "assimp/postprocess.h"     // Post processing fla
+#error "You have to define which importer implementation you want"
 #endif
 
 class Importer {

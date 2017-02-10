@@ -1,8 +1,13 @@
 #include "GLFW/glfw3.h"
+#include "EventCore.hh"
+#include <map>
 
 class WindowHandle {
-    public:
+    private:
 	GLFWwindow* _window;
+	EventInterface _e;
+	static void keyCallback(GLFWwindow*, int, int, int, int);
+    public:
 	WindowHandle();
 	bool exec();
 	~WindowHandle();

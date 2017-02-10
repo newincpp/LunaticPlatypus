@@ -1,3 +1,5 @@
+#warning "using tinyObjLoader"
+
 void Importer::load(std::string& file, DrawBuffer& s_) {
     std::cout << "Import using tinyObjLoader\n";
     /*

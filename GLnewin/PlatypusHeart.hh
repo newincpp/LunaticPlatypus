@@ -2,6 +2,7 @@
 #include "WindowHandle.hh"
 #include "node.hh"
 #include "fileWatcher.hh"
+#include "EventCore.hh"
 
 #include "imgui/imgui.h"
 
@@ -13,6 +14,7 @@ class Heart {
 	class IGamelogic {
 	    public:
 		Heart* _lunaticPlatypus;
+		EventInterface _event;
 		std::string _scene;
 		virtual void update() = 0;
 	};

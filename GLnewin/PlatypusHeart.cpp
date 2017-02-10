@@ -9,7 +9,9 @@ Heart::Heart() {
     }
     assert(_game != nullptr);
     _game->_lunaticPlatypus = this;
-    _game->_scene = STRINGIZE(DEFAULT_SCENE);
+    if (_game->_scene.empty()) {
+	_game->_scene = STRINGIZE(DEFAULT_SCENE);
+    }
     std::cout << "default scene: " << _game->_scene << "\n";
     _renderer.getDrawBuffer().reset(_game->_scene);
 }
