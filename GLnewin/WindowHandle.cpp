@@ -5,13 +5,17 @@
 
 WindowHandle::WindowHandle() {
     glewExperimental = true;
-    glfwInit();
+    if (!glfwInit()) {
+	    std::cout << "failed to init glfw3\n";
+    }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     _window = glfwCreateWindow(1920, 1024, "OpenGL", nullptr, nullptr); // Windowed
-    //GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
+    //GLFWwindow* window = glfwCreateWindow(1920, 1080, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
     glfwMakeContextCurrent(_window);
     glewExperimental=true;
     GLenum err = glewInit();
