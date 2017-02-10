@@ -6,7 +6,8 @@ LUNATICPLATYPUSDIR=../GLnewin
 OPTIM= -march=native -O2 -fno-rtti #-fno-exceptions
 INCLUDE=-I$(LUNATICPLATYPUSDIR)/ -I$(LUNATICPLATYPUSDIR)/imgui/ -I$(LUNATICPLATYPUSDIR)/glm
 CXXFLAGS= -Wconversion -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
-LIBS= -lGL -lglfw -ldl -pthread libLunaticPlatypus.a
+#LIBS= -lGL -lglfw -ldl -pthread libLunaticPlatypus.a
+LIBS= -framework OpenGL libLunaticPlatypus.a
 LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS)
 OBJS	= $(SRC:.$(EXT)=.o)
 RM	= rm -f
