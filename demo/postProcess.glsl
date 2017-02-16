@@ -46,6 +46,22 @@ vec3 getCameraPos() {
     return inverse(uView)[3].xyz;
 }
 
+float timeBounce(float slow) {
+    return sin(uTime / slow) / 2 + 0.5;
+}
+
+// TODO this function is highly wrong
+float fresnel_shlick(in sampler2D normalTexture, vec2 p, float refaction) {
+    vec3 nDirection = vec3(0., 0., 1.);
+    vec3 nNormal = normalize(texture2D(normalTexture, p).xyz * 2.0f - 1.0f);
+    vec3 halfDirection = normalize(nNormal + nDirection);
+    return 1 - pow( max(dot(halfDirection, nDirection), 0.0), 5.0 );
+}
+
+float fresnel() {
+    return fresnel_shlick(gNormal, TexCoords, 1);
+}
+
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
@@ -155,7 +171,6 @@ float calAO(float depth, float dw, float dh, vec3 normal, float radius) {
 }
 
 float ssao(float samples, float radius) {
-    radius += sin(uTime / 400) /5;
     float aoclamp = 0.125; //depth clamp - reduces haloing at screen edges
     float strength = 1.2;
 
@@ -194,50 +209,20 @@ float ssao(float samples, float radius) {
 
 /********************************* SSR *************************/
 
-vec3 raytrace0(in vec3 reflectionVector, in float startDepth, in sampler2D tex) {
-    vec3 color = vec3(0.0f, 0.0f, 0.4f);
-    float stepSize = 0.01f; 
-    int steps = 0;
-
-    float size = length(reflectionVector.xy);
-    reflectionVector = normalize(reflectionVector/size) * stepSize;
-
-    // Current sampling position is at current fragment
-    vec2 sampledPosition = TexCoords.xy;
-    // Current depth at current fragment
-    float currentDepth = startDepth;
-    // The sampled depth at the current sampling position
-    float sampledDepth = linearizeDepth( texture(gDepth, sampledPosition).x);
-
-    // Raytrace as long as in texture space of depth buffer (between 0 and 1)
-    while(sampledPosition.x <= 1.0 && sampledPosition.x >= 0.0 &&
-	    sampledPosition.y <= 1.0 && sampledPosition.y >= 0.0) {
-	// Update sampling position by adding reflection vector's xy and y components
-	sampledPosition = sampledPosition + reflectionVector.xy;
-	// Updating depth values
-	currentDepth = currentDepth + reflectionVector.z * startDepth;
-	float sampledDepth = linearizeDepth( texture(gDepth, sampledPosition).z );
-
-	// If current depth is greater than sampled depth of depth buffer, intersection is found
-	if(currentDepth > sampledDepth) {
-	    // Delta is for stop the raytracing after the first intersection is found
-	    // Not using delta will create "repeating artifacts"
-	    float delta = (currentDepth - sampledDepth);
-	    if(delta < 0.003f ) {
-		color = texture(tex, sampledPosition).rgb;
-		return color;
-	    }
-	}
-	if (steps > 20) {
-	    return color;
-	}
-	steps++;
-    }
-    return color;
+float ggx (vec3 N, vec3 V, vec3 L, float roughness, float F0) {
+    float alpha = roughness*roughness;
+    vec3 H = normalize(L - V);
+    float dotLH = max(0.0, dot(L,H));
+    float dotNH = max(0.0, dot(N,H));
+    float dotNL = max(0.0, dot(N,L));
+    float alphaSqr = alpha * alpha;
+    float denom = dotNH * dotNH * (alphaSqr - 1.0) + 1.0;
+    float D = alphaSqr / (3.141592653589793 * denom * denom);
+    float F = F0 + (1.0 - F0) * pow(1.0 - dotLH, 5.0);
+    float k = 0.5 * alpha;
+    float k2 = k * k;
+    return dotNL * D * F / (dotLH*dotLH*(1.0-k2)+k2);
 }
-
-
-
 
 // By Morgan McGuire and Michael Mara at Williams College 2014
 // Released as open source under the BSD 2-Clause License
@@ -324,6 +309,7 @@ bool McGuireTraceScreenSpaceRay1(vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D
     return (rayZMax >= sceneZMax - zThickness) && (rayZMin < sceneZMax);
 }
 
+
 vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
     vec2 hitPixel = vec2(0.0f);
     vec3 hitPoint = vec3(0.0f);
@@ -334,18 +320,20 @@ vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
     s[3][0] = resolution.x/2;
     s[3][1] = resolution.y/2;
     vec2 uv2 = TexCoords * vec2(1920, 1080); 
-    float jitter = mod((uv2.x + uv2.y) * 0.25, 1.0);
+    float jitter = mod((uv2.x + uv2.y) * (0.35), 1.0);
     const float maxSteps= 8.0f;
-    const float maxDistance = 32;
-    float zThickness = 24;
+    const float maxDistance =  1024.0;
+    float stride = 128.f;
+    float zThickness = 5;
     			//( vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D csZBuffer, vec2 csZBufferSize, float zThickness, float nearPlaneZ, float stride, float jitter, const float maxSteps, float maxDistance, out vec2 hitPixel, out vec3 hitPoint, float iterations)
-    bool hit = McGuireTraceScreenSpaceRay1((uView * texture(gPosition, TexCoords)).xyz, normalize(reflectionVector), s * uProjection, gDepth, resolution, zThickness, zNear, 1.0f, jitter, maxSteps, maxDistance, hitPixel, hitPoint, complexity);
+    bool hit = McGuireTraceScreenSpaceRay1((uView * texture(gPosition, TexCoords)).xyz, normalize(reflectionVector), s * uProjection, gDepth, resolution, zThickness, -zNear, stride, jitter, maxSteps, maxDistance, hitPixel, hitPoint, complexity);
     //return vec3(complexity / maxSteps);
-    //return vec3(hitPixel / vec2(1920, 1080), 0.);
+    //return texture(tex, hitPixel/vec2(1920,1080)).xyz;
     if (hit) {
-	//return vec3(1.0);
+	return texture(tex, hitPixel / resolution).xyz;
+	//return texelFetch(tex, ivec2(hitPixel), 0).xyz;
+	return vec3(1.0);
 	//return vec3(TexCoords, 0.);
-	return texture(tex, hitPixel/vec2(1920,1080)).xyz;
     } else {
         return vec3(.0f, .0f, 0.0);
     }
@@ -353,7 +341,6 @@ vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
 
 vec3 raytrace(in vec3 reflectionVector, in sampler2D tex) {
     return raytrace1(reflectionVector, tex);
-    //return raytrace0(reflectionVector, linearizeDepth(texture(gDepth, TexCoords).x), tex);
 }
 
 vec3 SSR() {
@@ -377,6 +364,6 @@ void main() {
     float c = (2.0 * near) / (far + near - z * (far - near));  // convert to linear values 
     vec3 cd = vec3(c);
     //outColour = cn + cp + ca + cd;
-    //outColour = mix(SSR(), texture(gNormal, TexCoords).xyz, 0.3) * ssao(12, 1.5f);
-    outColour = clamp(SSR(), 0., 1.) * ssao(12, 1.5f);
+    outColour = mix(texture(gNormal, TexCoords).xyz, SSR(), 0.3) * ssao(12, 1.5f);
+    //outColour = mix(texture(gNormal, TexCoords).xyz, SSR().xyz, 0.4) * ssao(12, 1.5f);
 }
