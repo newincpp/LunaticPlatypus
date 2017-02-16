@@ -2,7 +2,7 @@
 
 layout (location = 0) uniform float uTime;
 layout (location = 1) uniform mat4 uMeshTransform;
-layout(location = 2) uniform mat4 uView;
+layout (location = 2) uniform mat4 uView;
 layout(location = 3) uniform mat4 uProjection;
 
 uniform sampler2D gPosition;
@@ -10,16 +10,16 @@ uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 uniform sampler2D gDepth;
 
-uniform layout(binding=1, rgba16f) image2D uFractalTexture; // float
+layout(binding=1, rgba16f) uniform image2D uFractalTexture; // float
 //uniform layout(binding=1, rgba16ui) uimage2D uFractalTexture; // int
 
 in vec2 TexCoords;
 
 out vec3 outColour;
 
-vec2 resolution = vec2(1920, 1024);
+vec2 resolution = vec2(1920, 1080);
 float zNear = 0.1;
-float zFar = 300.0;
+float zFar = 100.0;
 
 // -------------
 
@@ -35,6 +35,16 @@ changelog:
 //uniform sampler2D bgl_RenderedTexture;
 
 #define PI    3.14159265
+
+float linearizeDepth(float z) {
+    //float near = 0.1;  // the near plane
+    //float far = 100.0; // the far plane
+    return (2.0 * zNear) / (zFar + zNear - z * (zFar - zNear));
+}
+
+vec3 getCameraPos() {
+    return inverse(uView)[3].xyz;
+}
 
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
@@ -145,6 +155,7 @@ float calAO(float depth, float dw, float dh, vec3 normal, float radius) {
 }
 
 float ssao(float samples, float radius) {
+    radius += sin(uTime / 400) /5;
     float aoclamp = 0.125; //depth clamp - reduces haloing at screen edges
     float strength = 1.2;
 
@@ -176,9 +187,184 @@ float ssao(float samples, float radius) {
 	l += dl;
     }
     ao = 1.0 - ao / float(samples) * strength;
-    return ao;
+    return clamp(0., 1., ao);
 }
 
+
+
+/********************************* SSR *************************/
+
+vec3 raytrace0(in vec3 reflectionVector, in float startDepth, in sampler2D tex) {
+    vec3 color = vec3(0.0f, 0.0f, 0.4f);
+    float stepSize = 0.01f; 
+    int steps = 0;
+
+    float size = length(reflectionVector.xy);
+    reflectionVector = normalize(reflectionVector/size) * stepSize;
+
+    // Current sampling position is at current fragment
+    vec2 sampledPosition = TexCoords.xy;
+    // Current depth at current fragment
+    float currentDepth = startDepth;
+    // The sampled depth at the current sampling position
+    float sampledDepth = linearizeDepth( texture(gDepth, sampledPosition).x);
+
+    // Raytrace as long as in texture space of depth buffer (between 0 and 1)
+    while(sampledPosition.x <= 1.0 && sampledPosition.x >= 0.0 &&
+	    sampledPosition.y <= 1.0 && sampledPosition.y >= 0.0) {
+	// Update sampling position by adding reflection vector's xy and y components
+	sampledPosition = sampledPosition + reflectionVector.xy;
+	// Updating depth values
+	currentDepth = currentDepth + reflectionVector.z * startDepth;
+	float sampledDepth = linearizeDepth( texture(gDepth, sampledPosition).z );
+
+	// If current depth is greater than sampled depth of depth buffer, intersection is found
+	if(currentDepth > sampledDepth) {
+	    // Delta is for stop the raytracing after the first intersection is found
+	    // Not using delta will create "repeating artifacts"
+	    float delta = (currentDepth - sampledDepth);
+	    if(delta < 0.003f ) {
+		color = texture(tex, sampledPosition).rgb;
+		return color;
+	    }
+	}
+	if (steps > 20) {
+	    return color;
+	}
+	steps++;
+    }
+    return color;
+}
+
+
+
+
+// By Morgan McGuire and Michael Mara at Williams College 2014
+// Released as open source under the BSD 2-Clause License
+// http://opensource.org/licenses/BSD-2-Clause
+float distanceSquared(vec2 a, vec2 b) { a -= b; return dot(a, a); }
+
+// Returns true if the ray hit something
+bool McGuireTraceScreenSpaceRay1(vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D csZBuffer, vec2 csZBufferSize, float zThickness, float nearPlaneZ, float stride, float jitter, const float maxSteps, float maxDistance, out vec2 hitPixel, out vec3 hitPoint, out float complexity) {
+    float rayLength = ((csOrig.z + csDir.z * maxDistance) > nearPlaneZ) ?
+	(nearPlaneZ - csOrig.z) / csDir.z : maxDistance;
+    vec3 csEndPoint = csOrig + csDir * rayLength;
+
+    // Project into homogeneous clip space
+    vec4 H0 = proj * vec4(csOrig, 1.0);
+    vec4 H1 = proj * vec4(csEndPoint, 1.0);
+    float k0 = 1.0 / H0.w, k1 = 1.0 / H1.w;
+
+    // The interpolated homogeneous version of the camera-space points
+    vec3 Q0 = csOrig * k0, Q1 = csEndPoint * k1;
+
+    // Screen-space endpoints
+    vec2 P0 = H0.xy * k0, P1 = H1.xy * k1;
+
+    // If the line is degenerate, make it cover at least one pixel
+    // to avoid handling zero-pixel extent as a special case later
+    P1 += vec2((distanceSquared(P0, P1) < 0.0001) ? 0.01 : 0.0);
+    vec2 delta = P1 - P0;
+
+    // Permute so that the primary iteration is in x to collapse
+    // all quadrant-specific DDA cases later
+    bool permute = false;
+    if (abs(delta.x) < abs(delta.y)) {
+	// This is a more-vertical line
+	permute = true; delta = delta.yx; P0 = P0.yx; P1 = P1.yx;
+    }
+
+    float stepDir = sign(delta.x);
+    float invdx = stepDir / delta.x;
+
+    // Track the derivatives of Q and k
+    vec3  dQ = (Q1 - Q0) * invdx;
+    float dk = (k1 - k0) * invdx;
+    vec2  dP = vec2(stepDir, delta.y * invdx);
+
+    // Scale derivatives by the desired pixel stride and then
+    // offset the starting values by the jitter fraction
+    dP *= stride; dQ *= stride; dk *= stride;
+    P0 += dP * jitter; Q0 += dQ * jitter; k0 += dk * jitter;
+
+    // Slide P from P0 to P1, (now-homogeneous) Q from Q0 to Q1, k from k0 to k1
+    vec3 Q = Q0;
+
+    // Adjust end condition for iteration direction
+    float  end = P1.x * stepDir;
+
+    float k = k0, stepCount = 0.0, prevZMaxEstimate = csOrig.z;
+    float rayZMin = prevZMaxEstimate, rayZMax = prevZMaxEstimate;
+    float sceneZMax = rayZMax + 100;
+    for (vec2 P = P0;
+	    ((P.x * stepDir) <= end) && (stepCount < maxSteps) &&
+	    ((rayZMax < sceneZMax - zThickness) || (rayZMin > sceneZMax)) &&
+	    (sceneZMax != 0);
+	    P += dP, Q.z += dQ.z, k += dk, ++stepCount) {
+
+	rayZMin = prevZMaxEstimate;
+	rayZMax = (dQ.z * 0.5 + Q.z) / (dk * 0.5 + k);
+	prevZMaxEstimate = rayZMax;
+	if (rayZMin > rayZMax) {
+	    float t = rayZMin;
+	    rayZMin = rayZMax;
+	    rayZMax = t;
+	}
+
+	hitPixel = permute ? P.yx : P;
+	// You may need hitPixel.y = csZBufferSize.y - hitPixel.y; here if your vertical axis
+	// is different than ours in screen space
+	sceneZMax = texelFetch(csZBuffer, ivec2(hitPixel), 0).x;
+	complexity += 1;
+    }
+
+    // Advance Q based on the number of steps
+    Q.xy += dQ.xy * stepCount;
+    hitPoint = Q * (1.0 / k);
+    return (rayZMax >= sceneZMax - zThickness) && (rayZMin < sceneZMax);
+}
+
+vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
+    vec2 hitPixel = vec2(0.0f);
+    vec3 hitPoint = vec3(0.0f);
+    float complexity = 0.;
+    mat4 s = mat4(1.0f);
+    s[0][0] = resolution.x/2;
+    s[1][1] = resolution.y/2;
+    s[3][0] = resolution.x/2;
+    s[3][1] = resolution.y/2;
+    vec2 uv2 = TexCoords * vec2(1920, 1080); 
+    float jitter = mod((uv2.x + uv2.y) * 0.25, 1.0);
+    const float maxSteps= 8.0f;
+    const float maxDistance = 32;
+    float zThickness = 24;
+    			//( vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D csZBuffer, vec2 csZBufferSize, float zThickness, float nearPlaneZ, float stride, float jitter, const float maxSteps, float maxDistance, out vec2 hitPixel, out vec3 hitPoint, float iterations)
+    bool hit = McGuireTraceScreenSpaceRay1((uView * texture(gPosition, TexCoords)).xyz, normalize(reflectionVector), s * uProjection, gDepth, resolution, zThickness, zNear, 1.0f, jitter, maxSteps, maxDistance, hitPixel, hitPoint, complexity);
+    //return vec3(complexity / maxSteps);
+    //return vec3(hitPixel / vec2(1920, 1080), 0.);
+    if (hit) {
+	//return vec3(1.0);
+	//return vec3(TexCoords, 0.);
+	return texture(tex, hitPixel/vec2(1920,1080)).xyz;
+    } else {
+        return vec3(.0f, .0f, 0.0);
+    }
+}
+
+vec3 raytrace(in vec3 reflectionVector, in sampler2D tex) {
+    return raytrace1(reflectionVector, tex);
+    //return raytrace0(reflectionVector, linearizeDepth(texture(gDepth, TexCoords).x), tex);
+}
+
+vec3 SSR() {
+    vec3 normal = normalize(texture(gNormal, TexCoords).xyz * 2.0f - 1.0f);
+    float currDepth = linearizeDepth(texture(gDepth, TexCoords).x);
+    vec3 reflectionVector = reflect(normalize((uView * texture(gPosition, TexCoords)).xyz), normal);
+    //return raytrace(-reflectionVector.xyz, currDepth, gNormal);
+    return raytrace(reflectionVector.xyz, gNormal);
+}
+
+/****************************** Compositor *******************/
 
 void main() { 
     vec2 distCoord = TexCoords * 2.0f;
@@ -191,12 +377,6 @@ void main() {
     float c = (2.0 * near) / (far + near - z * (far - near));  // convert to linear values 
     vec3 cd = vec3(c);
     //outColour = cn + cp + ca + cd;
-    //outColour = vec3(ssaoAlone());
-    //ssaoI();
-    //outColour = vec3(ssaoAlone());
-    //ivec2 plop = ivec2(TexCoords.x * 1920, TexCoords.y * 1080);
-    ivec2 plop = ivec2(distCoord * imageSize(uFractalTexture));
-    outColour = imageLoad(uFractalTexture, plop).xyz + cn + ca + c;
-    //imageStore(uFractalTexture, plop, uvec4(0.0));
-    //outColour = abs(texture(gNormal, TexCoords).xyz) * ssao();
+    //outColour = mix(SSR(), texture(gNormal, TexCoords).xyz, 0.3) * ssao(12, 1.5f);
+    outColour = clamp(SSR(), 0., 1.) * ssao(12, 1.5f);
 }

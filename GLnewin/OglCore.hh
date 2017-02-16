@@ -17,7 +17,6 @@ class OglCore {
 	Uniform<float> uTime;
 	Uniform<int> _uPostPRocessTexture;
 	Shader _sgBuffer;
-	Shader _srender;
 	Shader _sPostProc;
 	DrawBuffer _s;
 	Mesh _renderTarget;

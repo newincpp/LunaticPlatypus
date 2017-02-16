@@ -14,7 +14,7 @@ WindowHandle::WindowHandle() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    _window = glfwCreateWindow(1920, 1024, "OpenGL", nullptr, nullptr); // Windowed
+    _window = glfwCreateWindow(1920, 1080, "OpenGL", nullptr, nullptr); // Windowed
     //GLFWwindow* window = glfwCreateWindow(1920, 1080, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
     glfwMakeContextCurrent(_window);
     glewExperimental=true;

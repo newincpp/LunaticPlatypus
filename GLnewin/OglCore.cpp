@@ -18,7 +18,7 @@ void getGlError(const char* file_, unsigned long line_) {
     }
 }
 
-OglCore::OglCore() : uTime(1, 0.0f), _uPostPRocessTexture(2) { 
+OglCore::OglCore() : uTime(0, 0.0f), _uPostPRocessTexture(2) { 
     init();
 }
 
@@ -77,7 +77,6 @@ void OglCore::init() {
     _renderTarget.uploadToGPU(vertices, elements);
 
     _sgBuffer.use();
-    autoRelocate(uTime);
     std::cout << "OpenGL renderer initialized" << std::endl;
 }
 
@@ -90,25 +89,18 @@ void OglCore::render() {
 
     //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
     glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
-    checkGlError;
     _sgBuffer.use();
-    checkGlError;
-    //autoRelocate(uTime);
-    uTime.upload();
-    checkGlError;
+    //uTime.upload();
     _s.render();
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
 
-
-    //glDisable(GL_CULL_FACE);
     _sPostProc.use();
     _s.bindGBuffer(0);
-    //autoRelocate(uTime);
-    //uTime.upload();
+    _s._cameras[0].uploadUniform();
+    uTime.upload();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _renderTarget.render();
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
 }
-

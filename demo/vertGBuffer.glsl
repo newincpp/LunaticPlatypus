@@ -21,8 +21,7 @@ void main() {
     gl_Position = uProjection * uView * uMeshTransform * vec4(vertexPos_ + displacement, 1.0);
 
     vInfVertexPos_ = (uMeshTransform * vec4(vertexPos_ + displacement, 1.0)).xyz;
-    vec4 truc = transpose(inverse(uView)) * vec4(vertexNormal_, 1.0);
     //vInfVertexNormal_ = vertexNormal_;
-    vInfVertexNormal_ = truc.xyz;
+    vInfVertexNormal_ = (transpose(inverse(uMeshTransform * uView)) * vec4(vertexNormal_, 1.0)).xyz / 2 + 0.5;
     vInfUvCoord_ = uvCoord_;
 }  
