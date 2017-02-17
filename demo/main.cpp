@@ -7,7 +7,7 @@ class MyGame : public Heart::IGamelogic {
 	std::chrono::time_point<std::chrono::system_clock> start;
 	bool done;
 	MyGame() : done(false) {
-	    _scene = "noblesse.obj";
+	    _scene = "./noblesse.obj";
 	    start = std::chrono::system_clock::now();
 	}
 	virtual void update() {
