@@ -1,3 +1,4 @@
+#warning "using assimp"
 inline glm::mat4 Importer::aiMatrix4x4ToGlm(const aiMatrix4x4& from) {
     glm::mat4 to;
 
@@ -24,26 +25,25 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
 	    aiProcess_SortByPType);
 
     // If the import failed, report it
+    s_._cameras.emplace_back(s_._fb[0]);
     if( !scene) {
 	std::cout << "fuu: " << importer.GetErrorString() << '\n';
+	return;
     }
     genMesh(scene, s_);
     //scene->mCameras[0]->GetCameraMatrix(m);
-    s_._cameras.emplace_back(s_._fb[0]);
     Camera& mainCamera = s_._cameras[0];
-    /*if (scene->mNumCameras) {
+    if (scene->mNumCameras) {
 	aiCamera* c = scene->mCameras[0];
-	std::cout << "position: " << scene->mCameras[0]->mPosition[0] << ' ' << scene->mCameras[0]->mPosition[1] << ' ' << scene->mCameras[0]->mPosition[2] << '\n';
-	//c->GetCameraMatrix(m);
-	//_mainCamera.setMatrix(aiMatrix4x4ToGlm(m));
+	std::cout << "position: " << c->mPosition[0] << ' ' << c->mPosition[1] << ' ' << c->mPosition[2] << '\n';
 
-	mainCamera.lookAt(glm::vec3(c->mLookAt[0], c->mLookAt[1], c->mLookAt[2]));
+	mainCamera.lookAt(glm::vec3(c->mLookAt[2] * 1000.0f, c->mLookAt[1] * 1000.0f, c->mLookAt[0] * 1000.0f));
 	mainCamera.setPos(glm::vec3(c->mPosition[0] / 1.0f, c->mPosition[1] / 1.0f, c->mPosition[2] / 1.0f));
 	//_mainCamera.fieldOfview(c->mHorizontalFOV);
 	mainCamera.fieldOfview(1.571f);
 	mainCamera.clipPlane(glm::vec2(c->mClipPlaneNear, c->mClipPlaneFar));
 	mainCamera.upVector(glm::vec3(c->mUp[0], c->mUp[1], c->mUp[2]));
-    } else {*/
+    } else {
 	std::cout << "no Camera Detected\n";
 	mainCamera.lookAt(glm::vec3(.0f, 3.7f, 8.4f)); // Nelo.obj
 	//mainCamera.setPos(glm::vec3(-9.3, 4.4f, 15.9)); // Nelo.obj
@@ -58,7 +58,7 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
 	for(unsigned int i = 0; i < 250; ++i) {
 	    s_._cameras.emplace_back(s_._cameras[0]);
 	}
-    //}
+    }
 }
 
 void Importer::genMesh(const aiScene* scene_, DrawBuffer& s_) {

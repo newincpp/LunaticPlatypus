@@ -1,6 +1,6 @@
 #include "shader.hh"
 
-Shader::Shader() : _vertexId(0), _fragmentId(0), _geometryId(0), _programId(0) {
+Shader::Shader() : _vertexId(std::make_pair("", 0)), _fragmentId(std::make_pair("", 0)), _geometryId(std::make_pair("", 0)), _programId(0) {
 }
 
 void Shader::add(std::string sourceFile_, GLenum type_) {
@@ -11,11 +11,14 @@ void Shader::add(std::string sourceFile_, GLenum type_) {
 
     GLuint* id;
     if (type_ == GL_VERTEX_SHADER) {
-	id = &_vertexId;
+	id = &_vertexId.second;
+	_vertexId.first = sourceFile_;
     } else if (type_ == GL_FRAGMENT_SHADER) {
-	id = &_fragmentId;
+	id = &_fragmentId.second;
+	_fragmentId.first = sourceFile_;
     } else {
-	id = &_geometryId;
+	id = &_geometryId.second;
+	_geometryId.first = sourceFile_;
     }
     *id = glCreateShader(type_);
     glShaderSource(*id, 1, &s, NULL);
@@ -25,14 +28,14 @@ void Shader::add(std::string sourceFile_, GLenum type_) {
 
 void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
     _programId = glCreateProgram();
-    if (_vertexId) {
-	glAttachShader(_programId, _vertexId);
+    if (_vertexId.second) {
+	glAttachShader(_programId, _vertexId.second);
     }
-    if (_fragmentId) {
-	glAttachShader(_programId, _fragmentId);
+    if (_fragmentId.second) {
+	glAttachShader(_programId, _fragmentId.second);
     }
-    if (_geometryId) {
-	glAttachShader(_programId, _geometryId);
+    if (_geometryId.second) {
+	glAttachShader(_programId, _geometryId.second);
     }
 
     if (fragDataOutPut_.size() > GL_MAX_DRAW_BUFFERS) {

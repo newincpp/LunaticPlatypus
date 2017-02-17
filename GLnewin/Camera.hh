@@ -28,6 +28,7 @@ class Camera {
 	void upVector(glm::vec3&&);
 	void setMatrix(glm::mat4&&);
 	void use();
+	void uploadUniform();
 	void unUse();
 	void bindFramebuffer();
 };

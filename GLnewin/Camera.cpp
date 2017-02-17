@@ -59,8 +59,14 @@ void Camera::use() {
     ImGui::InputFloat2("clipPlane", glm::value_ptr(_clipPlane));
     ImGui::InputFloat("fov", &_fov);
     uView = glm::lookAt(_position, _target, _upVector);
-    uView.upload();
     uProjection = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y);
+
+    uView.upload();
+    uProjection.upload();
+    //uploadUniform();
+}
+void Camera::uploadUniform() {
+    uView.upload();
     uProjection.upload();
 }
 void Camera::unUse() {

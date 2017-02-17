@@ -1,3 +1,5 @@
+#warning "using tinyObjLoader"
+
 void Importer::load(std::string& file, DrawBuffer& s_) {
     std::cout << "Import using tinyObjLoader\n";
     /*
@@ -26,11 +28,11 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
     s_._cameras.emplace_back(s_._fb[0]);
     Camera& mainCamera = s_._cameras[0];
 
-    mainCamera.lookAt(glm::vec3(.0f, 3.7f, 8.4f)); // Nelo.obj
-    mainCamera.setPos(glm::vec3(-9.3, 4.4f, 15.9)); // Nelo.obj
+    mainCamera.lookAt(glm::vec3(.0f, 4.5f, 8.4f)); // Nelo.obj
+    mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9)); // Nelo.obj
     //mainCamera.lookAt(glm::vec3(59.0f, 131.0f, 582.0f)); // DemoCity.obj
     //mainCamera.setPos(glm::vec3(136.0f, 231.0f, 218.0f)); // DemoCity.obj
-    mainCamera.fieldOfview(1.623f);
+    mainCamera.fieldOfview(1.823f);
     mainCamera.clipPlane(glm::vec2(0.1f, 10000.0f));
     mainCamera.upVector(glm::vec3(0.0f,1.0f,0.0f));
     //for(unsigned int i = 0; i < 250; ++i) {

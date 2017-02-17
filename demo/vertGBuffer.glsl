@@ -16,12 +16,12 @@ layout(location = 2) out vec2 vInfUvCoord_;
 layout(location = 3) out vec2 vInfDepth_;
 
 void main() {    
-    vec3 displacement = vec3(sin(uTime * .001), 0.0f, sin(uTime*0.003));
+    //vec3 displacement = vec3(sin(uTime * .001), 0.0f, sin(uTime*0.003));
+    vec3 displacement = vec3(0.0f);
     gl_Position = uProjection * uView * uMeshTransform * vec4(vertexPos_ + displacement, 1.0);
 
     vInfVertexPos_ = (uMeshTransform * vec4(vertexPos_ + displacement, 1.0)).xyz;
-    vec4 truc = transpose(inverse(uView)) * vec4(vertexNormal_, 1.0);
     //vInfVertexNormal_ = vertexNormal_;
-    vInfVertexNormal_ = truc.xyz;
+    vInfVertexNormal_ = (transpose(inverse(uMeshTransform * uView)) * vec4(vertexNormal_, 1.0)).xyz / 2 + 0.5;
     vInfUvCoord_ = uvCoord_;
 }  

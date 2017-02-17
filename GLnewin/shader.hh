@@ -3,16 +3,22 @@
 #include <fstream>
 #include <vector>
 #include <streambuf>
+#include <utility>
 #include "Uniform.hh"
 
 #include "glew.h"
 
 class Shader {
     private:
-	GLuint _vertexId;
-	GLuint _fragmentId;
-	GLuint _geometryId;
+	std::pair<std::string, GLuint> _vertexId;
+	std::pair<std::string, GLuint> _fragmentId;
+	std::pair<std::string, GLuint> _geometryId;
 	GLuint _programId;
+	
+	//GLuint _vertexId;
+	//GLuint _fragmentId;
+	//GLuint _geometryId;
+	//GLuint _programId;
 
 	inline bool _checkValidity(GLenum id_, const char* src_, std::string& filename_)const {
 	    GLint compileStatus;
