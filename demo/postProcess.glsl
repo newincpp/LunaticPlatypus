@@ -321,21 +321,18 @@ vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
     s[3][1] = resolution.y/2;
     vec2 uv2 = TexCoords * vec2(1920, 1080); 
     float jitter = mod((uv2.x + uv2.y) * (0.35), 1.0);
-    const float maxSteps= 8.0f;
+    const float maxSteps= 32.0f;
     const float maxDistance =  1024.0;
-    float stride = 128.f;
+    float stride = 32.f;
     float zThickness = 5;
     			//( vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D csZBuffer, vec2 csZBufferSize, float zThickness, float nearPlaneZ, float stride, float jitter, const float maxSteps, float maxDistance, out vec2 hitPixel, out vec3 hitPoint, float iterations)
     bool hit = McGuireTraceScreenSpaceRay1((uView * texture(gPosition, TexCoords)).xyz, normalize(reflectionVector), s * uProjection, gDepth, resolution, zThickness, -zNear, stride, jitter, maxSteps, maxDistance, hitPixel, hitPoint, complexity);
-    //return vec3(complexity / maxSteps);
+    return vec3(complexity / maxSteps);
     //return texture(tex, hitPixel/vec2(1920,1080)).xyz;
     if (hit) {
-	return texture(tex, hitPixel / resolution).xyz;
-	//return texelFetch(tex, ivec2(hitPixel), 0).xyz;
-	return vec3(1.0);
-	//return vec3(TexCoords, 0.);
+	return texelFetch(tex, ivec2(hitPixel), 0).xyz;
     } else {
-        return vec3(.0f, .0f, 0.0);
+        return vec3(.0f, .0f, 0.2f);
     }
 }
 
@@ -364,6 +361,6 @@ void main() {
     float c = (2.0 * near) / (far + near - z * (far - near));  // convert to linear values 
     vec3 cd = vec3(c);
     //outColour = cn + cp + ca + cd;
-    outColour = mix(texture(gNormal, TexCoords).xyz, SSR(), 0.3) * ssao(12, 1.5f);
-    //outColour = mix(texture(gNormal, TexCoords).xyz, SSR().xyz, 0.4) * ssao(12, 1.5f);
+    outColour = SSR();
+    //outColour = mix(texture(gNormal, TexCoords).xyz, SSR(), 0.25) * ssao(12, 1.5f);
 }
