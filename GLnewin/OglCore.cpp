@@ -50,7 +50,6 @@ void OglCore::init() {
     _sPostProc.link({"outColour"});
 
     Mesh m;
-    glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &fractalTex);
     glBindTexture(GL_TEXTURE_2D, fractalTex);
 
