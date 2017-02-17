@@ -202,7 +202,8 @@ float ssao(float samples, float radius) {
 	l += dl;
     }
     ao = 1.0 - ao / float(samples) * strength;
-    return clamp(0., 1., ao);
+    return ao;
+    //return clamp(0., 1., ao);
 }
 
 
@@ -309,7 +310,6 @@ bool McGuireTraceScreenSpaceRay1(vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D
     return (rayZMax >= sceneZMax - zThickness) && (rayZMin < sceneZMax);
 }
 
-
 vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
     vec2 hitPixel = vec2(0.0f);
     vec3 hitPoint = vec3(0.0f);
@@ -321,13 +321,15 @@ vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
     s[3][1] = resolution.y/2;
     vec2 uv2 = TexCoords * vec2(1920, 1080); 
     float jitter = mod((uv2.x + uv2.y) * (0.35), 1.0);
-    const float maxSteps= 32.0f;
-    const float maxDistance =  1024.0;
-    float stride = 32.f;
-    float zThickness = 5;
+    const float maxSteps= 16;
+    const float maxDistance = 1048576.0;
+    //float stride = timeBounce(600) * 1024.f;
+    float stride = 50.f;
+    //float zThickness = 16;
+    float zThickness = 18;
     			//( vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D csZBuffer, vec2 csZBufferSize, float zThickness, float nearPlaneZ, float stride, float jitter, const float maxSteps, float maxDistance, out vec2 hitPixel, out vec3 hitPoint, float iterations)
     bool hit = McGuireTraceScreenSpaceRay1((uView * texture(gPosition, TexCoords)).xyz, normalize(reflectionVector), s * uProjection, gDepth, resolution, zThickness, -zNear, stride, jitter, maxSteps, maxDistance, hitPixel, hitPoint, complexity);
-    return vec3(complexity / maxSteps);
+    //return vec3(complexity / maxSteps);
     //return texture(tex, hitPixel/vec2(1920,1080)).xyz;
     if (hit) {
 	return texelFetch(tex, ivec2(hitPixel), 0).xyz;
@@ -361,6 +363,7 @@ void main() {
     float c = (2.0 * near) / (far + near - z * (far - near));  // convert to linear values 
     vec3 cd = vec3(c);
     //outColour = cn + cp + ca + cd;
-    outColour = SSR();
-    //outColour = mix(texture(gNormal, TexCoords).xyz, SSR(), 0.25) * ssao(12, 1.5f);
+    //outColour = SSR();
+    //outColour = vec3(.5)* ssao(15, 1);
+    outColour = mix(texture(gNormal, TexCoords).xyz, SSR(), 0.2) * ssao(15, 1.5);
 }
