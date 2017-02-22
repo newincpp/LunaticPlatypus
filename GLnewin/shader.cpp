@@ -1,6 +1,7 @@
 #include "shader.hh"
+#include "Uniform.hh"
 
-Shader::Shader() : _vertexId(0), _fragmentId(0), _geometryId(0), _programId(0) {
+Shader::Shader() : _vertexId(0), _fragmentId(0), _geometryId(0), _programId(0), uniformList(), containedUniformNames() {
 }
 
 void Shader::add(std::string sourceFile_, GLenum type_) {
@@ -56,7 +57,44 @@ void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
 	std::cout << "\033[31mfailed to Link with error:\"" << ErrorMessage << std::endl << "-------------------\033[0m" << std::endl;
     }
     glUseProgram(_programId);
+    int count;
+    glGetProgramiv(_programId, GL_ACTIVE_UNIFORMS, &count);
+    containedUniformNames.reserve(count);
+    uniformList.reserve(count);
+    std::vector<GLchar> nameData(256);
+    for (int i = 0; i < count; i++) {
+	GLint arraySize = 0;
+	GLenum type = 0;
+	GLsizei actualLength = 0;
+	glGetActiveUniform(_programId, i, nameData.size(), &actualLength, &arraySize, &type, &nameData[0]);
+	std::string name((char*)&nameData[0], actualLength);
+	containedUniformNames.push_back(name);
+	std::cout << "Uniform " << i << " Type: " << type << " Name: " << name << '\n';
+    }
 }
 
-template <typename T>
-void relocateUniform(Uniform<T>&&);
+bool Shader::containUniform(Uniform &u_) {
+    for (decltype(containedUniformNames)::value_type& name : containedUniformNames) {
+	if (name == u_.name) {
+	    for (decltype(uniformList)::value_type& u : uniformList) {
+		if (u.first.name == u_.name) {
+		    return true;
+		}
+	    }
+	    std::cout << "add uniform " << u_.name << '\n';
+	    uniformList.emplace_back(u_, u_.getFrameUpdated());
+	    return true;
+	}
+    }
+    return false;
+}
+
+void Shader::use() {
+    glUseProgram(_programId);
+    for (decltype(uniformList)::value_type& u : uniformList) {
+	if (u.first.getFrameUpdated() != u.second) {
+	    u.first.upload();
+	    u.second = u.first.getFrameUpdated();
+	}
+    }
+}

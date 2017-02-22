@@ -1,11 +1,14 @@
+#pragma once
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <vector>
+#include <map>
 #include <streambuf>
-#include "Uniform.hh"
 
 #include "glew.h"
+
+class Uniform;
 
 class Shader {
     private:
@@ -13,6 +16,9 @@ class Shader {
 	GLuint _fragmentId;
 	GLuint _geometryId;
 	GLuint _programId;
+    public:
+	std::vector<std::pair<Uniform &, unsigned int>> uniformList;
+	std::vector<std::string> containedUniformNames;
 
 	inline bool _checkValidity(GLenum id_, const char* src_, std::string& filename_)const {
 	    GLint compileStatus;
@@ -36,15 +42,9 @@ class Shader {
     public:
 	Shader();
 	void add(std::string, GLenum);
+	bool containUniform(Uniform &u_);
 	void link(const std::vector<std::string>&& fragDataOutPut_);
 	template <typename T>
-		void relocateUniform(Uniform<T>&&, const char* name_);
-	inline void use() {
-	    glUseProgram(_programId);
-	}
+		void relocateUniform(Uniform&&, const char* name_);
+	void use();
 };
-
-template <typename T>
-void Shader::relocateUniform(Uniform<T>&& u_, const char* name_) {
-	u_._location = glGetUniformLocation(_programId, name_);
-}

@@ -18,7 +18,7 @@ void getGlError(const char* file_, unsigned long line_) {
     }
 }
 
-OglCore::OglCore() : uTime(1, 0.0f), _uPostPRocessTexture(2) { 
+OglCore::OglCore() : uTime(1, 0.0f, "uTime"), _uPostPRocessTexture(2, "") { 
     init();
 }
 
@@ -42,13 +42,19 @@ void OglCore::init() {
 	0, 3, 2
     };
 
-    _sgBuffer.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
-    _sgBuffer.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
-    _sgBuffer.link({"gPosition", "gNormal", "gAlbedoSpec"});
+    _s._shaders.reserve(2);
+    _s._shaders.emplace_back();
+    _s._shaders.emplace_back();
 
-    _sPostProc.add("./postProcess.glsl",GL_FRAGMENT_SHADER);
-    _sPostProc.add("./postProcessVert.glsl",GL_VERTEX_SHADER);
-    _sPostProc.link({"outColour"});
+    _sgBuffer = &(_s._shaders[0]);
+    _sPostProc = &(_s._shaders[1]);
+    _sgBuffer->add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
+    _sgBuffer->add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
+    _sgBuffer->link({"gPosition", "gNormal", "gAlbedoSpec"});
+
+    _sPostProc->add("./postProcess.glsl",GL_FRAGMENT_SHADER);
+    _sPostProc->add("./postProcessVert.glsl",GL_VERTEX_SHADER);
+    _sPostProc->link({"outColour"});
 
     Mesh m;
     glActiveTexture(GL_TEXTURE0);
@@ -75,26 +81,30 @@ void OglCore::init() {
     _s._cameras.emplace_back(_s._fb[0]);
 
     _renderTarget.uploadToGPU(vertices, elements);
+    _renderTarget.uMeshTransform.addItselfToShaders(_s._shaders);
 
-    _sgBuffer.use();
-    autoRelocate(uTime);
+    //_sgBuffer->use();
+    //uTime.addItselfToShaders(_s._shaders);
+    //autoRelocate(uTime);
+    //_uPostPRocessTexture.addItselfToShaders(_s._shaders);
+    _s.addCameraUniformsToShaders();
     std::cout << "OpenGL renderer initialized" << std::endl;
 }
 
 void OglCore::render() {
     std::chrono::time_point<std::chrono::high_resolution_clock> beginFrame = std::chrono::high_resolution_clock::now();
     GLfloat time = std::chrono::duration_cast<std::chrono::milliseconds>(beginFrame - _beginTime).count();
-    uTime = time;
+    //uTime.updateValue(time, 1); //TODO frame
 
     _s.update();
 
     //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
     glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
     checkGlError;
-    _sgBuffer.use();
+    _sgBuffer->use();
     checkGlError;
     //autoRelocate(uTime);
-    uTime.upload();
+    //uTime.upload();
     checkGlError;
     _s.render();
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
@@ -102,7 +112,7 @@ void OglCore::render() {
 
 
     //glDisable(GL_CULL_FACE);
-    _sPostProc.use();
+    _sPostProc->use();
     _s.bindGBuffer(0);
     //autoRelocate(uTime);
     //uTime.upload();

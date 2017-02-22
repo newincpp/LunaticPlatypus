@@ -1,14 +1,15 @@
 #pragma once
 #include "Uniform.hh"
 #include "FrameBuffer.hh"
+#include "shader.hh"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 class Camera {
     public:
-	Uniform<glm::mat4> uView;
-	Uniform<glm::mat4> uProjection;
+	Uniform uView;
+	Uniform uProjection;
     private:
 	glm::vec3 _target;
 	glm::vec3 _position;

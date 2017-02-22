@@ -33,3 +33,16 @@ void DrawBuffer::reset(std::string& scene_) {
     _cameras.clear();
     Importer iscene(scene_, *this);
 }
+
+void DrawBuffer::addMeshUniformsToShaders() {
+    for (Mesh mesh : _meshes) {
+	mesh.uMeshTransform.addItselfToShaders(_shaders);
+    }
+}
+
+void DrawBuffer::addCameraUniformsToShaders() {
+    for (decltype(_cameras)::value_type& camera : _cameras) {
+	camera.uView.addItselfToShaders(_shaders);
+	camera.uProjection.addItselfToShaders(_shaders);
+    }
+}
