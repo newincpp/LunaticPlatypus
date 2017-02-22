@@ -61,6 +61,10 @@ void Camera::use() {
     uView.updateValue(glm::lookAt(_position, _target, _upVector), 1); //TODO frame
     uProjection.updateValue(glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y), 1); //TODO frame
 }
+void Camera::uploadUniform() {
+    uView.upload();
+    uProjection.upload();
+}
 void Camera::unUse() {
     _gBuffer.disable();
 }

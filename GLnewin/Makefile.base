@@ -14,7 +14,7 @@ ifeq ($(OS),Linux)
     LIBS+=-lGL -ldl -pthread -lrt -lm -lXrandr -lXinerama -lXi -lXcursor -lXrender -ldrm -lXdamage -lXfixes -lX11-xcb -lxcb-glx -lxcb-dri2 -lX11 -lXxf86vm
 endif
 ifeq ($(OS),Darwin)
-    LIBS+= -framework openGL 
+    LIBS+= -framework openGL -framework Cocoa -framework IOKit -framework CoreFoundation -framework CoreVideo
 endif
 LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS)
 OBJS	= $(SRC:.$(EXT)=.o)

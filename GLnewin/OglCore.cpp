@@ -83,9 +83,8 @@ void OglCore::init() {
     _renderTarget.uploadToGPU(vertices, elements);
     _renderTarget.uMeshTransform.addItselfToShaders(_s._shaders);
 
-    //_sgBuffer->use();
+    _sgBuffer->use();
     //uTime.addItselfToShaders(_s._shaders);
-    //autoRelocate(uTime);
     //_uPostPRocessTexture.addItselfToShaders(_s._shaders);
     _s.addCameraUniformsToShaders();
     std::cout << "OpenGL renderer initialized" << std::endl;
@@ -100,25 +99,19 @@ void OglCore::render() {
 
     //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
     glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
-    checkGlError;
     _sgBuffer->use();
-    checkGlError;
-    //autoRelocate(uTime);
-    //uTime.upload();
     checkGlError;
     _s.render();
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
 
-
     //glDisable(GL_CULL_FACE);
     _sPostProc->use();
     _s.bindGBuffer(0);
-    //autoRelocate(uTime);
-    //uTime.upload();
+    _s._cameras[0].uploadUniform();
+    uTime.upload();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _renderTarget.render();
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
 }
-

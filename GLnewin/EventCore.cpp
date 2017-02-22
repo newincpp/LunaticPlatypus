@@ -24,6 +24,20 @@ EventInterface::EventInterface() {
     }
 }
 
+void EventInterface::exec(std::string& evName_) {
+    _eCore->call(evName_);
+}
+
+void EventInterface::sExec(std::string& evName_) {
+    if (EventInterface::_eCore) {
+	_eCore->call(evName_);
+    }
+}
+
+void EventInterface::bind(std::string& evName_, std::function<void()>& fun_) {
+    _eCore->bindAction(evName_, fun_);
+}
+
 void EventInterface::exec(std::string&& evName_) {
     _eCore->call(evName_);
 }
@@ -34,7 +48,7 @@ void EventInterface::sExec(std::string&& evName_) {
     }
 }
 
-void EventInterface::bind(std::string&& evName_, std::function<void()>&& fun_) {
+void EventInterface::bind(std::string&& evName_, std::function<void()>& fun_) {
     _eCore->bindAction(evName_, fun_);
 }
 

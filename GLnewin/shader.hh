@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <streambuf>
+#include <utility>
 
 #include "glew.h"
 
@@ -12,9 +13,9 @@ class Uniform;
 
 class Shader {
     private:
-	GLuint _vertexId;
-	GLuint _fragmentId;
-	GLuint _geometryId;
+	std::pair<std::string, GLuint> _vertexId;
+	std::pair<std::string, GLuint> _fragmentId;
+	std::pair<std::string, GLuint> _geometryId;
 	GLuint _programId;
     public:
 	std::vector<std::pair<Uniform &, unsigned int>> uniformList;

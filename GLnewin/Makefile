@@ -30,7 +30,7 @@ ifeq ($(OS),Darwin)
     LIBFOLDER=OSX
 endif
 NAME	=LunaticPlatypus
-IMPORTER=ASSIMP
+IMPORTER=TINYOBJLOADER
 DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC 
 DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE -DGLM_FORCE_AVX
@@ -76,7 +76,7 @@ $(NAME): $(OBJS)
 	ranlib lib$(NAME).a
 
 extractLibs:
-	cd libs/$(LIBFOLDER); ./extractObject.sh
+	cd libs/ ; ./extractObject.sh $(LIBFOLDER)
 
 install:
 	cp lib$(NAME).a $(INSTALL)

@@ -3,7 +3,8 @@
 #include <cassert>
 #include <chrono>
 
-Heart::Heart() {
+//Heart::Heart() : _fw("") {
+Heart::Heart() : _fw(nullptr) {
     if (_game == nullptr) {
 	std::cout << "SetGameClass() macro has not been called I will now assert\n";
     }
@@ -13,6 +14,9 @@ Heart::Heart() {
 	_game->_scene = STRINGIZE(DEFAULT_SCENE);
     }
     std::cout << "default scene: " << _game->_scene << "\n";
+//    _fw.bind([](){
+//	    std::cout << "file modified\n";
+//	    });
     _renderer.getDrawBuffer().reset(_game->_scene);
 }
 
@@ -38,6 +42,8 @@ void Heart::run() {
 	}
 	if (ImGui::IsItemActivePreviousFrame() && !ImGui::IsItemActive() && ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_Enter]) && mod) {
 	    std::cout << "new Scene:" << _game->_scene << '\n';
+	    //_fw = _game->_scene;
+
 	    if (_fw) {
 	        delete _fw;
 	    }
