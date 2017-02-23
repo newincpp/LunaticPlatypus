@@ -1,6 +1,7 @@
 #include "Mesh.hh"
 
 Mesh::Mesh() : uMeshTransform(glm::mat4(), "uMeshTransform") {
+    uMeshTransform._location = 1; // TODO temporarily fixing auto location bug
 }
 
 void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {

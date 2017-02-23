@@ -105,7 +105,7 @@ void Shader::use() {
     glUseProgram(_programId);
     for (decltype(uniformList)::value_type& u : uniformList) {
 	if (u.first.getFrameUpdated() != u.second) {
-	    std::cout << u.first.name << " updated with program id " << _programId << " at frame " << u.first.getFrameUpdated() << " location:" << u.first._location << '\n';
+	    //std::cout << u.first.name << " updated with program id " << _programId << " at frame " << u.first.getFrameUpdated() << " location:" << u.first._location << '\n';
 	    u.first.upload();
 	    checkGlError;
 	    u.second = u.first.getFrameUpdated();

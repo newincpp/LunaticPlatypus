@@ -10,6 +10,7 @@ SRC	= Camera.cpp \
 	   OglCore.cpp \
 	   RenderTexture.cpp \
 	   Texture.cpp \
+	   ImageRAM.cpp \
 	   shader.cpp \
 	   Uniform.cpp \
 	   DrawBuffer.cpp \
@@ -83,7 +84,7 @@ install:
 	cp Makefile.base $(INSTALL)/Makefile
 
 project:
-	make -C ../demo -$(MAKEFLAGS) -B
+	make -C $(INSTALL) -$(MAKEFLAGS) -B
 
 full: extractLibs $(NAME) install project
 
