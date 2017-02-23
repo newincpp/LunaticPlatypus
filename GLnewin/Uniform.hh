@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <vector>
+#include <list>
 #include "glew.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -70,7 +70,7 @@ class Uniform {
 	void updateValue(T v_, unsigned int frame) { _value = v_; _frameUpdated = frame; setValueType(v_); }
 	unsigned int getFrameUpdated() const { return _frameUpdated; }
 	void upload() const;
-	void addItselfToShaders(std::vector<Shader> & shaderList);
+	void addItselfToShaders(std::list<Shader> & shaderList);
 	void _resetLocation(const char* name_) {
 		GLint programId;
 		glGetIntegerv(GL_CURRENT_PROGRAM, &programId);

@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <list>
 #include <iostream>
 #include <utility>
 #include <chrono>
@@ -15,8 +15,10 @@ class OglCore {
     private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> _beginTime;
 	Uniform uTime;
-	Shader *_sgBuffer = nullptr;
-	Shader *_sPostProc = nullptr;
+	decltype(DrawBuffer::_shaders)::iterator _sgBuffer;
+	decltype(DrawBuffer::_shaders)::iterator _sPostProc;
+	//Shader *_sgBuffer = nullptr;
+	//Shader *_sPostProc = nullptr;
 	DrawBuffer _s;
 	Mesh _renderTarget;
 	GLuint fractalTex;

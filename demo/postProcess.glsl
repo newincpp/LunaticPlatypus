@@ -1,8 +1,8 @@
 #version 430 core
 
-layout (location = 0) uniform float uTime;
-layout (location = 1) uniform mat4 uMeshTransform;
-layout (location = 2) uniform mat4 uView;
+layout(location = 0) uniform float uTime;
+layout(location = 1) uniform mat4 uMeshTransform;
+layout(location = 2) uniform mat4 uView;
 layout(location = 3) uniform mat4 uProjection;
 
 uniform sampler2D gPosition;
@@ -325,7 +325,7 @@ vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
     const float maxDistance = 4194304.0;
     //float stride = timeBounce(600) * 1024.f;
     float stride = 50.f;
-    float zThickness = 1;
+    float zThickness = 18;
     //float zThickness = timeBounce(600) * 50;
     			//( vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D csZBuffer, vec2 csZBufferSize, float zThickness, float nearPlaneZ, float stride, float jitter, const float maxSteps, float maxDistance, out vec2 hitPixel, out vec3 hitPoint, float iterations)
     bool hit = McGuireTraceScreenSpaceRay1((uView * texture(gPosition, TexCoords)).xyz, normalize(reflectionVector), s * uProjection, gDepth, resolution, zThickness, -zNear, stride, jitter, maxSteps, maxDistance, hitPixel, hitPoint, complexity);

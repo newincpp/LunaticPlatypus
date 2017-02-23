@@ -1,8 +1,5 @@
 #include <ctime>
-#include <stack>
 #include "OglCore.hh"
-
-#include <imgui.h>
 
 void getGlError(const char* file_, unsigned long line_) {
     GLenum e = glGetError();
@@ -42,16 +39,14 @@ void OglCore::init() {
 	0, 3, 2
     };
 
-    _s._shaders.reserve(2);
     _s._shaders.emplace_back();
-    _s._shaders.emplace_back();
-
-    _sgBuffer = &(_s._shaders[0]);
-    _sPostProc = &(_s._shaders[1]);
+    _sgBuffer = --(_s._shaders.end());
     _sgBuffer->add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
     _sgBuffer->add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
     _sgBuffer->link({"gPosition", "gNormal", "gAlbedoSpec"});
 
+    _s._shaders.emplace_back();
+    _sPostProc = --(_s._shaders.end());
     _sPostProc->add("./postProcess.glsl",GL_FRAGMENT_SHADER);
     _sPostProc->add("./postProcessVert.glsl",GL_VERTEX_SHADER);
     _sPostProc->link({"outColour"});

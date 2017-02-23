@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <list>
 #include <functional>
 #include "Camera.hh"
 #include "Mesh.hh"
@@ -14,7 +15,7 @@ class DrawBuffer {
 	std::vector<FrameBuffer> _fb;
 	std::vector<Mesh> _meshes;
 	std::vector<Camera> _cameras;
-	std::vector<Shader> _shaders;
+	std::list<Shader> _shaders;
 	unsigned int _activeCamera;
 	DrawBuffer();
 	void update(unsigned int currentFrame = 0);

@@ -38,8 +38,8 @@ void Uniform::upload() const {
     }
 }
 
-void Uniform::addItselfToShaders(std::vector<Shader> &shaderList) {
-    for (std::vector<Shader>::iterator shader = shaderList.begin(); shader != shaderList.end(); shader++) {
-	shader->containUniform(*this);
+void Uniform::addItselfToShaders(std::list<Shader> &shaderList) {
+    for (Shader& s : shaderList) {
+	s.containUniform(*this);
     }
 }

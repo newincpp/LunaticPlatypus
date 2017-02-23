@@ -33,9 +33,6 @@ class Mesh {
 	Uniform uMeshTransform;
 	std::string _name;
 	Mesh();
-	~Mesh() {
-	    std::cout << "Mesh destroyed\n\n";
-	}
 	void uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_);
 	void render();
 };
