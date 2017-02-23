@@ -62,15 +62,6 @@ class Uniform {
     	explicit Uniform(glm::mat2 const & i, std::string const & name_) : _valueType(tMat2), _value(i), name(name_) { }
     	explicit Uniform(glm::mat3 const & i, std::string const & name_) : _valueType(tMat3), _value(i), name(name_) { }
     	explicit Uniform(glm::mat4 const & i, std::string const & name_) : _valueType(tMat4), _value(i), name(name_) { }
-    	explicit Uniform(GLint l_, int i, std::string const & name_) : _location(l_), _valueType(tInt), _value(i), name(name_) {}
-    	explicit Uniform(GLint l_, unsigned int i, std::string const & name_) : _location(l_), _valueType(tUnsignedInt), _value(i), name(name_) {}
-    	explicit Uniform(GLint l_, float i, std::string const & name_) : _location(l_), _valueType(tFloat), _value(i), name(name_) {}
-    	explicit Uniform(GLint l_, glm::vec2 const & i, std::string const & name_) : _location(l_), _valueType(tVec2), _value(i), name(name_) {}
-    	explicit Uniform(GLint l_, glm::vec3 const & i, std::string const & name_) : _location(l_), _valueType(tVec3), _value(i), name(name_) {}
-    	explicit Uniform(GLint l_, glm::vec4 const & i, std::string const & name_) : _location(l_), _valueType(tVec4), _value(i), name(name_) {}
-    	explicit Uniform(GLint l_, glm::mat2 const & i, std::string const & name_) : _location(l_), _valueType(tMat2), _value(i), name(name_) {}
-    	explicit Uniform(GLint l_, glm::mat3 const & i, std::string const & name_) : _location(l_), _valueType(tMat3), _value(i), name(name_) {}
-    	explicit Uniform(GLint l_, glm::mat4 const & i, std::string const & name_) : _location(l_), _valueType(tMat4), _value(i), name(name_) {}
 	template<typename T>
 	operator T() { return _value; }
 	template<typename T>

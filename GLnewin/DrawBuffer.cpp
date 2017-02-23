@@ -10,7 +10,10 @@ DrawBuffer::DrawBuffer() : _activeCamera(1) {
     _cameras.reserve(512);
 }
 
-void DrawBuffer::update() {
+void DrawBuffer::update(unsigned int currentFrame) {
+    for (unsigned int a = 0; a < _activeCamera && a < _cameras.size(); ++a) {
+	_cameras[a].updateUniform(currentFrame);
+    }
 }
 
 void DrawBuffer::render() {

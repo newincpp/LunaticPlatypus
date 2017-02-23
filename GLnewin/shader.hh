@@ -9,6 +9,8 @@
 
 #include "glew.h"
 
+#define checkGlError getGlError(__FILE__, __LINE__);
+void getGlError(const char* file_, unsigned long line_);
 class Uniform;
 
 class Shader {

@@ -17,7 +17,7 @@ class DrawBuffer {
 	std::vector<Shader> _shaders;
 	unsigned int _activeCamera;
 	DrawBuffer();
-	void update();
+	void update(unsigned int currentFrame = 0);
 	void render();
 	void bindGBuffer(unsigned int camera_);
 	void reset(std::string&);

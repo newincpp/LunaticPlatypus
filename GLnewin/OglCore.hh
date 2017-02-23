@@ -15,12 +15,12 @@ class OglCore {
     private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> _beginTime;
 	Uniform uTime;
-	Uniform _uPostPRocessTexture;
 	Shader *_sgBuffer = nullptr;
 	Shader *_sPostProc = nullptr;
 	DrawBuffer _s;
 	Mesh _renderTarget;
 	GLuint fractalTex;
+	unsigned int _currentFrame = 0;
     public:
 	OglCore();
 	inline DrawBuffer& getDrawBuffer() { return _s; }

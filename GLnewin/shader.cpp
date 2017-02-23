@@ -31,9 +31,11 @@ void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
     _programId = glCreateProgram();
     if (_vertexId.second) {
 	glAttachShader(_programId, _vertexId.second);
+	    std::cout << "vertex shader has id " << _programId << std::endl;
     }
     if (_fragmentId.second) {
 	glAttachShader(_programId, _fragmentId.second);
+	    std::cout << "fragment shader has id " << _programId << std::endl;
     }
     if (_geometryId.second) {
 	glAttachShader(_programId, _geometryId.second);
@@ -72,20 +74,27 @@ void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
 	glGetActiveUniform(_programId, i, nameData.size(), &actualLength, &arraySize, &type, &nameData[0]);
 	std::string name((char*)&nameData[0], actualLength);
 	containedUniformNames.push_back(name);
-	std::cout << "Uniform " << i << " Type: " << type << " Name: " << name << '\n';
+	std::cout << "Uniform " << i << " Type: " << type << " Name: " << name << " program id: " << _programId << '\n';
     }
 }
 
 bool Shader::containUniform(Uniform &u_) {
     for (decltype(containedUniformNames)::value_type& name : containedUniformNames) {
 	if (name == u_.name) {
+	    unsigned int i = 0;
 	    for (decltype(uniformList)::value_type& u : uniformList) {
 		if (u.first.name == u_.name) {
+		    //uniformList[i] = std::make_pair(u_, u_.getFrameUpdated());
 		    return true;
 		}
+		++i;
 	    }
 	    std::cout << "add uniform " << u_.name << '\n';
 	    uniformList.emplace_back(u_, u_.getFrameUpdated());
+	    if (u_.name.size() <= 0) {
+		std::cout << "ERROR: Uniform has no name to be uploaded with\n";
+	    }
+	    u_._location = glGetUniformLocation(_programId, u_.name.c_str());
 	    return true;
 	}
     }
@@ -96,7 +105,9 @@ void Shader::use() {
     glUseProgram(_programId);
     for (decltype(uniformList)::value_type& u : uniformList) {
 	if (u.first.getFrameUpdated() != u.second) {
+	    std::cout << u.first.name << " updated with program id " << _programId << " at frame " << u.first.getFrameUpdated() << " location:" << u.first._location << '\n';
 	    u.first.upload();
+	    checkGlError;
 	    u.second = u.first.getFrameUpdated();
 	}
     }

@@ -1,6 +1,6 @@
 #include "Mesh.hh"
 
-Mesh::Mesh() : uMeshTransform(1, glm::mat4()) {
+Mesh::Mesh() : uMeshTransform(glm::mat4(), "uMeshTransform") {
 }
 
 void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {

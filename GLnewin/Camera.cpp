@@ -3,8 +3,8 @@
 #include "Camera.hh"
 
 Camera::Camera(FrameBuffer& fb_) :
-    uView(2, glm::mat4(1.0f), "uView"),
-    uProjection(3, glm::mat4(1.0f), "uProjection"),
+    uView(glm::mat4(1.0f), "uView"),
+    uProjection(glm::mat4(1.0f), "uProjection"),
     _target(0.0f, 0.0f, 0.0f),
     _position(15.0f, 5.2f, 15.0f),
     _upVector(0.0f, 1.0f, 0.0f),
@@ -58,12 +58,10 @@ void Camera::use() {
     ImGui::InputFloat3("upVector", glm::value_ptr(_upVector));
     ImGui::InputFloat2("clipPlane", glm::value_ptr(_clipPlane));
     ImGui::InputFloat("fov", &_fov);
-    uView.updateValue(glm::lookAt(_position, _target, _upVector), 1); //TODO frame
-    uProjection.updateValue(glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y), 1); //TODO frame
 }
-void Camera::uploadUniform() {
-    uView.upload();
-    uProjection.upload();
+void Camera::updateUniform(unsigned int currentFrame) {
+    uView.updateValue(glm::lookAt(_position, _target, _upVector), currentFrame);
+    uProjection.updateValue(glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y), currentFrame);
 }
 void Camera::unUse() {
     _gBuffer.disable();
