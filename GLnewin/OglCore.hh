@@ -17,8 +17,6 @@ class OglCore {
 	Uniform uTime;
 	decltype(DrawBuffer::_shaders)::iterator _sgBuffer;
 	decltype(DrawBuffer::_shaders)::iterator _sPostProc;
-	//Shader *_sgBuffer = nullptr;
-	//Shader *_sPostProc = nullptr;
 	DrawBuffer _s;
 	Mesh _renderTarget;
 	GLuint fractalTex;

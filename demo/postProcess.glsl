@@ -55,11 +55,11 @@ float fresnel_shlick(in sampler2D normalTexture, vec2 p, float refaction) {
     vec3 nDirection = vec3(0., 0., 1.);
     vec3 nNormal = normalize(texture2D(normalTexture, p).xyz * 2.0f - 1.0f);
     vec3 halfDirection = normalize(nNormal + nDirection);
-    return 1 - pow( max(dot(halfDirection, nDirection), 0.0), 5.0 );
+    return 1 - pow( max(dot(halfDirection, nDirection), 0.0), refaction);
 }
 
 float fresnel() {
-    return fresnel_shlick(gNormal, TexCoords, 1);
+    return fresnel_shlick(gNormal, TexCoords, 0.7);
 }
 
 float rand(vec2 co){
@@ -327,7 +327,7 @@ vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
     float stride = 50.f;
     float zThickness = 18;
     //float zThickness = timeBounce(600) * 50;
-    			//( vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D csZBuffer, vec2 csZBufferSize, float zThickness, float nearPlaneZ, float stride, float jitter, const float maxSteps, float maxDistance, out vec2 hitPixel, out vec3 hitPoint, float iterations)
+    //( vec3 csOrig, vec3 csDir, mat4x4 proj, sampler2D csZBuffer, vec2 csZBufferSize, float zThickness, float nearPlaneZ, float stride, float jitter, const float maxSteps, float maxDistance, out vec2 hitPixel, out vec3 hitPoint, float iterations)
     bool hit = McGuireTraceScreenSpaceRay1((uView * texture(gPosition, TexCoords)).xyz, normalize(reflectionVector), s * uProjection, gDepth, resolution, zThickness, -zNear, stride, jitter, maxSteps, maxDistance, hitPixel, hitPoint, complexity);
     //return vec3(complexity / maxSteps);
     //return texture(tex, hitPixel/vec2(1920,1080)).xyz;
@@ -338,8 +338,42 @@ vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
     }
 }
 
+vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
+    const int maxComplexity = 16;
+    int complexity = 0;
+    vec2 stepSize = 4 / resolution;
+    float threshold = 0.005;
+
+    // Current sampling position is at current fragment
+    mat4 toViewSpace = transpose(inverse(uView));
+    vec2 sampledPosition = TexCoords;
+    vec3 startPos = (toViewSpace * vec4(texture(gPosition, TexCoords).xyz, 1.0f)).xyz;
+    vec3 sampledViewPos = startPos;
+    float test = 0.006;
+
+    while((sampledPosition.x <= 1.0 && sampledPosition.x >= 0.0 && sampledPosition.y <= 1.0 && sampledPosition.y >= 0.0) && (complexity <= maxComplexity) && (test > threshold)) {
+	sampledPosition += reflectionVector.xy * stepSize;
+	sampledViewPos = (toViewSpace * vec4(texture(gPosition, sampledPosition).xyz, 1.0)).xyz;
+	test = dot(normalize(sampledViewPos - startPos).xyz, reflectionVector);
+	++complexity;
+    }
+
+    //return reflectionVector;
+    //return vec3(test);
+    //return vec3(sampledPosition, 0.0f);
+    
+    //float influence = clamp(1/(((-distance(sampledViewPos, startPos) + fadeDistance) / fadeSpeed) + 0.001),1.0f, 0.0f);
+    float facing = dot(texture(gNormal, sampledPosition).xyz * 2.0f - 1.0f, reflectionVector);
+    if (facing < 0) {
+        return texture(tex, sampledPosition).rgb;
+    } else {
+        return vec3(0.0f);
+    }
+}
+
 vec3 raytrace(in vec3 reflectionVector, in sampler2D tex) {
-    return raytrace1(reflectionVector, tex);
+    return naiveRaymarch(reflectionVector, tex);
+    //return raytrace1(reflectionVector, tex); // unstable
 }
 
 vec3 SSR() {
@@ -365,6 +399,9 @@ void main() {
     //outColour = cn + cp + ca + cd;
     //outColour = SSR();
     //outColour = vec3(.5)* ssao(15, 1);
-    outColour = mix(texture(gNormal, TexCoords).xyz, SSR(), fresnel()) * ssao(15, 1.5);
+    //outColour = mix(SSR(), texture(gNormal, TexCoords).xyz, timeBounce(800));
+    //outColour = SSR();
+    //outColour = vec3(fresnel());
+    outColour = mix(texture(gNormal, TexCoords).xyz, SSR(), fresnel());
     //outColour = vec3(fresnel());
 }
