@@ -353,16 +353,11 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
 
     while((sampledPosition.x <= 1.0 && sampledPosition.x >= 0.0 && sampledPosition.y <= 1.0 && sampledPosition.y >= 0.0) && (complexity <= maxComplexity) && (test > threshold)) {
 	sampledPosition += reflectionVector.xy * stepSize;
-	sampledViewPos = (toViewSpace * vec4(texture(gPosition, sampledPosition).xyz, 1.0)).xyz;
+	sampledViewPos = (toViewSpace * vec4(texture(gPosition, sampledPosition).xyz, 1.0)).xyz; // TODO would be a good idea do delete the matrix calculation here for obvious performance reason
 	test = dot(normalize(sampledViewPos - startPos).xyz, reflectionVector);
 	++complexity;
     }
 
-    //return reflectionVector;
-    //return vec3(test);
-    //return vec3(sampledPosition, 0.0f);
-    
-    //float influence = clamp(1/(((-distance(sampledViewPos, startPos) + fadeDistance) / fadeSpeed) + 0.001),1.0f, 0.0f);
     float facing = dot(texture(gNormal, sampledPosition).xyz * 2.0f - 1.0f, reflectionVector);
     if (facing < 0) {
         return texture(tex, sampledPosition).rgb;
@@ -371,6 +366,7 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
     }
 }
 
+// TODO configurable GGX
 vec3 raytrace(in vec3 reflectionVector, in sampler2D tex) {
     return naiveRaymarch(reflectionVector, tex);
     //return raytrace1(reflectionVector, tex); // unstable
@@ -380,7 +376,6 @@ vec3 SSR() {
     vec3 normal = normalize(texture(gNormal, TexCoords).xyz * 2.0f - 1.0f);
     float currDepth = linearizeDepth(texture(gDepth, TexCoords).x);
     vec3 reflectionVector = reflect(normalize((uView * texture(gPosition, TexCoords)).xyz), normal);
-    //return raytrace(-reflectionVector.xyz, currDepth, gNormal);
     return raytrace(reflectionVector.xyz, gNormal);
 }
 
@@ -403,5 +398,6 @@ void main() {
     //outColour = SSR();
     //outColour = vec3(fresnel());
     outColour = mix(texture(gNormal, TexCoords).xyz, SSR(), fresnel());
+    //outColour = (inverse(uView) * vec4(texture(gPosition, TexCoords).xyz, 1.0f)).xyz - getCameraPos();
     //outColour = vec3(fresnel());
 }
