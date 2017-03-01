@@ -17,6 +17,7 @@ class Heart {
 		Heart* _lunaticPlatypus;
 		EventInterface _event;
 		std::string _scene;
+		virtual void postEngineInit();
 		virtual void update() = 0;
 	};
     private:

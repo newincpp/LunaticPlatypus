@@ -23,6 +23,7 @@ class OglCore {
 	unsigned int _currentFrame = 0;
     public:
 	OglCore();
+	inline Camera& getCamera(unsigned long i = 0) { return getDrawBuffer()._cameras[i]; }
 	inline DrawBuffer& getDrawBuffer() { return _s; }
 	void init();
 	void renderScene();
