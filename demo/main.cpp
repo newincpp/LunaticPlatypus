@@ -18,7 +18,7 @@ class MyGame : public Heart::IGamelogic {
 	    //glm::vec3 start(0.0, 4.0, 15.3);
 	    //glm::vec3 end(-9.8, 7.0, 5.3);
 
-	    glm::vec3 start(-5.5, 8, 3.7);
+	    glm::vec3 start(4.5, 8, 3.7);
 	    glm::vec3 end(8.0, 2, -1.7);
 	    //glm::vec3 end(2.0, 4, -1.7);
 	    _lunaticPlatypus->getRenderer().getDrawBuffer()._cameras[0].setPos(glm::mix(start, end, sin(elapsed_seconds.count() / 3) / 2.0f + 0.5f ));
