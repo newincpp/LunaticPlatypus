@@ -18,6 +18,7 @@ Heart::Heart() : _fw(nullptr) {
 //	    std::cout << "file modified\n";
 //	    });
     _renderer.getDrawBuffer().reset(_game->_scene);
+    _game->postEngineInit();
 }
 
 void Heart::run() {
@@ -49,7 +50,7 @@ void Heart::run() {
 	    }
 	    _fw = new FileWatcher(_game->_scene.c_str());
 	    mod = false;
-	} 
+	}
 	if (_fw) {
 	    if (_fw->isModified()) {
 		_renderer.getDrawBuffer().reset(_game->_scene);
@@ -63,6 +64,10 @@ void Heart::run() {
 
 void Heart::loadScene() {
     _renderer.getDrawBuffer().reset(_game->_scene);
+}
+
+void Heart::IGamelogic::postEngineInit() {
+    // default function do noting
 }
 
 int main() {
