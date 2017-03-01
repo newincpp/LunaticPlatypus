@@ -19,9 +19,7 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
     // Loop over shapes
     s_._meshes.reserve(shapes.size());
     for (tinyobj::shape_t object: shapes) {
-	std::cout << "loading: " << object.name << '\n';
 	genMesh(object, attrib, s_);
-	std::cout << "finished...\n";
     }
 
     std::cout << "generating cameras\n";

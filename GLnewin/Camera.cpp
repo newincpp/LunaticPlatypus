@@ -39,13 +39,9 @@ void Camera::setMatrix(glm::mat4&& m_) {
 
 void Camera::lookAt(glm::vec3&& target_) {
     _target = target_;
-    std::cout << "targ: " << _target[0] << ' ' << _target[1] << ' ' << _target[2] << '\n';
-    //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
 }
 void Camera::setPos(glm::vec3&& newPos_) {
     _position = newPos_;
-    std::cout << "pos: " << _position[0] << ' ' << _position[1] << ' ' << _position[2] << '\n';
-    //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
 }
 void Camera::use() {
     _gBuffer.enable();

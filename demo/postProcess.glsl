@@ -20,19 +20,13 @@ out vec3 outColour;
 vec2 resolution = vec2(1920, 1080);
 float zNear = 0.1;
 float zFar = 100.0;
+vec3 CurrentNormal;
+vec3 CurrentNormalWorldSpace;
+vec3 CurrentNormalWorld;
+vec3 CurrentPosition;
+float CurrentDepth;
+float CurrentDepthNotLinearized;
 
-// -------------
-
-/*
-SSAO GLSL shader v1.2
-assembled by Martins Upitis (martinsh) (devlog-martinsh.blogspot.com)
-original technique is made by Arkano22 (www.gamedev.net/topic/550699-ssao-no-halo-artifacts/)
-changelog:
-1.2 - added fog calculation to mask AO. Minor fixes.
-1.1 - added spiral sampling method from here:
-(http://www.cgafaq.info/wiki/Evenly_distributed_points_on_sphere)
-*/
-//uniform sampler2D bgl_RenderedTexture;
 
 #define PI    3.14159265
 
@@ -42,6 +36,15 @@ float linearizeDepth(float z) {
     return (2.0 * zNear) / (zFar + zNear - z * (zFar - zNear));
 }
 
+vec3 getCameraRight() {
+    return inverse(uView)[0].xyz;
+}
+vec3 getCameraUp() {
+    return inverse(uView)[1].xyz;
+}
+vec3 getCameraForward() {
+    return inverse(uView)[2].xyz;
+}
 vec3 getCameraPos() {
     return inverse(uView)[3].xyz;
 }
@@ -50,16 +53,24 @@ float timeBounce(float slow) {
     return sin(uTime / slow) / 2 + 0.5;
 }
 
-// TODO this function is highly wrong
-float fresnel_shlick(in sampler2D normalTexture, vec2 p, float refaction) {
-    vec3 nDirection = vec3(0., 0., 1.);
-    vec3 nNormal = normalize(texture2D(normalTexture, p).xyz * 2.0f - 1.0f);
-    vec3 halfDirection = normalize(nNormal + nDirection);
-    return 1 - pow( max(dot(halfDirection, nDirection), 0.0), refaction);
+float fast_fresnel(float IOR) {
+    float R0 = ((-1/(IOR+2.6)) * 3.2) + 0.75;
+    return  R0 + (1.0f - R0) * exp(((1.0f - dot(-normalize(CurrentPosition - getCameraPos()), CurrentNormalWorldSpace)) - 1) * 4.6);
 }
 
-float fresnel() {
-    return fresnel_shlick(gNormal, TexCoords, 0.7);
+float lastFresnel(float IOR) {
+    const float R0 = ((1.0f - IOR) * (1.0f - IOR)) / ((1.0f + IOR) * (1.0f + IOR));
+    vec3 normal = (inverse(uView) * vec4(CurrentNormal,0.0f)).xyz;
+    return R0 + (1.0 - R0) * pow( (1.0 - dot(-normalize(CurrentPosition - getCameraPos()), normal ) ), 5.0);
+}
+
+float fresnel(float IOR) {
+    float t = timeBounce(500);
+    if (t < 0.5) {
+	return fast_fresnel(IOR);
+    } else {
+	return lastFresnel(IOR);
+    }
 }
 
 float rand(vec2 co){
@@ -72,6 +83,37 @@ vec2 randomFromUv(vec2 coord) { //generating noise/pattern texture for dithering
     float noiseY = ((fract(1.0 - coord.s * (resolution.x / 2.0)) * 0.75) + (fract(coord.t * (resolution.y / 2.0)) * 0.25)) * 2.0 - 1.0;
     return vec2(noiseX, noiseY) * noiseamount;
 }
+
+vec3 planeInt(vec3 normal, vec3 center, vec3 rayorg, vec3 raydir) {
+    return (center - rayorg) + (raydir * (dot(center - rayorg, normal) / dot(normal, raydir)));
+}
+
+vec2 raytraceToCamera(vec3 raydir, vec3 rayorg) {
+    vec3 cp = getCameraPos();
+    vec3 cf = getCameraForward();
+    vec3 cu = getCameraUp();
+    vec3 cr = getCameraRight();
+
+    vec3 i = planeInt(cf, cp + cf * 0.218, rayorg, raydir);
+    //i = (transpose(inverse(uProjection)) * vec4(i, 0.0f)).xyz;
+    float sideT = dot(i, cu) - (PI / 2.);
+    float sideBiT = dot(i, cr) - (PI / 2.);
+
+    vec2 uv = -(vec2(sideBiT, sideT));
+    uv -= vec2(1.0707, 1.2895);
+    uv.y *= (resolution.x / resolution.y);
+    return uv;
+}
+
+vec2 getUVfromPosition(vec3 position) {
+    return raytraceToCamera(normalize(getCameraPos() - position), getCameraPos());
+}
+
+bool isRayTowardCamera(vec3 reflec) {
+    vec2 uv = raytraceToCamera(reflec, CurrentPosition);
+    return (uv.x >= 0 && uv.x <= 1) && (uv.y >= 0 && uv.y <= 1);
+}
+
 
 float doMist(float miststart, float mistend) {
 	float zdepth = texture2D(gDepth, TexCoords.xy).x;
@@ -176,7 +218,6 @@ float ssao(float samples, float radius) {
 
     vec2 noise = randomFromUv(TexCoords);
     float depth = readDepth(TexCoords);
-    vec3 normal = texture2D(gNormal, TexCoords).xyz;
 
     float w = (1.0 / resolution.x) / clamp(depth, aoclamp, 1.0) + (noise.x * (1.0 - noise.x));
     float h = (1.0 / resolution.y) / clamp(depth, aoclamp, 1.0) + (noise.y * (1.0 - noise.y));
@@ -197,25 +238,30 @@ float ssao(float samples, float radius) {
 
 	//pw = cos(l) * r;
 	//ph = sin(l) * r;
-	ao += calAO(depth, cos(l) * r * w, sin(l) * r * h, normal, radius);
+	ao += calAO(depth, cos(l) * r * w, sin(l) * r * h, CurrentNormal, radius);
 	z -= dz;
 	l += dl;
     }
     ao = 1.0 - ao / float(samples) * strength;
+    return clamp(0., 1., ao);
     return ao;
-    //return clamp(0., 1., ao);
 }
 
 
 
 /********************************* SSR *************************/
 
-float ggx (vec3 N, vec3 V, vec3 L, float roughness, float F0) {
+//vec3 V - normalized view direction
+//vec3 L - normalized light direction
+//float roughness - smooth (0.0) to rough (1.0)
+//float F0 - fresnel term, 0.0 to 1.0
+float ggx(vec3 L, float roughness, float F0) {
+    vec3 V = normalize(getCameraPos() - CurrentPosition);
     float alpha = roughness*roughness;
     vec3 H = normalize(L - V);
     float dotLH = max(0.0, dot(L,H));
-    float dotNH = max(0.0, dot(N,H));
-    float dotNL = max(0.0, dot(N,L));
+    float dotNH = max(0.0, dot(CurrentNormal,H));
+    float dotNL = max(0.0, dot(CurrentNormal,L));
     float alphaSqr = alpha * alpha;
     float denom = dotNH * dotNH * (alphaSqr - 1.0) + 1.0;
     float D = alphaSqr / (3.141592653589793 * denom * denom);
@@ -339,30 +385,39 @@ vec3 raytrace1(in vec3 reflectionVector, in sampler2D tex) {
 }
 
 vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
-    const int maxComplexity = 16;
+    const int maxComplexity = 4;
+    const float baseThreshold = 0.999;
+    const float targetThreshold = 0.98;
+    float samplingOffset = 1;
     int complexity = 0;
-    vec2 stepSize = 4 / resolution;
-    float threshold = 0.005;
+    vec2 stepDir = normalize(reflectionVector.xy);
+    float threshold = baseThreshold;
+    reflectionVector = (inverse(uView) * vec4(reflectionVector, 0.0f)).xyz;
 
     // Current sampling position is at current fragment
-    mat4 toViewSpace = transpose(inverse(uView));
+    //mat4 toViewSpace = transpose(inverse(uView));
     vec2 sampledPosition = TexCoords;
-    vec3 startPos = (toViewSpace * vec4(texture(gPosition, TexCoords).xyz, 1.0f)).xyz;
+    //vec3 startPos = (toViewSpace * vec4(texture(gPosition, TexCoords).xyz, 1.0f)).xyz;
+    vec3 startPos = CurrentPosition;
     vec3 sampledViewPos = startPos;
-    float test = 0.006;
+    float test = 0.000;
 
-    while((sampledPosition.x <= 1.0 && sampledPosition.x >= 0.0 && sampledPosition.y <= 1.0 && sampledPosition.y >= 0.0) && (complexity <= maxComplexity) && (test > threshold)) {
-	sampledPosition += reflectionVector.xy * stepSize;
-	sampledViewPos = (toViewSpace * vec4(texture(gPosition, sampledPosition).xyz, 1.0)).xyz; // TODO would be a good idea do delete the matrix calculation here for obvious performance reason
-	test = dot(normalize(sampledViewPos - startPos).xyz, reflectionVector);
+    while((sampledPosition.x <= 1.0 && sampledPosition.x >= 0.0 && sampledPosition.y <= 1.0 && sampledPosition.y >= 0.0) && (complexity < maxComplexity) && (test < threshold)) {
+	vec2 stepSize = (samplingOffset * 3) / resolution;
+	sampledPosition += stepDir * stepSize;
+	sampledViewPos = texture2D(gPosition, sampledPosition, samplingOffset).xyz;
+	test = dot(normalize(sampledViewPos - startPos), reflectionVector);
+	threshold = mix(baseThreshold, targetThreshold, float(complexity) / float(maxComplexity));
+	//samplingOffset = mix(1, 6, distance(TexCoords, sampledPosition) / 0.25);
 	++complexity;
     }
-
-    float facing = dot(texture(gNormal, sampledPosition).xyz * 2.0f - 1.0f, reflectionVector);
-    if (facing < 0) {
-        return texture(tex, sampledPosition).rgb;
+    float facing = dot(texture2D(gNormal, sampledPosition, samplingOffset).xyz * 2.0f - 1.0f, reflectionVector);
+    //return -facing.xxx;
+    facing = -1;
+    if ((facing < 0.0f) && (test > 0.2)) {
+        return texture2D(gNormal, sampledPosition, samplingOffset).rgb;
     } else {
-        return vec3(0.0f);
+	return vec3(0.0f);
     }
 }
 
@@ -373,31 +428,48 @@ vec3 raytrace(in vec3 reflectionVector, in sampler2D tex) {
 }
 
 vec3 SSR() {
-    vec3 normal = normalize(texture(gNormal, TexCoords).xyz * 2.0f - 1.0f);
     float currDepth = linearizeDepth(texture(gDepth, TexCoords).x);
-    vec3 reflectionVector = reflect(normalize((uView * texture(gPosition, TexCoords)).xyz), normal);
-    return raytrace(reflectionVector.xyz, gNormal);
+    vec3 reflectionVector = reflect(normalize((uView * texture2D(gPosition, TexCoords, 1)).xyz), CurrentNormal);
+    if (isRayTowardCamera(reflectionVector.xyz) || CurrentDepth > 0.17) {
+	return vec3(0.0f);
+    } else {
+	return raytrace(reflectionVector.xyz, gNormal) * (1 - CurrentDepth / .2);
+    }
 }
 
 /****************************** Compositor *******************/
 
+vec3 pbrBlending(vec3 Kdiff, vec3 Kspec, vec3 Kbase, float metallic) {
+    float scRange = smoothstep(0.2, 0.45, metallic);
+    vec3  dielectric = Kdiff + Kspec;
+    vec3  metal = Kspec * Kbase;
+    return mix(dielectric, metal, scRange);
+}
+
+
 void main() { 
     vec2 distCoord = TexCoords * 2.0f;
-    vec3 cp = texture(gPosition, distCoord).rgb;
-    vec3 cn = texture(gNormal, distCoord - vec2(1.0f, 0.0f)).rgb;
-    vec3 ca = texture(gAlbedoSpec, distCoord - vec2(0.0f, 1.0f)).rgb;
-    float z = texture(gDepth, distCoord - vec2(1.0f, 1.0f)).r;
-    float near = 0.1;                                // the near plane
-    float far = 100.0;                               // the far plane
-    float c = (2.0 * near) / (far + near - z * (far - near));  // convert to linear values 
-    vec3 cd = vec3(c);
+
+    CurrentNormal = normalize(texture2D(gNormal, TexCoords).xyz * 2.0f - 1.0f);
+    CurrentNormalWorldSpace = (inverse(uView) * vec4(CurrentNormal,0.0f)).xyz;
+    CurrentPosition = texture2D(gPosition, TexCoords).xyz;
+    CurrentDepthNotLinearized = texture2D(gDepth, TexCoords).x;
+    CurrentDepth = linearizeDepth(CurrentDepthNotLinearized);
+    
     //outColour = cn + cp + ca + cd;
     //outColour = SSR();
-    //outColour = vec3(.5)* ssao(15, 1);
     //outColour = mix(SSR(), texture(gNormal, TexCoords).xyz, timeBounce(800));
-    //outColour = SSR();
-    //outColour = vec3(fresnel());
-    outColour = mix(texture(gNormal, TexCoords).xyz, SSR(), fresnel());
+
+    vec3 Light = vec3(0.0f, 12.0f, 11.0f);
+    //outColour = ggx(Light, 0.1f, fresnel(1.4)).xxx;
+    //outColour = fresnel(1.4).xxx;
+    outColour = vec3(getUVfromPosition(CurrentPosition), 0.0f);
+
+    outColour = SSR();
+    //outColour = vec3(ssao(10, 1));
+    //outColour = texture2D(gNormal, TexCoords, 5).xyz;
+    //outColour = CurrentNormal;
+    //outColour = mix(texture2D(gNormal, TexCoords, 0).xyz, SSR(), fresnel(1.4)) * ssao(10, 1);
     //outColour = (inverse(uView) * vec4(texture(gPosition, TexCoords).xyz, 1.0f)).xyz - getCameraPos();
     //outColour = vec3(fresnel());
 }
