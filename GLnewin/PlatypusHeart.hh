@@ -1,3 +1,4 @@
+#pragma once
 #include "OglCore.hh"
 #include "WindowHandle.hh"
 #include "node.hh"

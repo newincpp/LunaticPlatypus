@@ -1,8 +1,5 @@
 #include <ctime>
-#include <stack>
 #include "OglCore.hh"
-
-#include <imgui.h>
 
 void getGlError(const char* file_, unsigned long line_) {
     GLenum e = glGetError();
@@ -18,7 +15,7 @@ void getGlError(const char* file_, unsigned long line_) {
     }
 }
 
-OglCore::OglCore() : uTime(0, 0.0f), _uPostPRocessTexture(2) { 
+OglCore::OglCore() : uTime(0.0f, "uTime") { 
     init();
 }
 
@@ -42,13 +39,17 @@ void OglCore::init() {
 	0, 3, 2
     };
 
-    _sgBuffer.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
-    _sgBuffer.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
-    _sgBuffer.link({"gPosition", "gNormal", "gAlbedoSpec"});
+    _s._shaders.emplace_back();
+    _sgBuffer = --(_s._shaders.end());
+    _sgBuffer->add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
+    _sgBuffer->add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
+    _sgBuffer->link({"gPosition", "gNormal", "gAlbedoSpec"});
 
-    _sPostProc.add("./postProcess.glsl",GL_FRAGMENT_SHADER);
-    _sPostProc.add("./postProcessVert.glsl",GL_VERTEX_SHADER);
-    _sPostProc.link({"outColour"});
+    _s._shaders.emplace_back();
+    _sPostProc = --(_s._shaders.end());
+    _sPostProc->add("./postProcess.glsl",GL_FRAGMENT_SHADER);
+    _sPostProc->add("./postProcessVert.glsl",GL_VERTEX_SHADER);
+    _sPostProc->link({"outColour"});
 
     Mesh m;
     glGenTextures(1, &fractalTex);
@@ -74,32 +75,40 @@ void OglCore::init() {
     _s._cameras.emplace_back(_s._fb[0]);
 
     _renderTarget.uploadToGPU(vertices, elements);
+    _renderTarget.uMeshTransform.addItselfToShaders(_s._shaders); //TODO add meshTransform of every mesh loaded to shaders (function addMeshUniformsToShaders of DrawBuffer) when importing stuff; also deal with upload of multiple uniform with same name
 
-    _sgBuffer.use();
+    _sgBuffer->use();
+    uTime.addItselfToShaders(_s._shaders);
+    //_uPostPRocessTexture.addItselfToShaders(_s._shaders);
+    _s.addCameraUniformsToShaders();
     std::cout << "OpenGL renderer initialized" << std::endl;
 }
 
 void OglCore::render() {
     std::chrono::time_point<std::chrono::high_resolution_clock> beginFrame = std::chrono::high_resolution_clock::now();
     GLfloat time = std::chrono::duration_cast<std::chrono::milliseconds>(beginFrame - _beginTime).count();
-    uTime = time;
+    uTime.updateValue(time, _currentFrame);
 
-    _s.update();
+    _s.update(_currentFrame);
 
     //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
     glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
-    _sgBuffer.use();
-    uTime.upload();
+    _sgBuffer->use();
+    checkGlError;
     _s.render();
+    checkGlError;
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
 
-    _sPostProc.use();
+    //glDisable(GL_CULL_FACE);
+    _sPostProc->use();
+    checkGlError;
     _s.bindGBuffer(0);
-    _s._cameras[0].uploadUniform();
-    uTime.upload();
+    //_s._cameras[0].uploadUniform();
+    //uTime.upload();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _renderTarget.render();
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    //glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
+    ++_currentFrame;
 }

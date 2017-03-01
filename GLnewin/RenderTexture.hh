@@ -56,8 +56,9 @@ void RenderTexture<MODE>::init(unsigned short attachment_, std::string&& name_, 
     glGenTextures(1, &_id);
     glBindTexture(GL_TEXTURE_2D, _id);
     _TexImage2D(resolution_);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     _attachment = _genttachmentEnum(attachment_);
@@ -68,6 +69,7 @@ template <GLuint MODE>
 void RenderTexture<MODE>::bind(unsigned int i_) {
     glActiveTexture(GL_TEXTURE0 + i_);
     glBindTexture(GL_TEXTURE_2D, _id);
+    glGenerateMipmap(GL_TEXTURE_2D); // TODO fast ugly this is 1 frame old
 
     GLint programId;
     glGetIntegerv(GL_CURRENT_PROGRAM, &programId);

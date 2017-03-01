@@ -1,3 +1,6 @@
+#pragma once
+#include <cmath>
+
 template<typename T>
 T lerp(T a, T b, float f) {
     return a + f * (b - a);

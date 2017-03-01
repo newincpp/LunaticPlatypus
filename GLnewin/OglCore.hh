@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <list>
 #include <iostream>
 #include <utility>
 #include <chrono>
@@ -14,13 +14,13 @@ void getGlError(const char* file_, unsigned long line_);
 class OglCore {
     private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> _beginTime;
-	Uniform<float> uTime;
-	Uniform<int> _uPostPRocessTexture;
-	Shader _sgBuffer;
-	Shader _sPostProc;
+	Uniform uTime;
+	decltype(DrawBuffer::_shaders)::iterator _sgBuffer;
+	decltype(DrawBuffer::_shaders)::iterator _sPostProc;
 	DrawBuffer _s;
 	Mesh _renderTarget;
 	GLuint fractalTex;
+	unsigned int _currentFrame = 0;
     public:
 	OglCore();
 	inline Camera& getCamera(unsigned long i = 0) { return getDrawBuffer()._cameras[i]; }

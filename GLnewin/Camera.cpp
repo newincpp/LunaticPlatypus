@@ -3,8 +3,8 @@
 #include "Camera.hh"
 
 Camera::Camera(FrameBuffer& fb_) :
-    uView(2, glm::mat4(1.0f)),
-    uProjection(3, glm::mat4(1.0f)),
+    uView(glm::mat4(1.0f), "uView"),
+    uProjection(glm::mat4(1.0f), "uProjection"),
     _target(0.0f, 0.0f, 0.0f),
     _position(15.0f, 5.2f, 15.0f),
     _upVector(0.0f, 1.0f, 0.0f),
@@ -39,13 +39,9 @@ void Camera::setMatrix(glm::mat4&& m_) {
 
 void Camera::lookAt(glm::vec3&& target_) {
     _target = target_;
-    std::cout << "targ: " << _target[0] << ' ' << _target[1] << ' ' << _target[2] << '\n';
-    //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
 }
 void Camera::setPos(glm::vec3&& newPos_) {
     _position = newPos_;
-    std::cout << "pos: " << _position[0] << ' ' << _position[1] << ' ' << _position[2] << '\n';
-    //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
 }
 void Camera::use() {
     _gBuffer.enable();
@@ -58,16 +54,10 @@ void Camera::use() {
     ImGui::InputFloat3("upVector", glm::value_ptr(_upVector));
     ImGui::InputFloat2("clipPlane", glm::value_ptr(_clipPlane));
     ImGui::InputFloat("fov", &_fov);
-    uView = glm::lookAt(_position, _target, _upVector);
-    uProjection = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y);
-
-    uView.upload();
-    uProjection.upload();
-    //uploadUniform();
 }
-void Camera::uploadUniform() {
-    uView.upload();
-    uProjection.upload();
+void Camera::updateUniform(unsigned int currentFrame) {
+    uView.updateValue(glm::lookAt(_position, _target, _upVector), currentFrame);
+    uProjection.updateValue(glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y), currentFrame);
 }
 void Camera::unUse() {
     _gBuffer.disable();

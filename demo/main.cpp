@@ -5,6 +5,7 @@
 // This class represent your entiere application
 class MyGame : public Heart::IGamelogic {
     public:
+<<<<<<< HEAD
 	std::chrono::time_point<std::chrono::system_clock> start;
 	bool done;
 	// Your class is static so this constructor will be initialised before LunaticPlatypus Engine
@@ -12,6 +13,14 @@ class MyGame : public Heart::IGamelogic {
 	MyGame() : done(false) {
 	    _scene = "./noblesse.obj";
 	    start = std::chrono::system_clock::now();
+=======
+	std::chrono::time_point<std::chrono::system_clock> _start;
+	glm::vec3 p;
+	MyGame() {
+	    _scene = "./sponza.obj";
+
+	    _start = std::chrono::system_clock::now();
+>>>>>>> a28af7f9db0fe0454371b12b548f7ea78fc0226d
 	}
 	// if you want to call a function after the initialisation of the engine use this function
 	virtual void postEngineInit() {
@@ -19,15 +28,19 @@ class MyGame : public Heart::IGamelogic {
 	    //_lunaticPlatypus->getRenderer().getCamera().lookAt(glm::vec3(7.0,2.5,0.0));
 	}
 	virtual void update() {
-	    std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - start;
-	    //std::cout << elapsed_seconds.count() << std::endl;
-	    /*
-	    if ((unsigned int)elapsed_seconds.count() == 3 && !done) {
-		_scene = "dieDrache.obj";
-		_lunaticPlatypus->loadScene();
-		std::cout << "YAY" << std::endl;
-		done = true;
-	    }*/
+	    std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - _start;
+	    //glm::vec3 start(8.0, 1, -1.7);
+	    //glm::vec3 end(8, 4.5, 1);
+	    //glm::vec3 start(0.0, 4.0, 15.3);
+	    //glm::vec3 end(-9.8, 7.0, 5.3);
+
+	    glm::vec3 start(-5.5, 8, 3.7);
+	    glm::vec3 end(8.0, 2, -1.7);
+	    //glm::vec3 end(2.0, 4, -1.7);
+	    _lunaticPlatypus->getRenderer().getDrawBuffer()._cameras[0].setPos(glm::mix(start, end, sin(elapsed_seconds.count() / 3) / 2.0f + 0.5f ));
+	    
+	    _lunaticPlatypus->getRenderer().getDrawBuffer()._cameras[0].lookAt(glm::vec3(-1, 2, 0));
+	    //_lunaticPlatypus->getRenderer().getDrawBuffer()._cameras[0].setPos(glm::vec3(8.0, 2, -1.7));
 	}
 };
 
