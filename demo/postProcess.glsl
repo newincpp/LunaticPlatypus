@@ -545,8 +545,8 @@ void main() {
     //outColour = mix(SSR(), texture(gNormal, TexCoords).xyz, timeBounce(800));
 
     vec3 Light = vec3(0.0f, 12.0f, 11.0f);
-    outColour = normalize(abs(CurrentNormalWorldSpace)) * ggx(Light, 0.1f, fresnel(1.4)).xxx;
-    outColour = CurrentDepth.xxx;
+    //outColour = normalize(abs(CurrentNormalWorldSpace)) * ggx(Light, 0.1f, fresnel(1.4)).xxx;
+    outColour = CurrentNormal;
     //outColour = fresnel(1.4).xxx;
 
     //outColour = SSR(fresnel(1.4));

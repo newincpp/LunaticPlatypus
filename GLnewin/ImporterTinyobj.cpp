@@ -90,7 +90,10 @@ void Importer::genMesh(const tinyobj::shape_t& object_, const tinyobj::attrib_t&
 
 	// per-face material
     }
-    meshList_.emplace_back();
-    meshList_[meshList_.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
-    meshList_[meshList_.size() - 1]._name = object_.name;
+    if (indiceBuffer.size()) {
+	meshList_.emplace_back();
+	meshList_[meshList_.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
+	meshList_[meshList_.size() - 1]._name = object_.name;
+    }
+
 }

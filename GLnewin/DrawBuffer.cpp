@@ -41,6 +41,7 @@ void DrawBuffer::reset(std::string& scene_) {
     }
     _drawList.clear();
     Importer iscene(scene_, *this);
+    addAllUniformsToShaders();
 }
 
 void DrawBuffer::addMeshUniformsToShaders() {
