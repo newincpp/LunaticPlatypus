@@ -15,8 +15,8 @@ class OglCore {
     private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> _beginTime;
 	Uniform uTime;
-	decltype(DrawBuffer::_shaders)::iterator _sgBuffer;
-	decltype(DrawBuffer::_shaders)::iterator _sPostProc;
+	decltype(DrawBuffer::_drawList)::iterator _sgBuffer;
+	decltype(DrawBuffer::_drawList)::iterator _sPostProc;
 	DrawBuffer _s;
 	Mesh _renderTarget;
 	GLuint fractalTex;

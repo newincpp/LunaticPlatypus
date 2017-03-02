@@ -13,9 +13,9 @@
 class DrawBuffer {
     public:
 	std::vector<FrameBuffer> _fb;
-	std::vector<Mesh> _meshes;
 	std::vector<Camera> _cameras;
-	std::list<Shader> _shaders;
+	//std::vector<Mesh> _meshes;
+	std::list<std::pair<Shader, std::vector<Mesh>>> _drawList;
 	unsigned int _activeCamera;
 	DrawBuffer();
 	void update(unsigned int currentFrame = 0);

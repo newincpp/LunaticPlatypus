@@ -464,7 +464,7 @@ vec3 raytrace1() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
-    int maxComplexity = int(mix(16, 4, 1 - CurrentDepth));
+    int maxComplexity = int(mix(8, 4, 1 - CurrentDepth));
     const float baseThreshold = 0.9;
     const float targetThreshold = 0.8;
     float samplingOffset = 1;
@@ -481,8 +481,8 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
     vec3 sampledViewPos = startPos;
     float test = 0.000;
 
-    vec2 stepSizeMax = 10.0f / resolution;
-    vec2 stepSizemin = 3.0f / resolution;
+    vec2 stepSizeMax = .0f / resolution;
+    vec2 stepSizemin = 32.0f / resolution;
     vec2 stepSize = stepSizemin;
     while((sampledPosition.x <= 1.0 && sampledPosition.x >= 0.0 && sampledPosition.y <= 1.0 && sampledPosition.y >= 0.0) && (complexity < maxComplexity) && (test < threshold)) {
 	sampledPosition += stepDir * stepSize;
@@ -490,7 +490,6 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
 	test = dot(normalize(sampledViewPos - startPos), reflectionVector);
 	threshold = mix(baseThreshold, targetThreshold, float(complexity) / float(maxComplexity));
 	float d = distance(TexCoords, sampledPosition) / 0.1;
-	//stepSize = mix(stepSizemin, stepSizeMax, d);
 	stepSize *= 2;
 	samplingOffset = mix(1, 6, d); // really cheap fake "cone tracing" using mipmap filtering
 	++complexity;
@@ -546,15 +545,14 @@ void main() {
     //outColour = mix(SSR(), texture(gNormal, TexCoords).xyz, timeBounce(800));
 
     vec3 Light = vec3(0.0f, 12.0f, 11.0f);
-    outColour = ggx(Light, 0.1f, fresnel(1.4)).xxx;
+    outColour = normalize(abs(CurrentNormalWorldSpace)) * ggx(Light, 0.1f, fresnel(1.4)).xxx;
     //outColour = fresnel(1.4).xxx;
 
-    outColour = SSR(fresnel(1.4));
+    //outColour = SSR(fresnel(1.4));
     //outColour = raytrace1();
     //outColour = vec3(ssao(10, 1));
     //outColour = texture2D(gNormal, TexCoords, 5).xyz;
-    //outColour = CurrentNormal;
-    float f = fresnel(1.4);
+    //float f = fresnel(1.4);
     //outColour = mix(texture2D(gNormal, TexCoords, 0).xyz, SSR(f), f) * ssao(10, 1);
     //outColour = (inverse(uView) * vec4(texture(gPosition, TexCoords).xyz, 1.0f)).xyz - getCameraPos();
     //outColour = vec3(fresnel());

@@ -39,14 +39,14 @@ void OglCore::init() {
 	0, 3, 2
     };
 
-    _s._shaders.emplace_back();
-    _sgBuffer = --(_s._shaders.end());
+    _s._drawList.emplace_back();
+    _sgBuffer = --(_s._drawList.end());
     _sgBuffer->first.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
     _sgBuffer->first.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
     _sgBuffer->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
 
-    _s._shaders.emplace_back();
-    _sPostProc = --(_s._shaders.end());
+    _s._drawList.emplace_back();
+    _sPostProc = --(_s._drawList.end());
     _sPostProc->first.add("./postProcess.glsl",GL_FRAGMENT_SHADER);
     _sPostProc->first.add("./postProcessVert.glsl",GL_VERTEX_SHADER);
     _sPostProc->first.link({"outColour"});
@@ -75,11 +75,11 @@ void OglCore::init() {
     _s._cameras.emplace_back(_s._fb[0]);
 
     _renderTarget.uploadToGPU(vertices, elements);
-    _renderTarget.uMeshTransform.addItselfToShaders(_s._shaders); //TODO add meshTransform of every mesh loaded to shaders (function addMeshUniformsToShaders of DrawBuffer) when importing stuff; also deal with upload of multiple uniform with same name
+    _renderTarget.uMeshTransform.addItselfToShaders(_s._drawList); //TODO add meshTransform of every mesh loaded to shaders (function addMeshUniformsToShaders of DrawBuffer) when importing stuff; also deal with upload of multiple uniform with same name
 
     _sgBuffer->first.use();
-    uTime.addItselfToShaders(_s._shaders);
-    //_uPostPRocessTexture.addItselfToShaders(_s._shaders);
+    uTime.addItselfToShaders(_s._drawList);
+    //_uPostPRocessTexture.addItselfToShaders(_s._drawList);
     _s.addCameraUniformsToShaders();
     std::cout << "OpenGL renderer initialized" << std::endl;
 }
