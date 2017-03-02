@@ -20,9 +20,9 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
 	std::cout << shader.name << '\n';
 	s_._drawList.emplace_back();
 	std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
-	//s_._drawList.first.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
-	//add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
-	//link({"gPosition", "gNormal", "gAlbedoSpec"});
+	o.first.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
+	o.first.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
+	o.first.link({"gPosition", "gNormal", "gAlbedoSpec"});
 	// Loop over shapes
 	o.second.reserve(shapes.size());
 	for (tinyobj::shape_t object: shapes) {

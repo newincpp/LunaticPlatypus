@@ -102,6 +102,9 @@ bool Shader::containUniform(Uniform &u_) {
 }
 
 void Shader::use() {
+    if (!_programId) {
+	return;
+    }
     glUseProgram(_programId);
     for (decltype(uniformList)::value_type& u : uniformList) {
 	if (u.first.getFrameUpdated() != u.second) {

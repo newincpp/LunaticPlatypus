@@ -46,14 +46,19 @@ void DrawBuffer::reset(std::string& scene_) {
 void DrawBuffer::addMeshUniformsToShaders() {
     for (std::pair<Shader, std::vector<Mesh>>& material : _drawList) {
 	for (Mesh& mesh : material.second) {
-	    mesh.uMeshTransform.addItselfToShaders(_drawList);
+	    material.first.containUniform(mesh.uMeshTransform);
+	    //mesh.uMeshTransform.addItselfToShaders(_drawList);
 	}
     }
 }
 
 void DrawBuffer::addCameraUniformsToShaders() {
-    for (decltype(_cameras)::value_type& camera : _cameras) {
-	camera.uView.addItselfToShaders(_drawList);
-	camera.uProjection.addItselfToShaders(_drawList);
+    for (std::pair<Shader, std::vector<Mesh>>& material : _drawList) {
+	for (decltype(_cameras)::value_type& camera : _cameras) {
+	    material.first.containUniform(camera.uView);
+	    material.first.containUniform(camera.uProjection);
+	    //camera.uView.addItselfToShaders(_drawList);
+	    //camera.uProjection.addItselfToShaders(_drawList);
+	}
     }
 }

@@ -39,17 +39,17 @@ void OglCore::init() {
 	0, 3, 2
     };
 
-    _s._drawList.emplace_back();
-    _sgBuffer = --(_s._drawList.end());
-    _sgBuffer->first.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
-    _sgBuffer->first.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
-    _sgBuffer->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
+    //_s._drawList.emplace_back();
+    //_sgBuffer = --(_s._drawList.end());
+    //_sgBuffer->first.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
+    //_sgBuffer->first.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
+    //_sgBuffer->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
 
-    _s._drawList.emplace_back();
-    _sPostProc = --(_s._drawList.end());
-    _sPostProc->first.add("./postProcess.glsl",GL_FRAGMENT_SHADER);
-    _sPostProc->first.add("./postProcessVert.glsl",GL_VERTEX_SHADER);
-    _sPostProc->first.link({"outColour"});
+    //_s._drawList.emplace_back();
+    //_sPostProc = --(_s._drawList.end());
+    _compositor.add("./postProcess.glsl",GL_FRAGMENT_SHADER);
+    _compositor.add("./postProcessVert.glsl",GL_VERTEX_SHADER);
+    _compositor.link({"outColour"});
 
     Mesh m;
     glGenTextures(1, &fractalTex);
@@ -75,9 +75,10 @@ void OglCore::init() {
     _s._cameras.emplace_back(_s._fb[0]);
 
     _renderTarget.uploadToGPU(vertices, elements);
-    _renderTarget.uMeshTransform.addItselfToShaders(_s._drawList); //TODO add meshTransform of every mesh loaded to shaders (function addMeshUniformsToShaders of DrawBuffer) when importing stuff; also deal with upload of multiple uniform with same name
+    _compositor.containUniform(_renderTarget.uMeshTransform);
+    //_renderTarget.uMeshTransform.addItselfToShaders(_s._drawList); //TODO add meshTransform of every mesh loaded to shaders (function addMeshUniformsToShaders of DrawBuffer) when importing stuff; also deal with upload of multiple uniform with same name
 
-    _sgBuffer->first.use();
+    //_sgBuffer->first.use();
     uTime.addItselfToShaders(_s._drawList);
     //_uPostPRocessTexture.addItselfToShaders(_s._drawList);
     _s.addCameraUniformsToShaders();
@@ -93,7 +94,7 @@ void OglCore::render() {
 
     //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
     glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
-    _sgBuffer->first.use();
+    //_sgBuffer->first.use();
     checkGlError;
     _s.render();
     checkGlError;
@@ -101,7 +102,7 @@ void OglCore::render() {
     checkGlError;
 
     //glDisable(GL_CULL_FACE);
-    _sPostProc->first.use();
+    _compositor.use();
     checkGlError;
     _s.bindGBuffer(0);
     //_s._cameras[0].uploadUniform();
