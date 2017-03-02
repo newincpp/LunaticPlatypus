@@ -1,5 +1,6 @@
 #include <functional>
 #include "Uniform.hh"
+#include "Mesh.hh"
 
 void Uniform::upload() const {
     if (_location < 0) {
@@ -38,8 +39,8 @@ void Uniform::upload() const {
     }
 }
 
-void Uniform::addItselfToShaders(std::list<Shader> &shaderList) {
-    for (Shader& s : shaderList) {
-	s.containUniform(*this);
+void Uniform::addItselfToShaders(std::list<std::pair<Shader, std::vector<Mesh>>> &shaderList) {
+    for (std::pair<Shader, std::vector<Mesh>> &p : shaderList) {
+	p.first.containUniform(*this);
     }
 }

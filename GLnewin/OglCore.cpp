@@ -41,15 +41,15 @@ void OglCore::init() {
 
     _s._shaders.emplace_back();
     _sgBuffer = --(_s._shaders.end());
-    _sgBuffer->add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
-    _sgBuffer->add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
-    _sgBuffer->link({"gPosition", "gNormal", "gAlbedoSpec"});
+    _sgBuffer->first.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
+    _sgBuffer->first.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
+    _sgBuffer->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
 
     _s._shaders.emplace_back();
     _sPostProc = --(_s._shaders.end());
-    _sPostProc->add("./postProcess.glsl",GL_FRAGMENT_SHADER);
-    _sPostProc->add("./postProcessVert.glsl",GL_VERTEX_SHADER);
-    _sPostProc->link({"outColour"});
+    _sPostProc->first.add("./postProcess.glsl",GL_FRAGMENT_SHADER);
+    _sPostProc->first.add("./postProcessVert.glsl",GL_VERTEX_SHADER);
+    _sPostProc->first.link({"outColour"});
 
     Mesh m;
     glGenTextures(1, &fractalTex);
@@ -71,13 +71,13 @@ void OglCore::init() {
     _s._fb[0].addDepthBuffer("gDepth");
     _s._fb[0].enable();
     m.uploadToGPU(vertices, elements);
-    _s._meshes.push_back(m);
+    //_s._meshes.push_back(m);
     _s._cameras.emplace_back(_s._fb[0]);
 
     _renderTarget.uploadToGPU(vertices, elements);
     _renderTarget.uMeshTransform.addItselfToShaders(_s._shaders); //TODO add meshTransform of every mesh loaded to shaders (function addMeshUniformsToShaders of DrawBuffer) when importing stuff; also deal with upload of multiple uniform with same name
 
-    _sgBuffer->use();
+    _sgBuffer->first.use();
     uTime.addItselfToShaders(_s._shaders);
     //_uPostPRocessTexture.addItselfToShaders(_s._shaders);
     _s.addCameraUniformsToShaders();
@@ -93,7 +93,7 @@ void OglCore::render() {
 
     //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
     glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
-    _sgBuffer->use();
+    _sgBuffer->first.use();
     checkGlError;
     _s.render();
     checkGlError;
@@ -101,7 +101,7 @@ void OglCore::render() {
     checkGlError;
 
     //glDisable(GL_CULL_FACE);
-    _sPostProc->use();
+    _sPostProc->first.use();
     checkGlError;
     _s.bindGBuffer(0);
     //_s._cameras[0].uploadUniform();
