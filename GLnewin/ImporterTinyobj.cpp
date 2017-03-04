@@ -15,13 +15,16 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
     }
 
     // Loop over materials
+    std::string ext = ".material/";
     unsigned int material_id = 0;
     for (tinyobj::material_t& shader : materials) {
-	std::cout << shader.name << '\n';
+	std::cout << "\033[1;32mloading shader: " << shader.name << "\033[0m\n";
 	s_._drawList.emplace_back();
 	std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
-	o.first.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
-	o.first.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
+	o.first.add(shader.name + ext + "fragment.glsl", GL_FRAGMENT_SHADER);
+	o.first.add(shader.name + ext + "vertex.glsl", GL_VERTEX_SHADER);
+	//o.first.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
+	//o.first.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
 	o.first.link({"gPosition", "gNormal", "gAlbedoSpec"});
 	// Loop over shapes
 	o.second.reserve(shapes.size());

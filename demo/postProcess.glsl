@@ -20,12 +20,23 @@ out vec3 outColour;
 vec2 resolution = vec2(1920, 1080);
 float zNear = 0.1;
 float zFar = 100.0;
+vec3 CurrentAlbedo;
 vec3 CurrentNormal;
 vec3 CurrentNormalWorldSpace;
 vec3 CurrentNormalWorld;
 vec3 CurrentPosition;
 float CurrentDepth;
 float CurrentDepthNotLinearized;
+
+
+struct Light {
+    vec3 position;
+    vec3 colour;
+};
+
+
+Light debugDefaultLight[4];
+//Light debugDefaultLight;
 
 
 #define PI    3.14159265
@@ -63,6 +74,10 @@ float AccurateFresnel(float IOR) {
     vec3 normal = (inverse(uView) * vec4(CurrentNormal,0.0f)).xyz;
     return R0 + (1.0 - R0) * pow( (1.0 - dot(-normalize(CurrentPosition - getCameraPos()), normal ) ), 5.0);
 }
+
+vec3 fresnel(float cosTheta, vec3 F0) {
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+} 
 
 float fresnel(float IOR) {
     return AccurateFresnel(IOR);
@@ -248,29 +263,6 @@ float ssao(float samples, float radius) {
     return ao;
 }
 
-
-
-/********************************* SSR *************************/
-
-//vec3 V - normalized view direction
-//vec3 L - normalized light direction
-//float roughness - smooth (0.0) to rough (1.0)
-//float F0 - fresnel term, 0.0 to 1.0
-float ggx(vec3 L, float roughness, float F0) {
-    vec3 V = normalize(getCameraPos() - CurrentPosition);
-    float alpha = roughness * roughness;
-    vec3 H = normalize(L - V);
-    float dotLH = max(0.0, dot(L,H));
-    float dotNH = max(0.0, dot(CurrentNormal,H));
-    float dotNL = max(0.0, dot(CurrentNormal,L));
-    float alphaSqr = alpha * alpha;
-    float denom = dotNH * dotNH * (alphaSqr - 1.0) + 1.0;
-    float D = alphaSqr / (3.141592653589793 * denom * denom);
-    float F = F0 + (1.0 - F0) * pow(1.0 - dotLH, 5.0);
-    float k = 0.5 * alpha;
-    float k2 = k * k;
-    return dotNL * D * F / (dotLH*dotLH*(1.0-k2)+k2);
-}
 
 ///////////////////////////  http://roar11.com/2015/07/screen-space-glossy-reflections/ ///////////////
 
@@ -464,7 +456,7 @@ vec3 raytrace1() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
-    int maxComplexity = int(mix(8, 4, 1 - CurrentDepth));
+    int maxComplexity = int(mix(5, 1, 1 - CurrentDepth));
     const float baseThreshold = 0.9;
     const float targetThreshold = 0.8;
     float samplingOffset = 1;
@@ -472,17 +464,18 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
     vec2 stepDir = normalize(reflectionVector.xy);
     float threshold = baseThreshold;
 
-    reflectionVector = (inverse(uView) * vec4(reflectionVector, 0.0f)).xyz;
+    // reflectionVector = (inverse(uView) * vec4(reflectionVector, 0.0f)).xyz;
+
     // Current sampling position is at current fragment
-    //mat4 toViewSpace = transpose(inverse(uView));
+    // mat4 toViewSpace = transpose(inverse(uView));
     vec2 sampledPosition = TexCoords;
     //vec3 startPos = (toViewSpace * vec4(texture(gPosition, TexCoords).xyz, 1.0f)).xyz;
     vec3 startPos = CurrentPosition;
     vec3 sampledViewPos = startPos;
     float test = 0.000;
 
-    vec2 stepSizeMax = .0f / resolution;
-    vec2 stepSizemin = 32.0f / resolution;
+    vec2 stepSizeMax = 1.0f / resolution;
+    vec2 stepSizemin = 8.0f / resolution;
     vec2 stepSize = stepSizemin;
     while((sampledPosition.x <= 1.0 && sampledPosition.x >= 0.0 && sampledPosition.y <= 1.0 && sampledPosition.y >= 0.0) && (complexity < maxComplexity) && (test < threshold)) {
 	sampledPosition += stepDir * stepSize;
@@ -490,7 +483,7 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
 	test = dot(normalize(sampledViewPos - startPos), reflectionVector);
 	threshold = mix(baseThreshold, targetThreshold, float(complexity) / float(maxComplexity));
 	float d = distance(TexCoords, sampledPosition) / 0.1;
-	stepSize *= 2;
+	stepSize *= 4;
 	samplingOffset = mix(1, 6, d); // really cheap fake "cone tracing" using mipmap filtering
 	++complexity;
     }
@@ -499,29 +492,31 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
     }
     float facing = dot(texture2D(gNormal, sampledPosition, samplingOffset).xyz * 2.0f - 1.0f, reflectionVector);
     //return -facing.xxx;
-    if ((facing < 0.0f) && (test > threshold)) {
+    if ((facing < 0.0f) ) {
 	return texture2D(tex, sampledPosition, samplingOffset).xyz;
     } else {
-	vec3 (0.0f);
+	return vec3(0.1, 0.15, 0.2);
     }
 }
 
 // TODO configurable GGX
 vec3 raytrace(in vec3 reflectionVector) {
-    return naiveRaymarch(reflectionVector, gNormal);
+    return naiveRaymarch(reflectionVector, gAlbedoSpec);
 }
 
 vec3 SSR(float fresnel) {
-    float currDepth = linearizeDepth(texture(gDepth, TexCoords).x);
-    vec3 reflectionVector = reflect(normalize((uView * texture2D(gPosition, TexCoords, 1)).xyz), CurrentNormal);
-    if (isRayTowardCamera(reflectionVector.xyz) || CurrentDepth > 0.17 || fresnel < 0.03) {
-	return vec3(0.0f);
+    //vec3 reflectionVector = reflect(normalize((uView * texture2D(gPosition, TexCoords, 1)).xyz), CurrentNormal);
+    vec3 reflectionVector = reflect(normalize(CurrentPosition - getCameraPos()), CurrentNormalWorldSpace);
+
+    if (isRayTowardCamera(reflectionVector.xyz) || CurrentDepth > 0.47 || fresnel < 0.02) {
+	return vec3(0.1, 0.15, 0.2);
     } else {
 	return raytrace(reflectionVector.xyz) * (1 - CurrentDepth / .4);
     }
 }
 
-/****************************** Compositor *******************/
+
+/**************************** Physically Based Lighting ********/
 
 vec3 pbrBlending(vec3 Kdiff, vec3 Kspec, vec3 Kbase, float metallic) {
     float scRange = smoothstep(0.2, 0.45, metallic);
@@ -531,30 +526,116 @@ vec3 pbrBlending(vec3 Kdiff, vec3 Kspec, vec3 Kbase, float metallic) {
 }
 
 
-void main() { 
-    vec2 distCoord = TexCoords * 2.0f;
+float DistributionGGX(vec3 N, vec3 H, float roughness) {
+    float a      = roughness*roughness;
+    float a2     = a*a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
 
+    float nom   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return nom / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness) {
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float nom   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+
+vec3 pbrDirectIllumination(float roughness, float metallic, float ao) {
+    vec3 N = CurrentNormal;
+    vec3 V = normalize(getCameraPos() - CurrentPosition);
+
+    vec3 Lo = vec3(0.0);
+
+    for(int i = 0; i < 4; ++i) { // Loop over Lights
+	vec3 L = normalize(debugDefaultLight[i].position - CurrentPosition);
+	vec3 H = normalize(V + L);
+
+	// direct radiance
+	float distance = length(debugDefaultLight[i].position - CurrentPosition);
+	float attenuation = 1.0 / (distance * distance);
+	vec3 radiance = debugDefaultLight[i].colour * attenuation; 
+
+	vec3 F0 = mix(vec3(0.04), CurrentAlbedo, metallic);
+	vec3 F = fresnel(max(dot(H, V), 0.0), F0);
+
+	float NDF = DistributionGGX(N, H, roughness);
+	float G = GeometrySmith(N, V, L, roughness);
+
+	// Bidirectional reflectance distribution function (BRDF)
+	vec3 nominator = NDF * G * F;
+	float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; 
+	vec3 brdf = nominator / denominator;  
+
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - metallic;
+
+	float NdotL = max(dot(N, L), 0.0);        
+	Lo += (kD * CurrentAlbedo / PI + brdf) * radiance * NdotL;
+    }
+
+
+    // TODO inacurate ambient term
+    vec3 ambient = vec3(0.01) * CurrentAlbedo * ao;
+    vec3 color   = ambient + Lo; 
+
+
+    // gamma correction
+    color = color / (color + vec3(1.0));
+    return pow(color, vec3(1.0/2.2)); 
+}
+
+
+/****************************** Compositor *******************/
+
+
+void main() { 
     CurrentNormal = normalize(texture2D(gNormal, TexCoords).xyz * 2.0f - 1.0f);
     CurrentNormalWorldSpace = (inverse(uView) * vec4(CurrentNormal,0.0f)).xyz;
     CurrentPosition = texture2D(gPosition, TexCoords).xyz;
     CurrentDepthNotLinearized = texture2D(gDepth, TexCoords).x;
     CurrentDepth = linearizeDepth(CurrentDepthNotLinearized);
+    CurrentAlbedo = texture2D(gAlbedoSpec, TexCoords).xyz;
+
+    debugDefaultLight[0] = Light(mix(vec3(-17,2,-7), vec3(4,2,0), timeBounce(900)), vec3(4.8, 4.8, 4.75));
+    debugDefaultLight[1] = Light(-debugDefaultLight[0].position, debugDefaultLight[0].colour);
+    debugDefaultLight[2] = Light(mix(vec3(15, (5 * sin(uTime / 900)) + 8, 8), vec3(-17, (5 * sin(uTime / 400)) + 8, 8.5), timeBounce(1400)), vec3(9.8, 9.8, 9.75));
+    debugDefaultLight[3] = Light(mix(vec3(-1.5, 5, -2), vec3(-1.5, 21, 7), timeBounce(900)), vec3(12.8, 12.8, 12.75));
     
     //outColour = cn + cp + ca + cd;
     //outColour = SSR();
     //outColour = mix(SSR(), texture(gNormal, TexCoords).xyz, timeBounce(800));
 
-    vec3 Light = vec3(0.0f, 12.0f, 11.0f);
     //outColour = normalize(abs(CurrentNormalWorldSpace)) * ggx(Light, 0.1f, fresnel(1.4)).xxx;
-    outColour = CurrentNormal;
+    //outColour = SSR(fresnel(1.4));
     //outColour = fresnel(1.4).xxx;
 
     //outColour = SSR(fresnel(1.4));
     //outColour = raytrace1();
     //outColour = vec3(ssao(10, 1));
     //outColour = texture2D(gNormal, TexCoords, 5).xyz;
-    //float f = fresnel(1.4);
-    //outColour = mix(texture2D(gNormal, TexCoords, 0).xyz, SSR(f), f) * ssao(10, 1);
+    //outColour = SSR(f);
+
+    outColour = pbrDirectIllumination(0.4, 0.8, ssao(4, 1));
+    //outColour = pbrBlending(CurrentDiffuse, ggx(Light, 0.8f, f).xxx, SSR(f), 0.1f);
     //outColour = (inverse(uView) * vec4(texture(gPosition, TexCoords).xyz, 1.0f)).xyz - getCameraPos();
     //outColour = vec3(fresnel());
 }

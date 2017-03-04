@@ -76,6 +76,9 @@ void OglCore::init() {
 
     _renderTarget.uploadToGPU(vertices, elements);
     _compositor.containUniform(_renderTarget.uMeshTransform);
+    _compositor.containUniform(_s._cameras[0].uView);
+    _compositor.containUniform(_s._cameras[0].uProjection);
+    _compositor.containUniform(uTime);
     //_renderTarget.uMeshTransform.addItselfToShaders(_s._drawList); //TODO add meshTransform of every mesh loaded to shaders (function addMeshUniformsToShaders of DrawBuffer) when importing stuff; also deal with upload of multiple uniform with same name
 
     //_sgBuffer->first.use();
