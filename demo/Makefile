@@ -8,7 +8,7 @@ OPTIM= -march=native -O2 -fno-rtti #-fno-exceptions
 INCLUDE=-I$(LUNATICPLATYPUSDIR)/ -I$(LUNATICPLATYPUSDIR)/imgui/ -I$(LUNATICPLATYPUSDIR)/glm
 CXXFLAGS= -Wconversion -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 
-LIBS= libLunaticPlatypus.a
+LIBS= libLunaticPlatypus.a libAlembic.a /usr/lib/libHalf.a
 #pkg-config --static --libs glfw3
 ifeq ($(OS),Linux)
     LIBS+=-lGL -ldl -pthread -lrt -lm -lXrandr -lXinerama -lXi -lXcursor -lXrender -ldrm -lXdamage -lXfixes -lX11-xcb -lxcb-glx -lxcb-dri2 -lX11 -lXxf86vm

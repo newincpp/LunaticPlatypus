@@ -7,7 +7,7 @@
 
 #ifdef TINYOBJLOADER
 #include "tiny_obj_loader.h"
-#elif defined(ALEMBIC)
+#elif defined(ALEMBIC) || defined(ALEMBICV2)
 #include "Alembic/Abc/IObject.h"
 #elif defined(ASSIMP)
 #include "assimp/Importer.hpp"
@@ -21,6 +21,9 @@ class Importer {
     private:
 #ifdef TINYOBJLOADER
 	void genMesh(const tinyobj::shape_t&, const tinyobj::attrib_t&, int , std::vector<Mesh>&);
+#elif defined(ALEMBICV2)
+	void genMesh();
+	void genCamera();
 #elif defined(ALEMBIC)
 	inline glm::mat4 createTransformMatrix(const glm::vec3 &, const glm::vec3 &, const glm::vec3 &);
 	inline glm::vec3 AlembicVec3toGlmVec3(Alembic::Abc::V3d const &);

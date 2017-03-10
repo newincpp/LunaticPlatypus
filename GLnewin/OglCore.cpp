@@ -47,8 +47,8 @@ void OglCore::init() {
 
     //_s._drawList.emplace_back();
     //_sPostProc = --(_s._drawList.end());
-    _compositor.add("./postProcess.glsl",GL_FRAGMENT_SHADER);
-    _compositor.add("./postProcessVert.glsl",GL_VERTEX_SHADER);
+    _compositor.add("./compositor.glsl",GL_FRAGMENT_SHADER);
+    _compositor.add("./compositorVert.glsl",GL_VERTEX_SHADER);
     _compositor.link({"outColour"});
 
     Mesh m;

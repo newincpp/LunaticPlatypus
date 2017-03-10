@@ -31,7 +31,7 @@ ifeq ($(OS),Darwin)
     LIBFOLDER=OSX
 endif
 NAME	=LunaticPlatypus
-IMPORTER=TINYOBJLOADER
+IMPORTER=ALEMBIC
 DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC 
 DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE #-DGLM_FORCE_AVX
@@ -52,12 +52,10 @@ ifeq ($(IMPORTER),TINYOBJLOADER)
     DEFINE+=-DTINYOBJLOADER
 endif
 ifeq ($(IMPORTER),ALEMBIC)
-    DEFINE+=-DALEMBIC 
-    LIBS+=./libs/$(LIBFOLDER)/Objectsoup/libAlembic/*.o \
-	  ./libs/$(LIBFOLDER)/Objectsoup/libHalf/*.o \
-	  ./libs/$(LIBFOLDER)/Objectsoup/libhdf5/*.o \
-	  ./libs/$(LIBFOLDER)/Objectsoup/libIex/*.o \
-	  ./libs/$(LIBFOLDER)/Objectsoup/libz/*.o
+    DEFINE+=-DALEMBICV2
+    LIBS+= ./libs/$(LIBFOLDER)/Objectsoup/libHalf/*.o \
+	  ./libs/$(LIBFOLDER)/Objectsoup/libAlembic/*.o
+
     INCLUDE+=-I./Alembic/OpenEXR -I./Alembic
 endif
 ifeq ($(IMPORTER),ASSIMP)

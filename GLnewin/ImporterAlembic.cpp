@@ -167,25 +167,25 @@ void Importer::visitObject(Alembic::Abc::IObject iObj, std::string const &iInden
 			}
 		}
 		if (iObj.getName() != "PlaneShape") {
-		s_._meshes.emplace_back();
-		s_._meshes[s_._meshes.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
-		s_._meshes[s_._meshes.size() - 1]._name = path;
-		/*if (Alembic::AbcGeom::IXform::matches(iObj.getParent().getMetaData())) {
-			Alembic::AbcGeom::IXform xForm(iObj.getParent());
-			Alembic::AbcGeom::IXformSchema xFormSchema = xForm.getSchema();
-			Alembic::AbcGeom::XformSample xFormSample;
-			xFormSchema.get(xFormSample);*/
-			glm::vec3 pos(0);
-			glm::vec3 rotation(0);
-			glm::vec3 scale(1);
-			getFullPositionScale(iObj, pos, rotation, scale);
-			pos = glm::vec3(pos.x, -pos.z, pos.y);
-			std::cout << "Object " << iObj.getFullName() << " is in x:" << pos.x << " y:" << pos.y << " z:" << pos.z << ' ';
-			//std::cout << " rotation:" << rotation.x << ' ' << rotation.y << ' ' << rotation.z << " scale:";
-			std::cout << scale.x << ' ' << scale.y << ' ' << scale.z << '\n';
-			s_._meshes[s_._meshes.size() - 1].uMeshTransform = createTransformMatrix(pos, rotation, scale);//M44d4x4ToGlm(xFormSample.getMatrix());
-			/*std::cout << "parent with transform found\n";
-		}*/
+		    s_._meshes.emplace_back();
+		    s_._meshes[s_._meshes.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
+		    s_._meshes[s_._meshes.size() - 1]._name = path;
+		    /*if (Alembic::AbcGeom::IXform::matches(iObj.getParent().getMetaData())) {
+		      Alembic::AbcGeom::IXform xForm(iObj.getParent());
+		      Alembic::AbcGeom::IXformSchema xFormSchema = xForm.getSchema();
+		      Alembic::AbcGeom::XformSample xFormSample;
+		      xFormSchema.get(xFormSample);*/
+		    glm::vec3 pos(0);
+		    glm::vec3 rotation(0);
+		    glm::vec3 scale(1);
+		    getFullPositionScale(iObj, pos, rotation, scale);
+		    pos = glm::vec3(pos.x, -pos.z, pos.y);
+		    std::cout << "Object " << iObj.getFullName() << " is in x:" << pos.x << " y:" << pos.y << " z:" << pos.z << ' ';
+		    //std::cout << " rotation:" << rotation.x << ' ' << rotation.y << ' ' << rotation.z << " scale:";
+		    std::cout << scale.x << ' ' << scale.y << ' ' << scale.z << '\n';
+		    s_._meshes[s_._meshes.size() - 1].uMeshTransform = createTransformMatrix(pos, rotation, scale);//M44d4x4ToGlm(xFormSample.getMatrix());
+		    /*std::cout << "parent with transform found\n";
+		      }*/
 		}
 	} else if (Alembic::AbcGeom::ISubDSchema::matches(md)) {
 		std::cout << "ISubDSchema not implemented yet\n";
@@ -288,7 +288,6 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
     } else {
 	    std::cout << "archive is null :C " << file << '\n';
     }
-    //std::cout << "number of meshes:" << s_._meshes.size() << '\n';
     s_._cameras.emplace_back(s_._fb[0]);
     Camera& mainCamera = s_._cameras[s_._cameras.size() - 1];
 

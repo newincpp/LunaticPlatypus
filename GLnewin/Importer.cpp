@@ -9,6 +9,8 @@ Importer::Importer(std::string file, DrawBuffer& s_) {
 
 #ifdef TINYOBJLOADER
 #include "ImporterTinyobj.cpp"
+#elif defined(ALEMBICV2)
+#include "ImporterAlembicV2.cpp"
 #elif defined(ALEMBIC)
 #include "ImporterAlembic.cpp"
 #elif defined(ASSIMP)
