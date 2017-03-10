@@ -22,8 +22,10 @@ class Importer {
 #ifdef TINYOBJLOADER
 	void genMesh(const tinyobj::shape_t&, const tinyobj::attrib_t&, int , std::vector<Mesh>&);
 #elif defined(ALEMBICV2)
-	void genMesh();
-	void genCamera();
+	void genMesh(const Alembic::Abc::IObject&, DrawBuffer&, glm::mat4&);
+	void genCamera(const Alembic::Abc::IObject&, DrawBuffer&, glm::mat4&);
+	void transformUpdate(const Alembic::Abc::IObject&, glm::mat4&);
+	void visitor(const Alembic::Abc::IObject&, unsigned int, DrawBuffer&, glm::mat4);
 #elif defined(ALEMBIC)
 	inline glm::mat4 createTransformMatrix(const glm::vec3 &, const glm::vec3 &, const glm::vec3 &);
 	inline glm::vec3 AlembicVec3toGlmVec3(Alembic::Abc::V3d const &);
