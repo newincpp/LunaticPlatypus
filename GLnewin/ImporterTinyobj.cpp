@@ -65,7 +65,6 @@ void Importer::genMesh(const tinyobj::shape_t& object_, const tinyobj::attrib_t&
 		    std::vector<float> vertex = { attrib_.vertices[3*idx.vertex_index+0], attrib_.vertices[3*idx.vertex_index+1], attrib_.vertices[3*idx.vertex_index+2],
 			attrib_.normals[3*idx.normal_index+0], attrib_.normals[3*idx.normal_index+1], attrib_.normals[3*idx.normal_index+2] };
 		    if (idx.texcoord_index < 0) {
-			//push useless uv because we always upload 8 values and if there's no uv it does shitty things
 			vertex.push_back(0.0f);
 			vertex.push_back(0.0f);
 		    } else {
@@ -73,7 +72,6 @@ void Importer::genMesh(const tinyobj::shape_t& object_, const tinyobj::attrib_t&
 			vertex.push_back(attrib_.texcoords[2*idx.texcoord_index+1]);
 		    }
 		    if (uniqueVertices.count(vertex) <= 0) {
-			//push a new vertex if we never encountered it before (to the unordered map AND the buffer)
 			uniqueVertices[vertex] = vertexBuffer.size() / 8.0f;
 			vertexBuffer.push_back(vertex[0]);
 			vertexBuffer.push_back(vertex[1]);

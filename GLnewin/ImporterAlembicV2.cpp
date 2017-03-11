@@ -82,7 +82,6 @@ void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawB
 }
 
 void Importer::transformUpdate(const Alembic::Abc::IObject& iobj, glm::mat4& transform_) {
-    std::cout << "updating transform from xform\n";
     Alembic::AbcGeom::IXform matrix(iobj);
     Alembic::AbcGeom::IXformSchema ms = matrix.getSchema();
     Alembic::AbcGeom::XformSample s;
@@ -105,68 +104,105 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     std::cout << "generating Mesh: " << iobj.getName() << std::endl;
 
     Alembic::AbcGeom::IPolyMesh mesh(iobj);
-    Alembic::AbcGeom::IPolyMeshSchema ms = mesh.getSchema();
-    Alembic::AbcGeom::IV2fGeomParam uvParam = ms.getUVsParam();
-    Alembic::AbcGeom::IN3fGeomParam normalsParam = ms.getNormalsParam();
+    Alembic::AbcGeom::IPolyMeshSchema schema = mesh.getSchema();
+    Alembic::AbcGeom::IV2fGeomParam uvParam = schema.getUVsParam();
+
+    if (schema.getTopologyVariance() == Alembic::AbcGeom::kHeterogenousTopology) {
+	std::cout << "mesh is has heterogenous topology\n";
+	return;
+    }
+
 
     std::vector<GLfloat> vertexBuffer;
     std::vector<GLuint> indiceBuffer;
-    for (size_t i = 0; i < ms.getNumSamples(); i++) {
-	Alembic::AbcGeom::IPolyMeshSchema::Sample s;
-	ms.get(s, i);
-	Alembic::Abc::P3fArraySamplePtr positionsPtr = s.getPositions(); //P3fArraySamplePtr == 3 float32
-	Imath::Vec3<glm::float32> const *vertex = positionsPtr->get();
-	Alembic::Util::shared_ptr<Alembic::Abc::TypedArraySample<Alembic::Abc::N3fTPTraits>> normals;
-	Alembic::Util::shared_ptr<Alembic::Abc::TypedArraySample<Alembic::Abc::V2fTPTraits>> uvs;
-	if (normalsParam.valid()) {
-	    normals = normalsParam.getIndexedValue(i).getVals();
-	}
-	if (uvParam.valid()) {
-	    uvs = uvParam.getIndexedValue(i).getVals();
-	}
-	for (size_t j = 0; j < positionsPtr->size(); j++) {
-	    vertexBuffer.push_back((*vertex).x);
-	    vertexBuffer.push_back((*vertex).y);
-	    vertexBuffer.push_back((*vertex).z);
-	    vertex++;
-	    if (normalsParam.valid()) {
-		vertexBuffer.push_back((*normals)[j].x);
-		vertexBuffer.push_back((*normals)[j].y);
-		vertexBuffer.push_back((*normals)[j].z);
-	    } else {
-		vertexBuffer.push_back(1.0f);
-		vertexBuffer.push_back(1.0f);
-		vertexBuffer.push_back(1.0f);
-	    }
-	    if (uvParam.valid()) {
-		vertexBuffer.push_back((*uvs)[j].x);
-		vertexBuffer.push_back((*uvs)[j].y);
-	    } else {
-		vertexBuffer.push_back(0.0f);
-		vertexBuffer.push_back(0.0f);
-	    }
-	}
-	Alembic::Abc::Int32ArraySamplePtr indicesPtr = s.getFaceIndices(); //Int32ArraySamplePtr
-	glm::int32 const *indice = indicesPtr->get();
-	Alembic::Abc::Int32ArraySamplePtr countPtr = s.getFaceCounts(); //Int32ArraySamplePtr
-	glm::int32 const *nbIndicesInFace = countPtr->get();
-	if (*nbIndicesInFace > 3) {
-	    //std::cout << "WARNING: Triangulate your mesh if you want to avoid problems, quads are trianglulated naively and ngons are not implemented.\n";
-	    for (size_t j = 0; j < indicesPtr->size(); j += *nbIndicesInFace) {
-		for (int k = *nbIndicesInFace - 3; k >= 0; k--) {
-		    indiceBuffer.push_back(*indice);
-		    indiceBuffer.push_back(*(indice + 1 + k));
-		    indiceBuffer.push_back(*(indice + 2 + k));
-		}
-		indice += *nbIndicesInFace;
-	    }
-	} else {
-	    for (size_t j = 0; j < indicesPtr->size(); j++) {
-		indiceBuffer.push_back(*indice);
-		indice++;
-	    }
-	}
+
+
+    std::vector<std::string> oFaceSetNames;
+    schema.getFaceSetNames(oFaceSetNames);
+    for (auto x : oFaceSetNames) {
+	std::cout << "faceSet Name: " << x << '\n';
+
+	Alembic::AbcGeom::IFaceSetSchema msp = schema.getFaceSet(x).getSchema();
+	Alembic::AbcGeom::IFaceSetSchema::Sample p;
+	msp.get(p, 0);
+
+	std::cout << "faceset = " << p.getFaces()->size() << '\n';
     }
+
+
+
+    Alembic::AbcCoreAbstract::index_t index;
+    Alembic::Abc::P3fArraySamplePtr points = schema.getPositionsProperty().getValue(Alembic::Abc::ISampleSelector(index));
+    Alembic::AbcGeom::IN3fGeomParam::Sample sampN;
+    schema.getNormalsParam().getExpanded(sampN, Alembic::Abc::ISampleSelector(index));
+    Alembic::Abc::N3fArraySamplePtr sampVal = sampN.getVals();
+    size_t sampSize = sampVal->size();
+
+    unsigned int numPoints = points->size();
+    vertexBuffer.reserve(numPoints);
+    for (unsigned int i = 0; i < numPoints; ++i) {
+	vertexBuffer.push_back((*points)[i].x);
+	vertexBuffer.push_back((*points)[i].y);
+	vertexBuffer.push_back((*points)[i].z);
+
+	vertexBuffer.push_back((*sampVal)[i].x);
+	vertexBuffer.push_back((*sampVal)[i].y);
+	vertexBuffer.push_back((*sampVal)[i].z);
+
+	vertexBuffer.push_back(0.0f);
+	vertexBuffer.push_back(0.0f);
+    }
+
+    // Get face count info
+    Alembic::AbcGeom::IPolyMeshSchema::Sample samp;
+    schema.get(samp, Alembic::Abc::ISampleSelector(index));
+    Alembic::Abc::Int32ArraySamplePtr iCounts = samp.getFaceCounts();
+    Alembic::Abc::Int32ArraySamplePtr iIndices = samp.getFaceIndices();
+    if (!iCounts) {
+	std::cout << "WHAT ?!\n";
+    }
+    unsigned int numPolys = iCounts->size();
+    std::vector<int> polyCounts;
+    polyCounts.reserve(numPolys);
+    for (unsigned int i = 0; i < numPolys; ++i) {
+	polyCounts.push_back((*iCounts)[i]);
+    }
+
+    unsigned int numConnects = iIndices->size();
+    indiceBuffer.reserve(numConnects);
+
+    unsigned int facePointIndex = 0;
+    unsigned int base = 0;
+    for (unsigned int i = 0; i < numPolys; ++i) {
+	int curNum = polyCounts[i];
+	if (curNum == 3) {
+	    indiceBuffer.push_back((*iIndices)[base+curNum-0-1]);
+	    indiceBuffer.push_back((*iIndices)[base+curNum-1-1]);
+	    indiceBuffer.push_back((*iIndices)[base+curNum-2-1]);
+	    facePointIndex += 3;
+	} else if (curNum == 4) {
+	    indiceBuffer.push_back((*iIndices)[base+curNum-0-1]);
+	    indiceBuffer.push_back((*iIndices)[base+curNum-1-1]);
+	    indiceBuffer.push_back((*iIndices)[base+curNum-2-1]);
+
+	    indiceBuffer.push_back((*iIndices)[base+curNum-2-1]);
+	    indiceBuffer.push_back((*iIndices)[base+curNum-3-1]);
+	    indiceBuffer.push_back((*iIndices)[base+curNum-0-1]);
+	    facePointIndex += 4;
+	} else {
+	    //TODO ngon not supported yet
+	}
+
+	base += curNum;
+    }
+
+
+    //setColorsAndUVs(iFrame, ioMesh, schema.getUVsParam(), iNode.mV2s, iNode.mC3s, iNode.mC4s, !iInitialized);
+
+    if (schema.getNormalsParam().getNumSamples() > 1) {
+	//setPolyNormals(iFrame, ioMesh, schema.getNormalsParam());
+    }
+
 
     std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
     o.second.emplace_back();
@@ -176,7 +212,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 }
 
 void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_) {
-    std::cout << "generating Camera" << std::endl;
     Alembic::AbcGeom::ICamera cam(iobj);
     Alembic::AbcGeom::ICameraSchema ms = cam.getSchema();
     Alembic::AbcGeom::CameraSample s;
@@ -189,5 +224,5 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm:
     mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9));
     mainCamera.fieldOfview(s.getFieldOfView());
     mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane()));
-    mainCamera.upVector(glm::vec3(0.0f,-1.0f,0.0f));
+    mainCamera.upVector(glm::vec3(0.0f, 1.0f, 0.0f));
 }
