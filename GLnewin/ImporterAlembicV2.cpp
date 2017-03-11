@@ -105,7 +105,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 
     Alembic::AbcGeom::IPolyMesh mesh(iobj);
     Alembic::AbcGeom::IPolyMeshSchema schema = mesh.getSchema();
-    Alembic::AbcGeom::IV2fGeomParam uvParam = schema.getUVsParam();
 
     if (schema.getTopologyVariance() == Alembic::AbcGeom::kHeterogenousTopology) {
 	std::cout << "mesh is has heterogenous topology\n";
@@ -119,7 +118,7 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 
     std::vector<std::string> oFaceSetNames;
     schema.getFaceSetNames(oFaceSetNames);
-    for (auto x : oFaceSetNames) {
+    for (std::string x : oFaceSetNames) {
 	std::cout << "faceSet Name: " << x << '\n';
 
 	Alembic::AbcGeom::IFaceSetSchema msp = schema.getFaceSet(x).getSchema();
@@ -127,6 +126,9 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	msp.get(p, 0);
 
 	std::cout << "faceset = " << p.getFaces()->size() << '\n';
+	for (unsigned int i = 0; p.getFaces()->size() > i; ++i) {
+	    std::cout << "f " << (*p.getFaces())[i] << '\n';
+	}
     }
 
 
@@ -158,23 +160,19 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     schema.get(samp, Alembic::Abc::ISampleSelector(index));
     Alembic::Abc::Int32ArraySamplePtr iCounts = samp.getFaceCounts();
     Alembic::Abc::Int32ArraySamplePtr iIndices = samp.getFaceIndices();
-    if (!iCounts) {
-	std::cout << "WHAT ?!\n";
-    }
     unsigned int numPolys = iCounts->size();
-    std::vector<int> polyCounts;
-    polyCounts.reserve(numPolys);
-    for (unsigned int i = 0; i < numPolys; ++i) {
-	polyCounts.push_back((*iCounts)[i]);
-    }
-
     unsigned int numConnects = iIndices->size();
     indiceBuffer.reserve(numConnects);
 
+
+    Alembic::AbcGeom::IFaceSetSchema msp = schema.getFaceSet(oFaceSetNames[0]).getSchema();
+    Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
+    msp.get(faceSet, 0);
     unsigned int facePointIndex = 0;
     unsigned int base = 0;
     for (unsigned int i = 0; i < numPolys; ++i) {
-	int curNum = polyCounts[i];
+	//int curNum = (*iCounts)[(*faceSet.getFaces())[i]];
+	int curNum = (*iCounts)[i];
 	if (curNum == 3) {
 	    indiceBuffer.push_back((*iIndices)[base+curNum-0-1]);
 	    indiceBuffer.push_back((*iIndices)[base+curNum-1-1]);
@@ -195,15 +193,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 
 	base += curNum;
     }
-
-
-    //setColorsAndUVs(iFrame, ioMesh, schema.getUVsParam(), iNode.mV2s, iNode.mC3s, iNode.mC4s, !iInitialized);
-
-    if (schema.getNormalsParam().getNumSamples() > 1) {
-	//setPolyNormals(iFrame, ioMesh, schema.getNormalsParam());
-    }
-
-
     std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
     o.second.emplace_back();
     o.second[o.second.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
