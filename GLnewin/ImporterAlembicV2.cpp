@@ -11,12 +11,12 @@
 #include <glm/gtx/transform.hpp>
 
 void Importer::load(std::string& file, DrawBuffer& s_) {
-    s_._drawList.emplace_back();
-    std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
+    //s_._drawList.emplace_back();
+    //std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
 
-    o.first.add("gold.material/fragment.glsl", GL_FRAGMENT_SHADER);
-    o.first.add("gold.material/vertex.glsl", GL_VERTEX_SHADER);
-    o.first.link({"gPosition", "gNormal", "gAlbedoSpec"});
+    //o.first.add("gold.material/fragment.glsl", GL_FRAGMENT_SHADER);
+    //o.first.add("gold.material/vertex.glsl", GL_VERTEX_SHADER);
+    //o.first.link({"gPosition", "gNormal", "gAlbedoSpec"});
 
     //o.second.reserve(shapes.size());
 
@@ -50,9 +50,6 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
 void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawBuffer& s_, glm::mat4 transform_) {
     const Alembic::Abc::MetaData &md = iobj.getMetaData();
     std::string path = iobj.getName();
-    for (unsigned int i =0 ; i < it; ++i) {
-	std::cout << " ";
-    }
 
     if (Alembic::AbcGeom::ICurves::matches(md)) {
 	//std::cout << "Curves not implemented yet\n";
@@ -101,8 +98,6 @@ void Importer::transformUpdate(const Alembic::Abc::IObject& iobj, glm::mat4& tra
 }
 
 void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_) {
-    std::cout << "generating Mesh: " << iobj.getName() << std::endl;
-
     Alembic::AbcGeom::IPolyMesh mesh(iobj);
     Alembic::AbcGeom::IPolyMeshSchema schema = mesh.getSchema();
 
@@ -130,11 +125,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	vertexBuffer.push_back(0.0f);
 	vertexBuffer.push_back(0.0f);
     }
-    std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
-    o.second.emplace_back();
-    unsigned long meshBaseVBO = o.second.size() - 1;
-    o.second[meshBaseVBO].uploadVertexOnly(vertexBuffer);
-    o.second[meshBaseVBO].uMeshTransform = transform_;
 
 
 
@@ -157,40 +147,70 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     }
 
 
+    std::pair<Shader, std::vector<Mesh>>* o = nullptr;
+    std::pair<Shader, std::vector<Mesh>>* meshReferance =  nullptr;
     std::vector<std::string> oFaceSetNames;
     schema.getFaceSetNames(oFaceSetNames);
-    Alembic::AbcGeom::IFaceSetSchema fSetSamp = schema.getFaceSet(oFaceSetNames[0]).getSchema();
-    Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
-    fSetSamp.get(faceSet, 0);
-    for (unsigned int i = 0; i < faceSet.getFaces()->size(); ++i) {
-	unsigned int faceNumber = (*faceSet.getFaces())[i];
-	if (faceNumber > numPolys) {
-	    std::cout << "================== WTF ================\n";
-	    return;
-	}
-	unsigned int indexCount = (*iCounts)[faceNumber];
-	unsigned long base = faceBaseOffset[faceNumber];
-	unsigned short size;
-	if (faceNumber < faceSet.getFaces()->size()) {
-	    size = faceBaseOffset[faceNumber+1] - base;
-	} else {
-	    size = (*iCounts)[iCounts->size() - 1];
-	}
-	if (size == 3) {
-	    indiceBuffer.push_back((*iIndices)[base+0]);
-	    indiceBuffer.push_back((*iIndices)[base+1]);
-	    indiceBuffer.push_back((*iIndices)[base+2]);
-	} else if (size == 4) {
-	    indiceBuffer.push_back((*iIndices)[base+0]);
-	    indiceBuffer.push_back((*iIndices)[base+1]);
-	    indiceBuffer.push_back((*iIndices)[base+2]);
+    bool isFirst = true;
+    unsigned long meshBaseVBO;
+    for (std::string faceSetName : oFaceSetNames) {
+	std::map<std::string, std::list<std::pair<Shader, std::vector<Mesh>>>::iterator>::iterator shaderN = _shaderList.find(faceSetName);
 
-	    indiceBuffer.push_back((*iIndices)[base+2]);
-	    indiceBuffer.push_back((*iIndices)[base+3]);
-	    indiceBuffer.push_back((*iIndices)[base+0]);
+	if(shaderN != _shaderList.end()) {
+	    o = &(*shaderN->second);
+	} else {
+	    s_._drawList.emplace_back();
+	    o = &(s_._drawList.back());
+	    o->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
+	    o->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
+	    o->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
+	    _shaderList[faceSetName] = --s_._drawList.end();
 	}
+
+
+
+	Alembic::AbcGeom::IFaceSetSchema fSetSamp = schema.getFaceSet(faceSetName).getSchema();
+	Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
+	fSetSamp.get(faceSet, 0);
+	for (unsigned int i = 0; i < faceSet.getFaces()->size(); ++i) {
+	    unsigned int faceNumber = (*faceSet.getFaces())[i];
+	    if (faceNumber > numPolys) {
+		std::cout << "================== WTF ================\n";
+		return;
+	    }
+	    unsigned int indexCount = (*iCounts)[faceNumber];
+	    unsigned long base = faceBaseOffset[faceNumber];
+	    unsigned short size;
+	    if (faceNumber < faceSet.getFaces()->size()) {
+		size = faceBaseOffset[faceNumber+1] - base;
+	    } else {
+		size = (*iCounts)[iCounts->size() - 1];
+	    }
+	    if (size == 3) {
+		indiceBuffer.push_back((*iIndices)[base+0]);
+		indiceBuffer.push_back((*iIndices)[base+1]);
+		indiceBuffer.push_back((*iIndices)[base+2]);
+	    } else if (size == 4) {
+		indiceBuffer.push_back((*iIndices)[base+0]);
+		indiceBuffer.push_back((*iIndices)[base+1]);
+		indiceBuffer.push_back((*iIndices)[base+2]);
+
+		indiceBuffer.push_back((*iIndices)[base+2]);
+		indiceBuffer.push_back((*iIndices)[base+3]);
+		indiceBuffer.push_back((*iIndices)[base+0]);
+	    }
+	}
+	o->second.emplace_back();
+	if (isFirst) {
+	    meshBaseVBO = o->second.size() - 1;
+	    meshReferance = o;
+	    o->second[meshBaseVBO].uploadVertexOnly(vertexBuffer);
+	    isFirst = false;
+	}
+	o->second[o->second.size() - 1].uploadElementOnly(indiceBuffer, meshReferance->second[meshBaseVBO]._vbo, meshReferance->second[meshBaseVBO]._vao); // TODO use a iterator instead of meshBaseVBO
+	o->second[o->second.size() - 1].uMeshTransform = transform_;
+	indiceBuffer.clear();
     }
-    o.second[meshBaseVBO].uploadElementOnly(indiceBuffer, o.second[meshBaseVBO]._vbo, o.second[meshBaseVBO]._vao);
 
     //std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
     //o.second.emplace_back();

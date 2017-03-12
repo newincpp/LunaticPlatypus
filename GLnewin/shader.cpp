@@ -6,6 +6,10 @@ Shader::Shader() : _vertexId(std::make_pair("", 0)), _fragmentId(std::make_pair(
 
 void Shader::add(std::string sourceFile_, GLenum type_) {
     std::ifstream t(sourceFile_);
+    if (t.fail()) {
+        std::cout << "\033[31mfailed to open the shader: \"" << sourceFile_ << "\"\n";
+	return;
+    }
     std::string str((std::istreambuf_iterator<char>(t)),
 	    std::istreambuf_iterator<char>());
     const char* s = str.c_str();
@@ -60,6 +64,8 @@ void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
 	char ErrorMessage[InfoLogLength];
 	glGetProgramInfoLog(_programId, InfoLogLength, NULL, ErrorMessage);
 	std::cout << "\033[31mfailed to Link with error:\"" << ErrorMessage << std::endl << "-------------------\033[0m" << std::endl;
+	_programId = 0;
+	return;
     }
     glUseProgram(_programId);
     int count;
@@ -101,9 +107,9 @@ bool Shader::containUniform(Uniform &u_) {
     return false;
 }
 
-void Shader::use() {
+bool Shader::use() {
     if (!_programId) {
-	return;
+	return false;
     }
     glUseProgram(_programId);
     for (decltype(uniformList)::value_type& u : uniformList) {
@@ -114,4 +120,5 @@ void Shader::use() {
 	    u.second = u.first.getFrameUpdated();
 	}
     }
+    return true;
 }

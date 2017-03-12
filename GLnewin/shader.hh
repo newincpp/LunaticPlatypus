@@ -49,5 +49,5 @@ class Shader {
 	void link(const std::vector<std::string>&& fragDataOutPut_);
 	template <typename T>
 		void relocateUniform(Uniform&&, const char* name_);
-	void use();
+	bool use();
 };

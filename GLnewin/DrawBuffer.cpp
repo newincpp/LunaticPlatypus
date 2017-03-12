@@ -21,10 +21,11 @@ void DrawBuffer::render() {
     for (unsigned int a = 0; a < _activeCamera && a < _cameras.size(); ++a) {
 	_cameras[a].use();
 	for (std::pair<Shader, std::vector<Mesh>>& material : _drawList) {
-	    material.first.use();
-	    for (Mesh& m : material.second) {
-		m.render();
-	    }
+	    if (material.first.use()) {
+		for (Mesh& m : material.second) {
+		    m.render();
+		}
+	    } 
 	}
 	_cameras[a].unUse();
     }

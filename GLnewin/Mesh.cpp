@@ -100,5 +100,5 @@ void Mesh::render() {
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
-    glDrawElements(GL_TRIANGLES, _size, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, _size, GL_UNSIGNED_INT, 0); // TODO implement multidraw architecture
 }
