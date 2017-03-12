@@ -104,12 +104,11 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     std::vector<GLfloat> vertexBuffer;
     std::vector<GLuint> indiceBuffer;
 
-    Alembic::AbcCoreAbstract::index_t index;
+    Alembic::AbcCoreAbstract::index_t index = 0;
     Alembic::Abc::P3fArraySamplePtr points = schema.getPositionsProperty().getValue(Alembic::Abc::ISampleSelector(index));
     Alembic::AbcGeom::IN3fGeomParam::Sample sampN;
     schema.getNormalsParam().getExpanded(sampN, Alembic::Abc::ISampleSelector(index));
     Alembic::Abc::N3fArraySamplePtr sampVal = sampN.getVals();
-    size_t sampSize = sampVal->size();
 
     unsigned int numPoints = points->size();
     vertexBuffer.reserve(numPoints);
@@ -126,24 +125,24 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	vertexBuffer.push_back(0.0f);
     }
 
-
-
     // Get face count info
     Alembic::AbcGeom::IPolyMeshSchema::Sample samp;
     schema.get(samp, Alembic::Abc::ISampleSelector(index));
     Alembic::Abc::Int32ArraySamplePtr iCounts = samp.getFaceCounts();
     Alembic::Abc::Int32ArraySamplePtr iIndices = samp.getFaceIndices();
-    unsigned int numPolys = iCounts->size();
     unsigned int numConnects = iIndices->size();
     indiceBuffer.reserve(numConnects);
 
 
     std::vector<unsigned long> faceBaseOffset;
-    faceBaseOffset.reserve(numConnects);
+    faceBaseOffset.reserve(iCounts->size());
     unsigned int base = 0;
-    for (unsigned int i = 0; i < numPolys; ++i) {
+    for (unsigned int i = 0; i < iCounts->size(); ++i) {
 	faceBaseOffset.push_back(base);
         base += (*iCounts)[i];
+	if ((*iCounts)[i] > 4) {
+	    std::cout << "ngon detected\n";
+	}
     }
 
 
@@ -174,13 +173,8 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	fSetSamp.get(faceSet, 0);
 	for (unsigned int i = 0; i < faceSet.getFaces()->size(); ++i) {
 	    unsigned int faceNumber = (*faceSet.getFaces())[i];
-	    if (faceNumber > numPolys) {
-		std::cout << "================== WTF ================\n";
-		return;
-	    }
-	    unsigned int indexCount = (*iCounts)[faceNumber];
 	    unsigned long base = faceBaseOffset[faceNumber];
-	    unsigned short size;
+	    unsigned short size = 3;
 	    if (faceNumber < faceSet.getFaces()->size()) {
 		size = faceBaseOffset[faceNumber+1] - base;
 	    } else {
@@ -195,9 +189,12 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 		indiceBuffer.push_back((*iIndices)[base+1]);
 		indiceBuffer.push_back((*iIndices)[base+2]);
 
+		indiceBuffer.push_back((*iIndices)[base+0]);
 		indiceBuffer.push_back((*iIndices)[base+2]);
 		indiceBuffer.push_back((*iIndices)[base+3]);
-		indiceBuffer.push_back((*iIndices)[base+0]);
+	    } else {
+		std::cout << iobj.getName() << '\n';
+		std::cout << size << " ngon are NOT supported yet\n";
 	    }
 	}
 	o->second.emplace_back();
@@ -211,11 +208,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	o->second[o->second.size() - 1].uMeshTransform = transform_;
 	indiceBuffer.clear();
     }
-
-    //std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
-    //o.second.emplace_back();
-    //o.second[o.second.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
-    //o.second[o.second.size() - 1].uMeshTransform = transform_;
 }
 
 void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_) {

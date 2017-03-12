@@ -8,6 +8,7 @@
 #ifdef TINYOBJLOADER
 #include "tiny_obj_loader.h"
 #elif defined(ALEMBIC) || defined(ALEMBICV2)
+#define register // deleting warnings in alembig
 #include <map>
 #include "Alembic/Abc/IObject.h"
 #elif defined(ASSIMP)
