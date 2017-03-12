@@ -49,20 +49,19 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
 
 void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawBuffer& s_, glm::mat4 transform_) {
     const Alembic::Abc::MetaData &md = iobj.getMetaData();
-    std::string path = iobj.getName();
 
     if (Alembic::AbcGeom::ICurves::matches(md)) {
-	//std::cout << "Curves not implemented yet\n";
+	std::cout << "Curves not implemented yet\n";
     } else if (Alembic::AbcGeom::INuPatch::matches(md)) {
-	//std::cout << "NuPatch not implemented yet\n";
+	std::cout << "NuPatch not implemented yet\n";
     } else if (Alembic::AbcGeom::IPoints::matches(md)) {
-	//std::cout << "Points not implemented yet\n";
+	std::cout << "Points not implemented yet\n";
     } else if (Alembic::AbcGeom::ISubDSchema::matches(md)) {
-	//std::cout << "ISubDSchema not implemented yet\n";
+	std::cout << "ISubDSchema not implemented yet\n";
     } else if (Alembic::AbcGeom::IFaceSet::matches(md)) {
 	//std::cout << "IFaceset not implemented yet\n";
     } else if (Alembic::AbcGeom::ILight::matches(md)) {
-	//std::cout << "Lights not implemented yet\n";
+	std::cout << "Lights not implemented yet\n";
     } else if (Alembic::AbcGeom::IXform::matches(md)) {
 	transformUpdate(iobj, transform_);
     } else if (Alembic::AbcGeom::ICamera::matches(md)) {
