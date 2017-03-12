@@ -100,7 +100,7 @@ void Importer::genMesh(const aiScene* scene_, DrawBuffer& s_) {
 
 	s_._meshes.emplace_back();
 	s_._meshes[s_._meshes.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
-	s_._meshes[s_._meshes.size() - 1]._name = mesh->mName.C_Str();
+	//s_._meshes[s_._meshes.size() - 1]._name = mesh->mName.C_Str();
 
 	//_meshBuffer.emplace();
 	//_meshBuffer.top().uploadToGPU(vertexBuffer, indiceBuffer);

@@ -24,15 +24,19 @@ struct __remove_reference__<InputType_&&> {
 
 
 class Mesh {
-    private:
+    public:
 	GLuint _vao;
 	GLuint _vbo;
 	GLuint _ebo;
-	int size;
-    public:
+	int _size;
 	Uniform uMeshTransform;
-	std::string _name;
+	//std::string _name;
 	Mesh();
-	void uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_);
+	void uploadToGPU(std::vector<GLfloat>&, std::vector<GLuint>&);
+	void uploadElementOnly(std::vector<GLuint>&, GLuint, GLuint);
 	void render();
+	void freeVao();
+	void freeVbo();
+	void freeEbo();
+	void GpuFree();
 };

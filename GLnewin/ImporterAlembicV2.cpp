@@ -106,32 +106,8 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     Alembic::AbcGeom::IPolyMesh mesh(iobj);
     Alembic::AbcGeom::IPolyMeshSchema schema = mesh.getSchema();
 
-    if (schema.getTopologyVariance() == Alembic::AbcGeom::kHeterogenousTopology) {
-	std::cout << "mesh is has heterogenous topology\n";
-	return;
-    }
-
-
     std::vector<GLfloat> vertexBuffer;
     std::vector<GLuint> indiceBuffer;
-
-
-    std::vector<std::string> oFaceSetNames;
-    schema.getFaceSetNames(oFaceSetNames);
-    for (std::string x : oFaceSetNames) {
-	std::cout << "faceSet Name: " << x << '\n';
-
-	Alembic::AbcGeom::IFaceSetSchema msp = schema.getFaceSet(x).getSchema();
-	Alembic::AbcGeom::IFaceSetSchema::Sample p;
-	msp.get(p, 0);
-
-	std::cout << "faceset = " << p.getFaces()->size() << '\n';
-	for (unsigned int i = 0; p.getFaces()->size() > i; ++i) {
-	    std::cout << "f " << (*p.getFaces())[i] << '\n';
-	}
-    }
-
-
 
     Alembic::AbcCoreAbstract::index_t index;
     Alembic::Abc::P3fArraySamplePtr points = schema.getPositionsProperty().getValue(Alembic::Abc::ISampleSelector(index));
@@ -155,6 +131,8 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	vertexBuffer.push_back(0.0f);
     }
 
+
+
     // Get face count info
     Alembic::AbcGeom::IPolyMeshSchema::Sample samp;
     schema.get(samp, Alembic::Abc::ISampleSelector(index));
@@ -164,40 +142,49 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     unsigned int numConnects = iIndices->size();
     indiceBuffer.reserve(numConnects);
 
-
-    Alembic::AbcGeom::IFaceSetSchema msp = schema.getFaceSet(oFaceSetNames[0]).getSchema();
+    std::vector<std::string> oFaceSetNames;
+    schema.getFaceSetNames(oFaceSetNames);
+    Alembic::AbcGeom::IFaceSetSchema fSetSamp = schema.getFaceSet(oFaceSetNames[0]).getSchema();
     Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
-    msp.get(faceSet, 0);
-    unsigned int facePointIndex = 0;
+    fSetSamp.get(faceSet, 0);
+
+    std::vector<unsigned long> faceBaseOffset;
+    faceBaseOffset.reserve(numConnects);
     unsigned int base = 0;
     for (unsigned int i = 0; i < numPolys; ++i) {
-	//int curNum = (*iCounts)[(*faceSet.getFaces())[i]];
-	int curNum = (*iCounts)[i];
-	if (curNum == 3) {
-	    indiceBuffer.push_back((*iIndices)[base+curNum-0-1]);
-	    indiceBuffer.push_back((*iIndices)[base+curNum-1-1]);
-	    indiceBuffer.push_back((*iIndices)[base+curNum-2-1]);
-	    facePointIndex += 3;
-	} else if (curNum == 4) {
-	    indiceBuffer.push_back((*iIndices)[base+curNum-0-1]);
-	    indiceBuffer.push_back((*iIndices)[base+curNum-1-1]);
-	    indiceBuffer.push_back((*iIndices)[base+curNum-2-1]);
-
-	    indiceBuffer.push_back((*iIndices)[base+curNum-2-1]);
-	    indiceBuffer.push_back((*iIndices)[base+curNum-3-1]);
-	    indiceBuffer.push_back((*iIndices)[base+curNum-0-1]);
-	    facePointIndex += 4;
-	} else {
-	    //TODO ngon not supported yet
-	}
-
-	base += curNum;
+	faceBaseOffset.push_back(base);
+        base += (*iCounts)[i];
     }
+
+    for (unsigned int i = 0; i < faceSet.getFaces()->size(); ++i) {
+	unsigned int faceNumber = (*faceSet.getFaces())[i];
+	if (faceNumber > numPolys) {
+	    std::cout << "================== WTF ==========\n";
+	    return;
+	}
+	unsigned int indexCount = (*iCounts)[faceNumber];
+	unsigned long base = faceBaseOffset[faceNumber];
+	unsigned short size = faceBaseOffset[faceNumber+1] - base;
+	if (size == 3) {
+	    indiceBuffer.push_back((*iIndices)[base+0]);
+	    indiceBuffer.push_back((*iIndices)[base+1]);
+	    indiceBuffer.push_back((*iIndices)[base+2]);
+	} else if (size == 4) {
+	    indiceBuffer.push_back((*iIndices)[base+0]);
+	    indiceBuffer.push_back((*iIndices)[base+1]);
+	    indiceBuffer.push_back((*iIndices)[base+2]);
+
+	    indiceBuffer.push_back((*iIndices)[base+2]);
+	    indiceBuffer.push_back((*iIndices)[base+3]);
+	    indiceBuffer.push_back((*iIndices)[base+0]);
+	}
+    }
+
     std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
     o.second.emplace_back();
     o.second[o.second.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
     o.second[o.second.size() - 1].uMeshTransform = transform_;
-    o.second[o.second.size() - 1]._name = iobj.getName();
+    //o.second[o.second.size() - 1]._name = iobj.getName();
 }
 
 void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_) {

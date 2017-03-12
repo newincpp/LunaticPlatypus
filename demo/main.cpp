@@ -8,7 +8,7 @@ class MyGame : public Heart::IGamelogic {
 	std::chrono::time_point<std::chrono::system_clock> _start;
 	glm::vec3 p;
 	MyGame() {
-	    _scene = "./nelo.abc";
+	    _scene = "./triTest.abc";
 
 	    _start = std::chrono::system_clock::now();
 	}

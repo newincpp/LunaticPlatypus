@@ -28,7 +28,7 @@ void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
     glGenBuffers(1, &_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), GL_STATIC_DRAW);
-    size = ebo_.size();
+    _size = ebo_.size();
 
     //std::cout << "vertex[" << vbo_.size() << "] = {\n";
     //for (GLfloat v : vbo_) {
@@ -41,12 +41,42 @@ void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
     //std::cout << "};\n";
 }
 
+void Mesh::uploadElementOnly(std::vector<GLuint>& ebo_, GLuint vbo_, GLuint vao_) {
+    _vbo = vbo_;
+    _vao = vao_;
+
+    glBindVertexArray(_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+
+    glGenBuffers(1, &_ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), GL_STATIC_DRAW);
+    _size = ebo_.size();
+}
+
+void Mesh::GpuFree() {
+    freeVao();
+    freeVbo();
+    freeEbo();
+}
+
+void Mesh::freeVao() {
+    glDeleteVertexArrays(1, &_vao);
+}
+
+void Mesh::freeVbo() {
+    glDeleteBuffers(1, &_vbo);
+}
+
+void Mesh::freeEbo() {
+    glDeleteBuffers(1, &_ebo);
+}
+
 void Mesh::render() {
-    //autoRelocate(uMeshTransform);
     uMeshTransform.upload();
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
-    glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, _size, GL_UNSIGNED_INT, 0);
 }
