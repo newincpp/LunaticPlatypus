@@ -34,6 +34,7 @@ class Mesh {
 	Mesh();
 	void uploadToGPU(std::vector<GLfloat>&, std::vector<GLuint>&);
 	void uploadElementOnly(std::vector<GLuint>&, GLuint, GLuint);
+	void uploadVertexOnly(std::vector<GLfloat>&);
 	void render();
 	void freeVao();
 	void freeVbo();

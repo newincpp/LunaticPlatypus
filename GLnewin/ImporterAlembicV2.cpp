@@ -130,6 +130,11 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	vertexBuffer.push_back(0.0f);
 	vertexBuffer.push_back(0.0f);
     }
+    std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
+    o.second.emplace_back();
+    unsigned long meshBaseVBO = o.second.size() - 1;
+    o.second[meshBaseVBO].uploadVertexOnly(vertexBuffer);
+    o.second[meshBaseVBO].uMeshTransform = transform_;
 
 
 
@@ -185,12 +190,12 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	    indiceBuffer.push_back((*iIndices)[base+0]);
 	}
     }
+    o.second[meshBaseVBO].uploadElementOnly(indiceBuffer, o.second[meshBaseVBO]._vbo, o.second[meshBaseVBO]._vao);
 
-    std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
-    o.second.emplace_back();
-    o.second[o.second.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
-    o.second[o.second.size() - 1].uMeshTransform = transform_;
-    //o.second[o.second.size() - 1]._name = iobj.getName();
+    //std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
+    //o.second.emplace_back();
+    //o.second[o.second.size() - 1].uploadToGPU(vertexBuffer, indiceBuffer);
+    //o.second[o.second.size() - 1].uMeshTransform = transform_;
 }
 
 void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_) {
