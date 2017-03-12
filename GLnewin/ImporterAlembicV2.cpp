@@ -142,11 +142,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     unsigned int numConnects = iIndices->size();
     indiceBuffer.reserve(numConnects);
 
-    std::vector<std::string> oFaceSetNames;
-    schema.getFaceSetNames(oFaceSetNames);
-    Alembic::AbcGeom::IFaceSetSchema fSetSamp = schema.getFaceSet(oFaceSetNames[0]).getSchema();
-    Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
-    fSetSamp.get(faceSet, 0);
 
     std::vector<unsigned long> faceBaseOffset;
     faceBaseOffset.reserve(numConnects);
@@ -156,15 +151,26 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
         base += (*iCounts)[i];
     }
 
+
+    std::vector<std::string> oFaceSetNames;
+    schema.getFaceSetNames(oFaceSetNames);
+    Alembic::AbcGeom::IFaceSetSchema fSetSamp = schema.getFaceSet(oFaceSetNames[0]).getSchema();
+    Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
+    fSetSamp.get(faceSet, 0);
     for (unsigned int i = 0; i < faceSet.getFaces()->size(); ++i) {
 	unsigned int faceNumber = (*faceSet.getFaces())[i];
 	if (faceNumber > numPolys) {
-	    std::cout << "================== WTF ==========\n";
+	    std::cout << "================== WTF ================\n";
 	    return;
 	}
 	unsigned int indexCount = (*iCounts)[faceNumber];
 	unsigned long base = faceBaseOffset[faceNumber];
-	unsigned short size = faceBaseOffset[faceNumber+1] - base;
+	unsigned short size;
+	if (faceNumber < faceSet.getFaces()->size()) {
+	    size = faceBaseOffset[faceNumber+1] - base;
+	} else {
+	    size = (*iCounts)[iCounts->size() - 1];
+	}
 	if (size == 3) {
 	    indiceBuffer.push_back((*iIndices)[base+0]);
 	    indiceBuffer.push_back((*iIndices)[base+1]);
