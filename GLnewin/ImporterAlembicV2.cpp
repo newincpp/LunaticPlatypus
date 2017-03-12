@@ -175,7 +175,7 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	    unsigned int faceNumber = (*faceSet.getFaces())[i];
 	    unsigned long base = faceBaseOffset[faceNumber];
 	    unsigned short size = 3;
-	    if (faceNumber < faceSet.getFaces()->size()) {
+	    if (faceNumber < (faceSet.getFaces()->size() - 1)) {
 		size = faceBaseOffset[faceNumber+1] - base;
 	    } else {
 		size = (*iCounts)[iCounts->size() - 1];
@@ -193,7 +193,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 		indiceBuffer.push_back((*iIndices)[base+2]);
 		indiceBuffer.push_back((*iIndices)[base+3]);
 	    } else {
-		std::cout << iobj.getName() << '\n';
 		std::cout << size << " ngon are NOT supported yet\n";
 	    }
 	}
