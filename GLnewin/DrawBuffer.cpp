@@ -25,7 +25,9 @@ void DrawBuffer::render() {
 		for (Mesh& m : material.second) {
 		    m.render();
 		}
-	    } 
+	    } else {
+		std::cout << "trying to use invalid material\n";
+	    }
 	}
 	_cameras[a].unUse();
     }

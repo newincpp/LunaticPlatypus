@@ -108,7 +108,7 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     Alembic::Abc::P3fArraySamplePtr points = schema.getPositionsProperty().getValue(Alembic::Abc::ISampleSelector(index));
     Alembic::AbcGeom::IN3fGeomParam::Sample sampN;
     schema.getNormalsParam().getExpanded(sampN, Alembic::Abc::ISampleSelector(index));
-    Alembic::Abc::N3fArraySamplePtr sampVal = sampN.getVals();
+    Alembic::Abc::N3fArraySamplePtr normals = sampN.getVals();
 
     unsigned int numPoints = points->size();
     vertexBuffer.reserve(numPoints);
@@ -117,9 +117,9 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	vertexBuffer.push_back((*points)[i].y);
 	vertexBuffer.push_back((*points)[i].z);
 
-	vertexBuffer.push_back((*sampVal)[i].x);
-	vertexBuffer.push_back((*sampVal)[i].y);
-	vertexBuffer.push_back((*sampVal)[i].z);
+	vertexBuffer.push_back((*normals)[i].x);
+	vertexBuffer.push_back((*normals)[i].y);
+	vertexBuffer.push_back((*normals)[i].z);
 
 	vertexBuffer.push_back(0.0f);
 	vertexBuffer.push_back(0.0f);
@@ -140,9 +140,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     for (unsigned int i = 0; i < iCounts->size(); ++i) {
 	faceBaseOffset.push_back(base);
         base += (*iCounts)[i];
-	if ((*iCounts)[i] > 4) {
-	    std::cout << "ngon detected\n";
-	}
     }
 
 
@@ -166,8 +163,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	    _shaderList[faceSetName] = --s_._drawList.end();
 	}
 
-
-
 	Alembic::AbcGeom::IFaceSetSchema fSetSamp = schema.getFaceSet(faceSetName).getSchema();
 	Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
 	fSetSamp.get(faceSet, 0);
@@ -181,20 +176,18 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 		size = (*iCounts)[iCounts->size() - 1];
 	    }
 	    if (size == 3) {
-		indiceBuffer.push_back((*iIndices)[base+0]);
-		indiceBuffer.push_back((*iIndices)[base+1]);
 		indiceBuffer.push_back((*iIndices)[base+2]);
+		indiceBuffer.push_back((*iIndices)[base+1]);
+		indiceBuffer.push_back((*iIndices)[base+0]);
 	    } else if (size == 4) {
-		indiceBuffer.push_back((*iIndices)[base+0]);
-		indiceBuffer.push_back((*iIndices)[base+1]);
 		indiceBuffer.push_back((*iIndices)[base+2]);
+		indiceBuffer.push_back((*iIndices)[base+1]);
+		indiceBuffer.push_back((*iIndices)[base+0]);
 
 		indiceBuffer.push_back((*iIndices)[base+0]);
-		indiceBuffer.push_back((*iIndices)[base+2]);
 		indiceBuffer.push_back((*iIndices)[base+3]);
-	    } else {
-		std::cout << size << " ngon are NOT supported yet\n";
-	    }
+		indiceBuffer.push_back((*iIndices)[base+2]);
+	    } 
 	}
 	o->second.emplace_back();
 	if (isFirst) {
@@ -222,5 +215,5 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm:
     mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9));
     mainCamera.fieldOfview(s.getFieldOfView());
     mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane()));
-    mainCamera.upVector(glm::vec3(0.0f, 1.0f, 0.0f));
+    mainCamera.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
 }

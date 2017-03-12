@@ -35,11 +35,9 @@ void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
     _programId = glCreateProgram();
     if (_vertexId.second) {
 	glAttachShader(_programId, _vertexId.second);
-	    std::cout << "vertex shader has id " << _programId << std::endl;
     }
     if (_fragmentId.second) {
 	glAttachShader(_programId, _fragmentId.second);
-	    std::cout << "fragment shader has id " << _programId << std::endl;
     }
     if (_geometryId.second) {
 	glAttachShader(_programId, _geometryId.second);
@@ -66,6 +64,8 @@ void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
 	std::cout << "\033[31mfailed to Link with error:\"" << ErrorMessage << std::endl << "-------------------\033[0m" << std::endl;
 	_programId = 0;
 	return;
+    } else {
+	std::cout << "\033[32mshader program" << _programId << " succesfully linked\033[0m\n";
     }
     glUseProgram(_programId);
     int count;
