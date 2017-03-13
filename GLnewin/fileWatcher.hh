@@ -7,16 +7,16 @@
 
 class FileWatcher {
     private:
-	int _length;
 	int _fd;
 	int _wd;
 	bool _still;
-	char _buffer[4096];
-	std::thread t;
+	std::thread _t;
+	void fileChecker();
     public:
+	std::function<void(void)> callBack;
 	//void(*_callBack)(void);
-	FileWatcher(std::string&);
-	FileWatcher(const char*);
-	bool isModified();
+	FileWatcher(std::string&, bool = true);
+	FileWatcher(const char*, bool = true);
+	//bool isModified();
 	~FileWatcher();
 };

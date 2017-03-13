@@ -12,6 +12,7 @@
 
 class DrawBuffer {
     public:
+	bool _valid;
 	std::vector<FrameBuffer> _fb;
 	std::vector<Camera> _cameras;
 	//std::vector<Mesh> _meshes;

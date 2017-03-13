@@ -39,39 +39,18 @@ void OglCore::init() {
 	0, 3, 2
     };
 
-    //_s._drawList.emplace_back();
-    //_sgBuffer = --(_s._drawList.end());
-    //_sgBuffer->first.add("./fragGBuffer.glsl", GL_FRAGMENT_SHADER);
-    //_sgBuffer->first.add("./vertGBuffer.glsl", GL_VERTEX_SHADER);
-    //_sgBuffer->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
-
-    //_s._drawList.emplace_back();
-    //_sPostProc = --(_s._drawList.end());
     _compositor.add("./compositor.glsl",GL_FRAGMENT_SHADER);
     _compositor.add("./compositorVert.glsl",GL_VERTEX_SHADER);
     _compositor.link({"outColour"});
 
-    Mesh m;
-    glGenTextures(1, &fractalTex);
-    glBindTexture(GL_TEXTURE_2D, fractalTex);
-
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-
-    //glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16UI, 512, 512); // int
-    glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA16F, 512, 512); // float
-    checkGlError;
-    glBindTexture(GL_TEXTURE_2D, 0);
     _s._fb.emplace_back();
     _s._fb[0].addBuffer("gPosition");
     _s._fb[0].addBuffer("gNormal");
     _s._fb[0].addBuffer("gAlbedoSpec");
     _s._fb[0].addDepthBuffer("gDepth");
     _s._fb[0].enable();
+    Mesh m;
     m.uploadToGPU(vertices, elements);
-    //_s._meshes.push_back(m);
     _s._cameras.emplace_back(_s._fb[0]);
 
     _renderTarget.uploadToGPU(vertices, elements);
@@ -86,6 +65,20 @@ void OglCore::init() {
     //_uPostPRocessTexture.addItselfToShaders(_s._drawList);
     _s.addCameraUniformsToShaders();
     std::cout << "OpenGL renderer initialized" << std::endl;
+
+
+
+
+    glGenTextures(1, &fractalTex);
+    glBindTexture(GL_TEXTURE_2D, fractalTex);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    //glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16UI, 512, 512); // int
+    glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA16F, 512, 512); // float
+    checkGlError;
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void OglCore::render() {

@@ -14,11 +14,11 @@ Heart::Heart() : _fw(nullptr) {
 	_game->_scene = STRINGIZE(DEFAULT_SCENE);
     }
     std::cout << "default scene: " << _game->_scene << "\n";
-//    _fw.bind([](){
-//	    std::cout << "file modified\n";
-//	    });
     _renderer.getDrawBuffer().reset(_game->_scene);
     _game->postEngineInit();
+
+    _fw = new FileWatcher(_game->_scene.c_str());
+    _fw->callBack = [this](){ _renderer.getDrawBuffer().reset(_game->_scene); };
 }
 
 void Heart::run() {
@@ -50,12 +50,6 @@ void Heart::run() {
 	    }
 	    _fw = new FileWatcher(_game->_scene.c_str());
 	    mod = false;
-	}
-	if (_fw) {
-	    if (_fw->isModified()) {
-		_renderer.getDrawBuffer().reset(_game->_scene);
-		std::cout << "mod!\n";
-	    }
 	}
 	_scene.update();
 	ImGui::Render();

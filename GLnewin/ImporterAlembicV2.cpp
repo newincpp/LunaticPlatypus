@@ -11,17 +11,6 @@
 #include <glm/gtx/transform.hpp>
 
 void Importer::load(std::string& file, DrawBuffer& s_) {
-    //s_._drawList.emplace_back();
-    //std::pair<Shader, std::vector<Mesh>>& o =  s_._drawList.back();
-
-    //o.first.add("gold.material/fragment.glsl", GL_FRAGMENT_SHADER);
-    //o.first.add("gold.material/vertex.glsl", GL_VERTEX_SHADER);
-    //o.first.link({"gPosition", "gNormal", "gAlbedoSpec"});
-
-    //o.second.reserve(shapes.size());
-
-
-
     // Create an instance of the Importer class
     Alembic::AbcCoreFactory::IFactory factory;
     factory.setPolicy(Alembic::Abc::ErrorHandler::kQuietNoopPolicy);
@@ -30,7 +19,8 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
 
     std::cout  << "Alembic library version: " << Alembic::AbcCoreAbstract::GetLibraryVersion() << '\n';
     if (!archive || !archive.valid()) {
-	std::cout << "Alembic: failed to open archive\n" << std::endl;
+	std::cout << "Alembic: failed to open " << file << "\n" << std::endl;
+	return;
     }
 
     std::string appName;
@@ -40,7 +30,7 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
     std::string userDescription;
     GetArchiveInfo (archive, appName, libraryVersionString, libraryVersion, whenWritten, userDescription);
 
-    std::cout << "file written by: " << appName << '\n' << "using Alembic : " << libraryVersionString << '\n' << "user description : " << userDescription << '\n';
+    std::cout << "file written by: " << appName << ' ' << "using: " << libraryVersionString << '\n' << "user description : " << userDescription << '\n';
 
     Alembic::Abc::IObject iobj = archive.getTop();
     glm::mat4 root(1.0f);
@@ -64,8 +54,12 @@ void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawB
 	std::cout << "Lights not implemented yet\n";
     } else if (Alembic::AbcGeom::IXform::matches(md)) {
 	transformUpdate(iobj, transform_);
+	std::string gameClassType("_GameClass");
+	if ((gameClassType.size() < iobj.getName().size()) && (gameClassType == iobj.getName().substr(iobj.getName().size() - gameClassType.size()))) {
+	    genGameClass(iobj.getName(), transform_);
+	}
     } else if (Alembic::AbcGeom::ICamera::matches(md)) {
-	genCamera(iobj , s_, transform_);
+	genCamera(iobj, s_, transform_);
     } else if (Alembic::AbcGeom::IPolyMesh::matches(md)) {
 	genMesh(iobj, s_, transform_);
     } else {
@@ -154,11 +148,13 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	if(shaderN != _shaderList.end()) {
 	    o = &(*shaderN->second);
 	} else {
+	    s_._valid = false;
 	    s_._drawList.emplace_back();
 	    o = &(s_._drawList.back());
 	    o->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
 	    o->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
 	    o->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
+	    s_._valid = true;
 	    _shaderList[faceSetName] = --s_._drawList.end();
 	}
 
@@ -188,6 +184,7 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 		indiceBuffer.push_back((*iIndices)[base+2]);
 	    } 
 	}
+	s_._valid = false;
 	o->second.emplace_back();
 	if (isFirst) {
 	    meshBaseVBO = o->second.size() - 1;
@@ -196,6 +193,7 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	    isFirst = false;
 	}
 	o->second[o->second.size() - 1].uploadElementOnly(indiceBuffer, meshReferance->second[meshBaseVBO]._vbo, meshReferance->second[meshBaseVBO]._vao); // TODO use a iterator instead of meshBaseVBO
+	s_._valid = true;
 	o->second[o->second.size() - 1].uMeshTransform = transform_;
 	indiceBuffer.clear();
     }
@@ -207,7 +205,9 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm:
     Alembic::AbcGeom::CameraSample s;
 
     ms.get(s, 0);
+    s_._valid = false;
     s_._cameras.emplace_back(s_._fb[0]);
+    s_._valid = true;
     Camera& mainCamera = s_._cameras[s_._cameras.size() - 1];
 
     mainCamera.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
@@ -215,4 +215,8 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm:
     mainCamera.fieldOfview(s.getFieldOfView());
     mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane()));
     mainCamera.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
+}
+
+void Importer::genGameClass(const std::string& name, glm::mat4&) {
+    std::cout << "gameClass detected: " << name << '\n';
 }

@@ -5,7 +5,7 @@
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
-DrawBuffer::DrawBuffer() : _activeCamera(1) {
+DrawBuffer::DrawBuffer() : _valid(true), _activeCamera(1) {
     _fb.reserve(8);
     _cameras.reserve(512);
 }
@@ -17,6 +17,9 @@ void DrawBuffer::update(unsigned int currentFrame) {
 }
 
 void DrawBuffer::render() {
+    if (!_valid) {
+	return;
+    }
     ImGui::Text("camera in use: %d", _activeCamera);
     for (unsigned int a = 0; a < _activeCamera && a < _cameras.size(); ++a) {
 	_cameras[a].use();
@@ -25,9 +28,7 @@ void DrawBuffer::render() {
 		for (Mesh& m : material.second) {
 		    m.render();
 		}
-	    } else {
-		std::cout << "trying to use invalid material\n";
-	    }
+	    } 
 	}
 	_cameras[a].unUse();
     }
@@ -43,7 +44,9 @@ void DrawBuffer::reset(std::string& scene_) {
 	material.second.clear();
     }
     _drawList.clear();
+    _valid = false;
     Importer iscene(scene_, *this);
+    _valid = true;
     addAllUniformsToShaders();
 }
 
