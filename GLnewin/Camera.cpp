@@ -40,6 +40,9 @@ void Camera::setMatrix(glm::mat4&& m_) {
 void Camera::lookAt(glm::vec3&& target_) {
     _target = target_;
 }
+void Camera::addPos(glm::vec3&& Pos_) {
+    _position += Pos_;
+}
 void Camera::setPos(glm::vec3&& newPos_) {
     _position = newPos_;
 }

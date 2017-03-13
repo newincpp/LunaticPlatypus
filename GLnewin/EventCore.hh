@@ -28,5 +28,5 @@ class EventInterface {
 
 	void exec(std::string&&);
 	static void sExec(std::string&&);
-	void bind(std::string&&, std::function<void()>&);
+	void bind(std::string&&, std::function<void()>&&);
 };
