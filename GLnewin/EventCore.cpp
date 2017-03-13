@@ -48,7 +48,7 @@ void EventInterface::sExec(std::string&& evName_) {
     }
 }
 
-void EventInterface::bind(std::string&& evName_, std::function<void()>& fun_) {
+void EventInterface::bind(std::string&& evName_, std::function<void()>&& fun_) {
     _eCore->bindAction(evName_, fun_);
 }
 

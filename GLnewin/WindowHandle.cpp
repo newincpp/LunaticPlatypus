@@ -79,5 +79,6 @@ WindowHandle::~WindowHandle() {
 
 void WindowHandle::keyCallback(GLFWwindow* w_, int key_, int scanCode_, int keyStatus_, int modsKey_) {
     ImGui_ImplGlfwGL3_KeyCallback(w_, key_, scanCode_, keyStatus_, modsKey_);
+    EventInterface::sExec(std::to_string(key_));
     EventInterface::sExec("keyboard");
 }

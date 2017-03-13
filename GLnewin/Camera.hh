@@ -23,6 +23,7 @@ class Camera {
 	Camera(Camera&&);
 	void operator=(const Camera&&) = delete;
 	void lookAt(glm::vec3&&);
+	void addPos(glm::vec3&&);
 	void setPos(glm::vec3&&);
 	void fieldOfview(float);
 	void clipPlane(glm::vec2&&);
