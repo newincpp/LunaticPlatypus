@@ -13,6 +13,7 @@ void nelo::init(std::list<std::function<void(float)>>* tickFunctions_) {
 
 void nelo::destroy() {
     std::cout << "aaaaaannnd am ded =(\n";
+    _tickFunctions->clear();
 }
 
 nelo::~nelo() {

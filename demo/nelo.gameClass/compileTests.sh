@@ -1,2 +1,2 @@
 #!/bin/sh
-dmd nelo.d -fPIC -ofnelo.so -shared
+dmd nelo.d -fPIC -ofneloD.so -shared

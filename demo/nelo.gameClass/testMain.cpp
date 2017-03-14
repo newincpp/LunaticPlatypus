@@ -14,7 +14,7 @@ class DynamicGameClass {
 	DynamicGameClass(std::string&& name) : DynamicGameClass(name) {}
 	DynamicGameClass(std::string& name) : _lib_handle(nullptr), _handle(nullptr), _genClass(nullptr) {
 	    std::string libname("./" + name + ".so");
-	    _lib_handle = dlopen(libname.c_str(), RTLD_LAZY);
+	    _lib_handle = dlopen(libname.c_str(), RTLD_NOW);
 	    if (!_lib_handle) {
 		std::cout << "failed to open \"" << libname << "\"\n";
 		return;
@@ -57,6 +57,7 @@ class DynamicGameClass {
 	    delete _handle;
 	    std::cout << "destructor call ok\n";
 	    dlclose(_lib_handle);
+	    std::cout << "handle deleted\n";
 	}
 };
 #undef LIB_NULL_PROTECT

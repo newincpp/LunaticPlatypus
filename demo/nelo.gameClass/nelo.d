@@ -18,9 +18,8 @@ extern(C++) class nelo : PlatyInterface {
 	printf("dtor\n");
     }
     extern(C++) override void init(SList!LPFun*) {
-    //extern(C++) override void init() {
+	//extern(C++) override void init() {
 	printf("destroy D style\n");
-	//neloDInit();
     }
     extern(C++) override void destroy() {
 	printf("init D style\n");
