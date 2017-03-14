@@ -1,22 +1,14 @@
 #include <PlatyInterface>
 
-class nelo : public PlatyInterface {
+class nelo {
     private:
-	std::list<std::function<void(float)>>* _tickFunctions;
+	//std::list<std::function<void(float)>> _tickFunctions;
     public:
 	nelo();
-	virtual void init(std::list<std::function<void(float)>>* tickFunctions_);
-	virtual void destroy();
-	virtual ~nelo();
+	void init();
+	void(*getTickFun())(float);
+	unsigned int getRemainingTickFunSize();
+	void destroy();
+	~nelo();
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-PlatyInterface* genClass() {
-    return new nelo;
-}
-#ifdef __cplusplus
-}
-#endif
 

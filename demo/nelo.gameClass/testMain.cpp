@@ -1,18 +1,28 @@
 #include <dlfcn.h>
 #include <iostream>
-#include <PlatyInterface>
+#include <list>
+//#include <PlatyInterface>
 
 #define LIB_NULL_PROTECT if (!_lib_handle) { return; }
 
 class DynamicGameClass {
     private:
 	void* _lib_handle;
-	PlatyInterface* _handle;
-	PlatyInterface* (*_genClass)();
-	std::list<std::function<void(float)>> _tickFunctions;
+	typedef void (*TickFunType)(float);
+	class PlatyGameClass {
+	    public:
+		PlatyGameClass() : init(nullptr), getRemainingTickFunSize(nullptr), destroy(nullptr) {}
+		void (*init)();
+		TickFunType (*getTickFun)();
+		unsigned int (*getRemainingTickFunSize)();
+		void (*destroy)();
+		bool checkInit() { return (init && getRemainingTickFunSize && destroy); }
+	};
+	PlatyGameClass _handle;
+	std::list<TickFunType> _tickFunctions;
     public:
 	DynamicGameClass(std::string&& name) : DynamicGameClass(name) {}
-	DynamicGameClass(std::string& name) : _lib_handle(nullptr), _handle(nullptr), _genClass(nullptr) {
+	DynamicGameClass(std::string& name) : _lib_handle(nullptr) {
 	    std::string libname("./" + name + ".so");
 	    _lib_handle = dlopen(libname.c_str(), RTLD_NOW);
 	    if (!_lib_handle) {
@@ -21,43 +31,35 @@ class DynamicGameClass {
 	    }
 	    std::cout << libname << '\n';
 
-	    _genClass = (PlatyInterface* (*)())dlsym(_lib_handle, "genClass");
+	    _handle.init = (void(*)())dlsym(_lib_handle, "init");
+	    _handle.getTickFun = (TickFunType(*)())dlsym(_lib_handle, "getTickFun");
+	    _handle.getRemainingTickFunSize = (unsigned int(*)())dlsym(_lib_handle, "getRemainingTickFunSize");
+	    _handle.destroy = (void(*)())dlsym(_lib_handle, "destroy");
+
 	    char *error;
 	    if ((error = dlerror()) != NULL) {
 		std::cout << "failed to find genClass function:\n" << error << '\n';
 		return;
 	    }
-	    std::cout << "getting genClass func ok\n";
-	    _handle = _genClass();
-	    if (!_handle) {
-		std::cout << "something wrong happened\n";
+	    if (_handle.checkInit()) {
+		std::cout << "gameClass successfully reconstructed\n";
 	    }
-	    std::cout << "genClass exec ok\n";
-	    _handle->init(&_tickFunctions);
-	    std::cout << "init call ok\n";
+	    std::cout << "test: " << _handle.getRemainingTickFunSize() << '\n';
+	    _tickFunctions.emplace_back(_handle.getTickFun());
 	}
 	void update(float deltaTime_) {
 	    LIB_NULL_PROTECT
-	    for(std::function<void(float)>& f : _tickFunctions) {
+	    for(decltype(_tickFunctions)::value_type f : _tickFunctions) {
 		f(deltaTime_);
 	    }
 	}
 	void reset() {
 	    LIB_NULL_PROTECT
-	    _handle->destroy();
-	    delete _handle;
-	    _handle = _genClass();
 	    _tickFunctions.clear();
-	    _handle->init(&_tickFunctions);
 	}
 	~DynamicGameClass() {
 	    LIB_NULL_PROTECT
-	    _handle->destroy();
-	    std::cout << "destroy call ok\n";
-	    delete _handle;
-	    std::cout << "destructor call ok\n";
 	    dlclose(_lib_handle);
-	    std::cout << "handle deleted\n";
 	}
 };
 #undef LIB_NULL_PROTECT
@@ -68,8 +70,8 @@ int main(int ac, char** av){
 	name = av[1];
     }
     DynamicGameClass p(name);
-    p.reset();
     for (unsigned short i = 0; i < 5; ++i) {
 	p.update(0.0f);
     }
+    p.reset();
 }

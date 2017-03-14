@@ -1,21 +1,32 @@
 #include <iostream>
 #include "nelo.hh"
 
-nelo::nelo() : _tickFunctions(nullptr) {
+nelo::nelo() {
     std::cout << "let's create life\n";
 }
 
-void nelo::init(std::list<std::function<void(float)>>* tickFunctions_) {
-    _tickFunctions = tickFunctions_;
+void(*nelo::getTickFun())(float) {
+    return [](float){ std::cout << "doing something...\n"; };
+}
+
+unsigned int nelo::getRemainingTickFunSize() {
+    return 1;
+}
+
+void nelo::init() {
     std::cout << "I am Nelo\n";
-    _tickFunctions->emplace_back([](float){ std::cout << "doing something...\n"; });
 }
 
 void nelo::destroy() {
     std::cout << "aaaaaannnd am ded =(\n";
-    _tickFunctions->clear();
 }
 
 nelo::~nelo() {
     std::cout << "truely destroyed\n";
 }
+
+nelo g_nelo;
+void init() { g_nelo.init(); }
+void(*getTickFun())(float) { return g_nelo.getTickFun(); }
+unsigned int getRemainingTickFunSize() { return g_nelo.getRemainingTickFunSize(); }
+void destroy() { g_nelo.destroy(); }
