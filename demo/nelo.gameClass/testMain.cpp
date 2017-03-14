@@ -44,6 +44,7 @@ class DynamicGameClass {
 	    if (_handle.checkInit()) {
 		std::cout << "gameClass successfully reconstructed\n";
 	    }
+	    _handle.init();
 	    std::cout << "test: " << _handle.getRemainingTickFunSize() << '\n';
 	    _tickFunctions.emplace_back(_handle.getTickFun());
 	}
@@ -55,10 +56,13 @@ class DynamicGameClass {
 	}
 	void reset() {
 	    LIB_NULL_PROTECT
+	    _handle.destroy();
 	    _tickFunctions.clear();
+	    _handle.init();
 	}
 	~DynamicGameClass() {
 	    LIB_NULL_PROTECT
+	    _handle.destroy();
 	    dlclose(_lib_handle);
 	}
 };
