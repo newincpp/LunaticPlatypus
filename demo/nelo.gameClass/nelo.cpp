@@ -1,4 +1,5 @@
 #include <iostream>
+#include <PlatyInterface>
 #include "nelo.hh"
 
 nelo::nelo() {

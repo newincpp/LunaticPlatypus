@@ -16,8 +16,21 @@ class DynamicGameClass {
 		TickFunType (*getTickFun)();
 		unsigned int (*getRemainingTickFunSize)();
 		void (*destroy)();
-		bool checkInit() { return (init && getRemainingTickFunSize && destroy); }
+		inline bool checkInit() { return (init && getRemainingTickFunSize && destroy); }
 	};
+
+	template <typename T>
+	T _buildFunction(const char* name) {
+	    T func = (T)dlsym(_lib_handle, name);
+	    char *error;
+	    if ((error = dlerror()) != NULL) {
+		std::cout << "failed to find genClass function:\n" << error << '\n';
+	    } else if (func == nullptr){
+		std::cout << name << " is still null dunno why\n";
+	    }
+	    return func;
+	}
+#define autoBuildGameFunc(name) _handle.name = _buildFunction<decltype(_handle.name)>(#name)
 	PlatyGameClass _handle;
 	std::list<TickFunType> _tickFunctions;
     public:
@@ -29,20 +42,17 @@ class DynamicGameClass {
 		std::cout << "failed to open \"" << libname << "\"\n";
 		return;
 	    }
-	    std::cout << libname << '\n';
 
-	    _handle.init = (void(*)())dlsym(_lib_handle, "init");
-	    _handle.getTickFun = (TickFunType(*)())dlsym(_lib_handle, "getTickFun");
-	    _handle.getRemainingTickFunSize = (unsigned int(*)())dlsym(_lib_handle, "getRemainingTickFunSize");
-	    _handle.destroy = (void(*)())dlsym(_lib_handle, "destroy");
+	    autoBuildGameFunc(init);
+	    autoBuildGameFunc(getTickFun);
+	    autoBuildGameFunc(getRemainingTickFunSize);
+	    autoBuildGameFunc(destroy);
 
-	    char *error;
-	    if ((error = dlerror()) != NULL) {
-		std::cout << "failed to find genClass function:\n" << error << '\n';
+	    if (!_handle.checkInit()) {
+		std::cout << "failed to reconstruct the gameClass: " << name << '\n';
 		return;
-	    }
-	    if (_handle.checkInit()) {
-		std::cout << "gameClass successfully reconstructed\n";
+	    } else {
+		std::cout << "gameClass: " << name << " successfully reconstructed\n";
 	    }
 	    _handle.init();
 	    std::cout << "test: " << _handle.getRemainingTickFunSize() << '\n';

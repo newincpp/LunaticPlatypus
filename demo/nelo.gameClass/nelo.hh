@@ -1,4 +1,3 @@
-#include <PlatyInterface>
 
 class nelo {
     private:

@@ -2,61 +2,54 @@ import std.container : SList;
 import std.functional;
 import core.stdc.stdio;
 
-alias LPFun = void function(float);
-extern(C++) interface PlatyInterface {
-	//void init(std::list<std::function<void(float)>>* tickFunctions_);
-	void init(SList!LPFun*);
-	//void init();
-	void destroy();
+nelo ne;
+extern(C) {
+    alias TickFunType = void function(float);
+    void init() {
+	printf("init\n");
+	ne.__ctor(); // work
+	printf("X\n");
+	ne.ninit(); // segV
+	printf("init sucess!\n");
     }
+    TickFunType getTickFun() {
+	return ne.ngetTickFun();
+    }
+    uint getRemainingTickFunSize() {
+	return ne.ngetRemainingTickFunSize();
+    }
+    void destroy() {
+	ne.ndestroy();
+    }
+}
 
-extern(C++) class nelo : PlatyInterface {
+class nelo {
     this() {
 	printf("ctor\n");
     }
     ~this() {
 	printf("dtor\n");
     }
-    extern(C++) override void init(SList!LPFun*) {
-	//extern(C++) override void init() {
+    void ninit() {
 	printf("destroy D style\n");
     }
-    extern(C++) override void destroy() {
+    TickFunType ngetTickFun() {
+	return function void(float) { printf("doing something from the so"); };
+    }
+    uint ngetRemainingTickFunSize() {
+	return 1;
+    }
+    void ndestroy() {
 	printf("init D style\n");
-	//neloDDestroy();
     }
 }
 
-import std.c.stdlib;
-T* create(T, Args...)(Args args)
+shared static this()
 {
-	ClassInfo ci = T.classinfo;
-	T* f;
-	void *p;
-	p = std.c.stdlib.malloc(ci.init.length);
-	if (!p) {
-	    return f;
-	}
-	// Initialize it
-	(cast(byte*)p)[0 .. ci.init.length] = ci.init[];
-	f = cast(T*)p;
-	// Run constructor on it
-	f.__ctor(args);
-	return f;
+    printf("-------------------------------\n");
 }
 
-extern (C) PlatyInterface* genClass() {
-    printf("here is nelo D version\n");
-    //nelo n = new nelo();
-    nelo* n = create!nelo();
-    printf("creating done\n");
-    return cast(PlatyInterface*)n;
-}
-
-shared static this() {
-    printf("libdll.so shared static this\n");
-}
-
-shared static ~this() {
-    printf("libdll.so shared static ~this\n");
+shared static ~this()
+{
+    printf("===============================\n");
 }
