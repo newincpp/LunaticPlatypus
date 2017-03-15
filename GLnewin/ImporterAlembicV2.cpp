@@ -9,9 +9,9 @@
 #include <Alembic/Util/PlainOldDataType.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
-#include "DynamicGameClass.hh"
 
-void Importer::load(std::string& file, DrawBuffer& s_) {
+
+void Importer::load(std::string& file, DrawBuffer& s_, Heart::IGamelogic* g_) {
     // Create an instance of the Importer class
     Alembic::AbcCoreFactory::IFactory factory;
     factory.setPolicy(Alembic::Abc::ErrorHandler::kQuietNoopPolicy);
@@ -35,10 +35,13 @@ void Importer::load(std::string& file, DrawBuffer& s_) {
 
     Alembic::Abc::IObject iobj = archive.getTop();
     glm::mat4 root(1.0f);
-    visitor(iobj, 0, s_, root);
+    s_._valid = false;
+    visitor(iobj, 0, s_, g_, root);
+    s_._valid = true;
+    s_.addAllUniformsToShaders();
 }
 
-void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawBuffer& s_, glm::mat4 transform_) {
+void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawBuffer& s_, Heart::IGamelogic* g_, glm::mat4 transform_) {
     const Alembic::Abc::MetaData &md = iobj.getMetaData();
 
     if (Alembic::AbcGeom::ICurves::matches(md)) {
@@ -58,7 +61,7 @@ void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawB
 	std::string gameClassType("_GameClass");
 	if ((gameClassType.size() < iobj.getName().size()) && (gameClassType == iobj.getName().substr(iobj.getName().size() - gameClassType.size()))) {
 	    std::string name = iobj.getName().substr(0, iobj.getName().size() - gameClassType.size());
-	    genGameClass(name, transform_);
+	    genGameClass(name, g_, transform_);
 	}
     } else if (Alembic::AbcGeom::ICamera::matches(md)) {
 	genCamera(iobj, s_, transform_);
@@ -69,7 +72,7 @@ void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawB
     }
 
     for (size_t i = 0 ; i < iobj.getNumChildren() ; i++) {
-	visitor(iobj.getChild(i), it + 1, s_, transform_);
+	visitor(iobj.getChild(i), it + 1, s_, g_, transform_);
     }
 }
 
@@ -219,7 +222,7 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm:
     mainCamera.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
-void Importer::genGameClass(const std::string& name_, glm::mat4&) {
+void Importer::genGameClass(const std::string& name_, Heart::IGamelogic* g_, glm::mat4&) {
     std::cout << "gameClass detected: " << name_ << '\n';
-    DynamicGameClass c(name_);
+    g_->_gameClasses.emplace_back(name_);
 }

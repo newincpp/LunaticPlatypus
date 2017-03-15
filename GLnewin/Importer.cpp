@@ -3,8 +3,8 @@
 #include <map>
 #include "Importer.hh"
 
-Importer::Importer(std::string file, DrawBuffer& s_) {
-    load(file, s_);
+Importer::Importer(std::string file, DrawBuffer& s_, Heart::IGamelogic* g_) {
+    load(file, s_, g_);
 }
 
 #ifdef TINYOBJLOADER

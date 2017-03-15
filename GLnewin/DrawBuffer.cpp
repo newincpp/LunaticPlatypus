@@ -1,5 +1,5 @@
 #include "DrawBuffer.hh"
-#include "Importer.hh"
+//#include "Importer.hh"
 #include <imgui.h>
 
 #define STRINGIZE2(s) #s
@@ -38,16 +38,14 @@ void DrawBuffer::bindGBuffer(unsigned int camera_) {
     _cameras[camera_].bindFramebuffer();
 }
 
-void DrawBuffer::reset(std::string& scene_) {
+void DrawBuffer::reset() {
     _cameras.clear();
     for (std::pair<Shader, std::vector<Mesh>>& material : _drawList) {
 	material.second.clear();
     }
     _drawList.clear();
-    _valid = false;
-    Importer iscene(scene_, *this);
+    //Importer iscene(scene_, *this);
     _valid = true;
-    addAllUniformsToShaders();
 }
 
 void DrawBuffer::addMeshUniformsToShaders() {

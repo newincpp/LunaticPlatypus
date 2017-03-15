@@ -1,7 +1,7 @@
 #include "node.hh"
 
-void Node::push(std::string n) {
-    _childs.emplace_back(n);
+void Node::push(std::string&& n_) {
+    _childs.emplace_back(std::move(n_));
 }
 Node& Node::operator[](unsigned long i) {
     return _childs[i];

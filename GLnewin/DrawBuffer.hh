@@ -22,7 +22,7 @@ class DrawBuffer {
 	void update(unsigned int currentFrame = 0);
 	void render();
 	void bindGBuffer(unsigned int camera_);
-	void reset(std::string&);
+	void reset();
 	void addAllUniformsToShaders() { addMeshUniformsToShaders(); addCameraUniformsToShaders(); }
 	void addMeshUniformsToShaders();
 	void addCameraUniformsToShaders();

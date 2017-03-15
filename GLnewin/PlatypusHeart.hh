@@ -4,6 +4,7 @@
 #include "node.hh"
 #include "fileWatcher.hh"
 #include "EventCore.hh"
+#include "DynamicGameClass.hh"
 
 #include "imgui/imgui.h"
 
@@ -17,6 +18,7 @@ class Heart {
 		Heart* _lunaticPlatypus;
 		EventInterface _event;
 		std::string _scene;
+		std::list<GameClass> _gameClasses;
 		virtual void postEngineInit();
 		virtual void update() = 0;
 	};

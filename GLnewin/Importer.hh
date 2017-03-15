@@ -3,7 +3,7 @@
 #include "Mesh.hh"
 #include "Camera.hh"
 #include "glew.h"
-#include "DrawBuffer.hh"
+#include "PlatypusHeart.hh"
 
 #ifdef TINYOBJLOADER
 #include "tiny_obj_loader.h"
@@ -27,9 +27,9 @@ class Importer {
 	std::map<std::string, std::list<std::pair<Shader, std::vector<Mesh>>>::iterator> _shaderList;
 	void genMesh(const Alembic::Abc::IObject&, DrawBuffer&, glm::mat4&);
 	void genCamera(const Alembic::Abc::IObject&, DrawBuffer&, glm::mat4&);
-	void genGameClass(const std::string&, glm::mat4&);
+	void genGameClass(const std::string&, Heart::IGamelogic*, glm::mat4&);
 	void transformUpdate(const Alembic::Abc::IObject&, glm::mat4&);
-	void visitor(const Alembic::Abc::IObject&, unsigned int, DrawBuffer&, glm::mat4);
+	void visitor(const Alembic::Abc::IObject&, unsigned int, DrawBuffer&, Heart::IGamelogic*, glm::mat4);
 #elif defined(ALEMBIC)
 	inline glm::mat4 createTransformMatrix(const glm::vec3 &, const glm::vec3 &, const glm::vec3 &);
 	inline glm::vec3 AlembicVec3toGlmVec3(Alembic::Abc::V3d const &);
@@ -41,6 +41,6 @@ class Importer {
 	void genMesh(const aiScene* scene_, DrawBuffer&);
 #endif
     public:
-	Importer(std::string file, DrawBuffer&);
-	void load(std::string& file, DrawBuffer&);
+	Importer(std::string file, DrawBuffer&, Heart::IGamelogic*);
+	void load(std::string& file, DrawBuffer&, Heart::IGamelogic*);
 };

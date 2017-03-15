@@ -36,3 +36,5 @@ class DynamicGameClass {
 	void reset();
 	~DynamicGameClass();
 };
+
+typedef DynamicGameClass GameClass; // TODO scripting support

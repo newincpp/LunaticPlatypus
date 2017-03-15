@@ -20,7 +20,7 @@ class Node {
 #endif
     public:
 	Node(const std::string& n) : _name(n), _lTransform(1.0f), _wTransform(nullptr) {}
-	void push(std::string n);
+	void push(std::string&& n);
 	Node& operator[](unsigned long i);
 	void setLocalTransform(glm::mat4&& t_);
 	void read(); 
