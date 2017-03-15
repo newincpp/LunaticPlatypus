@@ -9,6 +9,7 @@
 #include <Alembic/Util/PlainOldDataType.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include "DynamicGameClass.hh"
 
 void Importer::load(std::string& file, DrawBuffer& s_) {
     // Create an instance of the Importer class
@@ -56,7 +57,8 @@ void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawB
 	transformUpdate(iobj, transform_);
 	std::string gameClassType("_GameClass");
 	if ((gameClassType.size() < iobj.getName().size()) && (gameClassType == iobj.getName().substr(iobj.getName().size() - gameClassType.size()))) {
-	    genGameClass(iobj.getName(), transform_);
+	    std::string name = iobj.getName().substr(0, iobj.getName().size() - gameClassType.size());
+	    genGameClass(name, transform_);
 	}
     } else if (Alembic::AbcGeom::ICamera::matches(md)) {
 	genCamera(iobj, s_, transform_);
@@ -217,6 +219,7 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm:
     mainCamera.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
-void Importer::genGameClass(const std::string& name, glm::mat4&) {
-    std::cout << "gameClass detected: " << name << '\n';
+void Importer::genGameClass(const std::string& name_, glm::mat4&) {
+    std::cout << "gameClass detected: " << name_ << '\n';
+    DynamicGameClass c(name_);
 }

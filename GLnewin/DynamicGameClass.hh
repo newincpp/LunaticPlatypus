@@ -1,18 +1,37 @@
 #include <dlfcn.h>
 #include <iostream>
-#include <PlatyInterface>
-
-#define LIB_NULL_PROTECT if (!_lib_handle) { return; }
+#include <list>
 
 class DynamicGameClass {
     private:
 	void* _lib_handle;
-	PlatyInterface* _handle;
-	PlatyInterface* (*_genClass)();
-	std::list<std::function<void(float)>> _tickFunctions;
+	typedef void (*TickFunType)(float);
+	class PlatyGameClass {
+	    public:
+		PlatyGameClass();
+		void (*init)();
+		TickFunType (*getTickFun)();
+		unsigned int (*getRemainingTickFunSize)();
+		void (*destroy)();
+		inline bool checkInit();
+	};
+
+	template <typename T>
+	T _buildFunction(const char* name) {
+	    T func = (T)dlsym(_lib_handle, name);
+	    char *error;
+	    if ((error = dlerror()) != NULL) {
+		std::cout << "failed to find genClass function:\n" << error << '\n';
+	    } else if (func == nullptr){
+		std::cout << name << " is still null dunno why\n";
+	    }
+	    return func;
+	}
+	PlatyGameClass _handle;
+	std::list<TickFunType> _tickFunctions;
     public:
 	DynamicGameClass(std::string&& name);
-	DynamicGameClass(std::string& name);
+	DynamicGameClass(const std::string& name);
 	void update(float deltaTime_);
 	void reset();
 	~DynamicGameClass();

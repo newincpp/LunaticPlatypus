@@ -1,7 +1,6 @@
 #include <dlfcn.h>
 #include <iostream>
 #include <list>
-//#include <PlatyInterface>
 
 #define LIB_NULL_PROTECT if (!_lib_handle) { return; }
 

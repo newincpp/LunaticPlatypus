@@ -3,7 +3,6 @@
 #include <cassert>
 #include <chrono>
 
-//Heart::Heart() : _fw("") {
 Heart::Heart() : _fw(nullptr) {
     if (_game == nullptr) {
 	std::cout << "SetGameClass() macro has not been called I will now assert\n";
@@ -15,10 +14,9 @@ Heart::Heart() : _fw(nullptr) {
     }
     std::cout << "default scene: " << _game->_scene << "\n";
     _renderer.getDrawBuffer().reset(_game->_scene);
-    _game->postEngineInit();
-
     _fw = new FileWatcher(_game->_scene.c_str());
     _fw->callBack = [this](){ _renderer.getDrawBuffer().reset(_game->_scene); };
+    _game->postEngineInit();
 }
 
 void Heart::run() {

@@ -1,44 +1,54 @@
 #include "DynamicGameClass.hh"
 
+
+#define LIB_NULL_PROTECT if (!_lib_handle) { return; }
+#define autoBuildGameFunc(name) _handle.name = _buildFunction<decltype(_handle.name)>(#name)
+
+DynamicGameClass::PlatyGameClass::PlatyGameClass() : init(nullptr), getRemainingTickFunSize(nullptr), destroy(nullptr) {}
+bool DynamicGameClass::PlatyGameClass::checkInit() { return (init && getRemainingTickFunSize && destroy); }
+
 DynamicGameClass::DynamicGameClass(std::string&& name) : DynamicGameClass(name) {}
-DynamicGameClass::DynamicGameClass(std::string& name) : _lib_handle(nullptr), _handle(nullptr), _genClass(nullptr) {
+
+DynamicGameClass::DynamicGameClass(const std::string& name) : _lib_handle(nullptr) {
     std::string libname("./" + name + ".gameClass/" + name + ".so");
-    _lib_handle = dlopen(libname.c_str(), RTLD_LAZY);
+    _lib_handle = dlopen(libname.c_str(), RTLD_NOW);
     if (!_lib_handle) {
 	std::cout << "failed to open \"" << libname << "\"\n";
 	return;
     }
-    std::cout << libname << '\n';
 
-    _genClass = (PlatyInterface* (*)())dlsym(_lib_handle, "genClass");
-    char *error;
-    if ((error = dlerror()) != NULL) {
-	std::cout << "failed to find genClass function:\n" << error << '\n';
+    autoBuildGameFunc(init);
+    autoBuildGameFunc(getTickFun);
+    autoBuildGameFunc(getRemainingTickFunSize);
+    autoBuildGameFunc(destroy);
+
+    if (!_handle.checkInit()) {
+	std::cout << "failed to reconstruct the gameClass: " << name << '\n';
 	return;
+    } else {
+	std::cout << "gameClass: " << name << " successfully reconstructed\n";
     }
-    _handle = _genClass();
-    if (!_handle) {
-	std::cout << "something wrong happened\n";
-    }
-    _handle->init(&_tickFunctions);
+    _handle.init();
+    std::cout << "test: " << _handle.getRemainingTickFunSize() << '\n';
+    _tickFunctions.emplace_back(_handle.getTickFun());
 }
+
 void DynamicGameClass::update(float deltaTime_) {
     LIB_NULL_PROTECT
-	for(std::function<void(float)>& f : _tickFunctions) {
+	for(decltype(_tickFunctions)::value_type f : _tickFunctions) {
 	    f(deltaTime_);
 	}
 }
+
 void DynamicGameClass::reset() {
     LIB_NULL_PROTECT
-	_handle->destroy();
-    delete _handle;
-    _handle = _genClass();
+	_handle.destroy();
     _tickFunctions.clear();
-    _handle->init(&_tickFunctions);
+    _handle.init();
 }
+
 DynamicGameClass::~DynamicGameClass() {
     LIB_NULL_PROTECT
-	_handle->destroy();
-    delete _handle;
+	_handle.destroy();
     dlclose(_lib_handle);
 }
