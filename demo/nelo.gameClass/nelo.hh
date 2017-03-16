@@ -1,7 +1,4 @@
-
 class nelo {
-    private:
-	//std::list<std::function<void(float)>> _tickFunctions;
     public:
 	nelo();
 	void init();
@@ -10,4 +7,3 @@ class nelo {
 	void destroy();
 	~nelo();
 };
-

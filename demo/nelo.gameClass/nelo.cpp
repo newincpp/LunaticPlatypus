@@ -2,7 +2,7 @@
 #include <PlatyInterface>
 #include "nelo.hh"
 
-nelo::nelo() {
+nelo::nelo() : functionToPush(1) {
     std::cout << "let's create life\n";
 }
 

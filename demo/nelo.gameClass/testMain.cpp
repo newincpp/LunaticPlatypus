@@ -55,7 +55,9 @@ class DynamicGameClass {
 	    }
 	    _handle.init();
 	    std::cout << "test: " << _handle.getRemainingTickFunSize() << '\n';
-	    _tickFunctions.emplace_back(_handle.getTickFun());
+	    for (unsigned int i = _handle.getRemainingTickFunSize(); i > 0 ; --i) {
+		_tickFunctions.emplace_back(_handle.getTickFun());
+	    }
 	}
 	void update(float deltaTime_) {
 	    LIB_NULL_PROTECT
