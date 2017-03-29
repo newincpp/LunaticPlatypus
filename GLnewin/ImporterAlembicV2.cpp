@@ -108,6 +108,13 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     schema.getNormalsParam().getExpanded(sampN, Alembic::Abc::ISampleSelector(index));
     Alembic::Abc::N3fArraySamplePtr normals = sampN.getVals();
 
+    Alembic::Abc::V2fArraySamplePtr uvs;
+    if (schema.getUVsParam().valid()) {
+	Alembic::AbcGeom::IV2fGeomParam::Sample sampUV;
+	schema.getUVsParam().getExpanded(sampUV, Alembic::Abc::ISampleSelector(index));
+	uvs = sampUV.getVals();
+    }
+
     unsigned int numPoints = points->size();
     vertexBuffer.reserve(numPoints);
     for (unsigned int i = 0; i < numPoints; ++i) {
@@ -115,12 +122,24 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	vertexBuffer.push_back((*points)[i].y);
 	vertexBuffer.push_back((*points)[i].z);
 
-	vertexBuffer.push_back((*normals)[i].x);
-	vertexBuffer.push_back((*normals)[i].y);
-	vertexBuffer.push_back((*normals)[i].z);
-
-	vertexBuffer.push_back(0.0f);
-	vertexBuffer.push_back(0.0f);
+	if (schema.getNormalsParam().valid()) {
+	    vertexBuffer.push_back((*normals)[i].x);
+	    vertexBuffer.push_back((*normals)[i].y);
+	    vertexBuffer.push_back((*normals)[i].z);
+	} else {
+	    std::cout << "normal data absent will result in incorrect shading\n";
+	    vertexBuffer.push_back(0.0f);
+	    vertexBuffer.push_back(0.0f);
+	    vertexBuffer.push_back(0.0f);
+	} 
+	
+	if (schema.getUVsParam().valid()) {
+	    vertexBuffer.push_back((*uvs)[i].x);
+	    vertexBuffer.push_back((*uvs)[i].y);
+	} else {
+	    vertexBuffer.push_back(0.0f);
+	    vertexBuffer.push_back(0.0f);
+	}
     }
 
     // Get face count info

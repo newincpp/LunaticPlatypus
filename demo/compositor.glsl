@@ -42,6 +42,21 @@ Light debugDefaultLight[4];
 #define PI    3.14159265
 #define OREN_NAYAR
 
+/* http://filmicworlds.com/blog/filmic-tonemapping-operators/
+float A = 0.15;
+float B = 0.50;
+float C = 0.10;
+float D = 0.20;
+float E = 0.02;
+float F = 0.30;
+float W = 11.2;
+
+float3 Uncharted2Tonemap(float3 x)
+{
+   return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+}
+*/
+
 float linearizeDepth(float z) {
     return (2.0 * zNear) / (zFar + zNear - z * (zFar - zNear));
 }
@@ -454,7 +469,7 @@ vec3 raytrace1() {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
+vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex, vec3 diffuseColour) {
     int maxComplexity = int(mix(16, 3, 1 - CurrentDepth));
     const float baseThreshold = 0.7;
     const float targetThreshold = 0.9;
@@ -495,22 +510,22 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex) {
     if ((facing < 0.0f) && (test > threshold)) {
 	return texture2D(tex, sampledPosition, samplingOffset).xyz;
     } else {
-	return vec3(0.1, 0.15, 0.2);
+	return diffuseColour;
     }
 }
 
-vec3 raytrace(in vec3 reflectionVector) {
-    return naiveRaymarch(reflectionVector, gAlbedoSpec);
+vec3 raytrace(in vec3 reflectionVector, vec3 diffuseColour) {
+    return naiveRaymarch(reflectionVector, gAlbedoSpec, diffuseColour);
 }
 
-vec3 SSR(float fresnel) {
+vec3 SSR(float fresnel, vec3 diffuseColour) {
     //vec3 reflectionVector = reflect(normalize((uView * texture2D(gPosition, TexCoords, 1)).xyz), CurrentNormal);
     vec3 reflectionVector = reflect(normalize(CurrentPosition - getCameraPos()), CurrentNormalWorldSpace);
 
     if (isRayTowardCamera(reflectionVector.xyz) || CurrentDepth > 0.47 || fresnel < 0.02) {
-	return vec3(0.1, 0.15, 0.2);
+	return diffuseColour;
     } else {
-	return raytrace(reflectionVector.xyz);
+	return raytrace(reflectionVector.xyz, diffuseColour);
 	//return raytrace(reflectionVector.xyz) * (1 - CurrentDepth / .4);
     }
 }
@@ -648,5 +663,7 @@ void main() {
     debugDefaultLight[3] = Light(mix(vec3(-1.5, 5, -2), vec3(-1.5, 21, 7), timeBounce(900)), vec3(12.8, 12.8, 12.75));
     outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
     float f = clamp(fresnel(2.5), 0.0, 1.0);
-    //outColour = mix(outColour, SSR(f), f); // ad-hoc way to add SSR while I didn't implement IBL
+    outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
+    //outColour = texture2D(gNormal, TexCoords).xyz;
 }
+

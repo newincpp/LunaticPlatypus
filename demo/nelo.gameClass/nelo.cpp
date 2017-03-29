@@ -2,12 +2,13 @@
 #include <PlatyInterface>
 #include "nelo.hh"
 
-nelo::nelo() : functionToPush(1) {
+nelo::nelo() {
     std::cout << "let's create life\n";
 }
 
 void(*nelo::getTickFun())(float) {
-    return [](float){ std::cout << "doing something...\n"; };
+    //return [](float){ std::cout << "doing something...\n"; };
+    return [](float){};
 }
 
 unsigned int nelo::getRemainingTickFunSize() {
