@@ -9,7 +9,6 @@ FrameBuffer::FrameBuffer() {
 }
 
 void FrameBuffer::enable() {
-    //glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
     if (_rtt.size()) {
 	GLuint attachments[_rtt.size()];

@@ -473,7 +473,7 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex, vec3 diffuseColou
     int maxComplexity = int(mix(16, 3, 1 - CurrentDepth));
     const float baseThreshold = 0.7;
     const float targetThreshold = 0.9;
-    float samplingOffset = 1;
+    float samplingOffset = 0;
     int complexity = 0;
     vec2 stepDir = normalize(reflectionVector.xy);
     float threshold = baseThreshold;
@@ -483,32 +483,25 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex, vec3 diffuseColou
     // Current sampling position is at current fragment
     // mat4 toViewSpace = transpose(inverse(uView));
     vec2 sampledPosition = TexCoords;
-    //vec3 startPos = (toViewSpace * vec4(texture(gPosition, TexCoords).xyz, 1.0f)).xyz;
-    vec3 startPos = CurrentPosition;
-    vec3 sampledViewPos = startPos;
+    vec3 sampledViewPos = CurrentPosition;
     float test = 0.000;
 
-    vec2 stepSizeMax = 1.0f / resolution;
-    vec2 stepSizemin = resolution / 100;
-    vec2 stepSize = stepSizemin;
+    vec2 stepSize = resolution / 100;
     while((sampledPosition.x <= 1.0 && sampledPosition.x >= 0.0 && sampledPosition.y <= 1.0 && sampledPosition.y >= 0.0) && (complexity < maxComplexity) && (test < threshold)) {
 	sampledPosition += stepDir / stepSize;
-	//return vec3(stepDir, 0.33f);
 	sampledViewPos = texture2D(gPosition, sampledPosition, samplingOffset).xyz;
-	test = dot(normalize(sampledViewPos - startPos), reflectionVector);
+	test = dot(normalize(sampledViewPos - CurrentPosition), reflectionVector);
 	threshold = mix(baseThreshold, targetThreshold, float(complexity) / float(maxComplexity));
-	//float d = distance(TexCoords, sampledPosition) / 0.1;
-	//samplingOffset = mix(1, 6, d); // really cheap fake "cone tracing" using mipmap filtering
-	stepSize *= 2;
+	stepSize *= 4;
+	//stepSize *= stepSize;
 	++complexity;
     }
 
-    if (sampledPosition.x > 1.0 || sampledPosition.x <= 0.0 || sampledPosition.y > 1.0 && sampledPosition.y < 0.0) {
-    }
     float facing = dot(texture2D(gNormal, sampledPosition, samplingOffset).xyz * 2.0f - 1.0f, reflectionVector);
-    //return -facing.xxx;
+    float d = clamp(0.0f, 1.0f, distance(CurrentPosition, sampledViewPos) / 100.0f);
+    samplingOffset = mix(1.0, 6.0, d); // really cheap fake "cone tracing" using mipmap filtering
     if ((facing < 0.0f) && (test > threshold)) {
-	return texture2D(tex, sampledPosition, samplingOffset).xyz;
+	return mix(texture2D(tex, sampledPosition, samplingOffset).xyz, diffuseColour, d);
     } else {
 	return diffuseColour;
     }
@@ -531,7 +524,7 @@ vec3 SSR(float fresnel, vec3 diffuseColour) {
 }
 
 
-/**************************** Physically Based Lighting ********/
+/**************************** Physically Based Lighting **************************************/
 
 float DistributionGGX(vec3 N, vec3 H, float roughness) {
     float a      = roughness*roughness;
@@ -661,9 +654,10 @@ void main() {
     debugDefaultLight[1] = Light(-debugDefaultLight[0].position, debugDefaultLight[0].colour);
     debugDefaultLight[2] = Light(mix(vec3(15, (5 * sin(uTime / 900)) + 8, 8), vec3(-17, (5 * sin(uTime / 400)) + 8, 8.5), timeBounce(1400)), vec3(9.8, 9.8, 9.75));
     debugDefaultLight[3] = Light(mix(vec3(-1.5, 5, -2), vec3(-1.5, 21, 7), timeBounce(900)), vec3(12.8, 12.8, 12.75));
-    outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
+    //outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
     float f = clamp(fresnel(2.5), 0.0, 1.0);
-    outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
-    //outColour = texture2D(gNormal, TexCoords).xyz;
+    //outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
+    outColour = SSR(f, vec3(0.0,0.05,0.05));
+    //outColour = texture2D(gAlbedoSpec, TexCoords, 6 * timeBounce(600)).xyz;
 }
 

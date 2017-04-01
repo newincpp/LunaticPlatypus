@@ -195,15 +195,15 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 		size = (*iCounts)[iCounts->size() - 1];
 	    }
 	    if (size == 3) {
+		indiceBuffer.push_back((*iIndices)[base+0]);
 		indiceBuffer.push_back((*iIndices)[base+2]);
 		indiceBuffer.push_back((*iIndices)[base+1]);
-		indiceBuffer.push_back((*iIndices)[base+0]);
 	    } else if (size == 4) {
-		indiceBuffer.push_back((*iIndices)[base+2]);
+		indiceBuffer.push_back((*iIndices)[base+0]);
+		indiceBuffer.push_back((*iIndices)[base+3]);
 		indiceBuffer.push_back((*iIndices)[base+1]);
-		indiceBuffer.push_back((*iIndices)[base+0]);
 
-		indiceBuffer.push_back((*iIndices)[base+0]);
+		indiceBuffer.push_back((*iIndices)[base+1]);
 		indiceBuffer.push_back((*iIndices)[base+3]);
 		indiceBuffer.push_back((*iIndices)[base+2]);
 	    } 
