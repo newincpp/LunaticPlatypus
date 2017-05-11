@@ -3,7 +3,7 @@ LunaticPlatypus
 
 LunaticPlatypus is a game engine designed with the philosophy "If less is more then nothing is everything".
 
-To build this engine go to the GLnewin folder and use `INSTALL="/path/to/my/project/" make extractLibs && make && make install && make project` alternatively you can also just `INSTALL="/path/to/my/project/" make full`.
+To build this engine go to the LunaticPlatypus folder and use `INSTALL="/path/to/my/project/" make extractLibs && make && make install && make project` alternatively you can also just `INSTALL="/path/to/my/project/" make full`.
 make install will copy Makefile.base and libPlatypus.a into the INSTALL directory so it will overwrite the destination makefile if you have one (this behavior will obviously change).
 There is a few options that you can change:
 IMPORTER change the importer implementation library, possible values: TINYOBJLOADER, ALEMBIC, ASSIMP (even if obj contain a few data with the current state of the engine it also have the most predictable result)
