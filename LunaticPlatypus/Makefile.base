@@ -3,7 +3,7 @@ SRC	= main.cpp
 OS	:= $(shell uname -s)
 EXT=cpp
 NAME	=demo
-LUNATICPLATYPUSDIR=../GLnewin
+LUNATICPLATYPUSDIR=../LunaticPlatypus
 OPTIM= -march=native -O2 -fno-rtti #-fno-exceptions
 INCLUDE=-I$(LUNATICPLATYPUSDIR)/ -I$(LUNATICPLATYPUSDIR)/imgui/ -I$(LUNATICPLATYPUSDIR)/glm
 CXXFLAGS= -Wconversion -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
