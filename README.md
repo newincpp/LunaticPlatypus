@@ -27,7 +27,7 @@ class MyGame : public Heart::IGamelogic {
 	virtual void update() {}
 };
 SetGameClass(MyGame)
-    ```
+```
 You will also need to write a `compositor.glsl` and a `compositorVert.glsl`
 This is the shader executed at the latest stage of the deferred pipeline.
 
