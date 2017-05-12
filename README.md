@@ -39,8 +39,6 @@ name.material/
 fragment.glsl #opengl fragment shader
 vertex.glsl #opengl vertex shader
 bin.spirv #vulkan spirv bytecode (when supported)
-# .metal (when supported)
-# .pssl (when supported)
 (I don't plan to support directx)
 Scripts: add an empty object called "myscript_GameClass" in the scene file and LunaticPlatypus will automatically load "myscript.gameClass/myscript.so"
 This dynamic library (for now) need:
