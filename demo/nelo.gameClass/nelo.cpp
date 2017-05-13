@@ -1,6 +1,7 @@
 #include <iostream>
 #include <PlatyInterface>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include "nelo.hh"
 
 nelo g_nelo;
@@ -9,8 +10,9 @@ nelo::nelo() {
 }
 
 void nelo::test(float deltaTime) {
-    //std::cout << "Node ptr:" << g_nelo.hierarchy_ << '\n';
-    //std::cout << "deltaTime:" << deltaTime << '\n';
+    std::cout << ">>>>>>>>>>>>>"<< '\n';
+    g_nelo.hierarchy_->read();
+    std::cout << "<<<<<<<<<<<<<" << '\n';
     glm::mat4& t = g_nelo.hierarchy_->getLocalTransformRef();
     g_nelo.hierarchy_->setLocalTransform(glm::rotate(t, 5 * deltaTime, glm::vec3(0, 1, 0)));
 }
@@ -42,7 +44,7 @@ nelo::~nelo() {
     std::cout << "truely destroyed\n";
 }
 
-void init(Node* hierarchy) { g_nelo.init(hierarchy); std::cout << "pointer to node:" << hierarchy << '\n'; }
+void init(Node* hierarchy) { g_nelo.init(hierarchy); }
 void(*getTickFun())(float) { return g_nelo.getTickFun(); }
 unsigned int getRemainingTickFunSize() { return g_nelo.getRemainingTickFunSize(); }
 void destroy() { g_nelo.destroy(); }

@@ -36,7 +36,6 @@ void Importer::load(std::string& file, DrawBuffer& d_, Heart::IGamelogic* g_, Gr
     glm::mat4 root(1.0f);
     d_._valid = false;
     visitor(iobj, 0, d_, g_, root, scene_.root);
-    scene_.update(true); //readjusting local matricies
     d_._valid = true;
     d_.addAllUniformsToShaders();
 }
@@ -82,7 +81,7 @@ void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawB
     }
 
     for (size_t i = 0 ; i < iobj.getNumChildren() ; i++) {
-	visitor(iobj.getChild(i), it + 1, s_, g_, transform_, node_);
+	visitor(iobj.getChild(i), it + 1, s_, g_, transform_, x);
     }
 }
 

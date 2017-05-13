@@ -26,7 +26,14 @@ void Node::linkWorldTransform(glm::mat4* link_) {
     _wTransform = link_;
 }
 void Node::read() {
-    //std::cout << "Node:" << _name << "\t\ttransform:" << _transform << "\t child size:" << _childs.size() << '\n';
+    std::cout << "nodePtr: " << this << '\n';
+    std::cout << "name: " << _name << '\n';
+    std::cout << "WorldtransformPtr: " << _wTransform << '\n';
+    if (_wTransform) {
+	std::cout << "world glm::mat4: " << glm::to_string(*_wTransform) << '\n';
+    }
+    std::cout << "local glm::mat4: " << glm::to_string(_lTransform) << '\n';
+    std::cout << "child size: " << _childs.size() << '\n';
 }
 void Node::readFromMe() {
     read();
@@ -56,6 +63,7 @@ void Node::updateFromMe(glm::mat4* worldTransformParent_, std::list<glm::mat4*>&
 	if (localMode) {
 	    _lTransform = *_wTransform * glm::inverse(*worldTransformParent_);
 	} else {
+	    read();
 	    *_wTransform = _lTransform * *worldTransformParent_;
 	}
 	worldRef = _wTransform;
