@@ -585,34 +585,37 @@ vec3 pbrDirectIllumination(float roughness, float metallic, float ao) {
     vec3 Lo = vec3(0.0);
 
     for(int i = 0; i < 4; ++i) { // Loop over Lights
-	vec3 L = normalize(debugDefaultLight[i].position - CurrentPosition);
-	vec3 H = normalize(V + L);
-
 	// direct radiance
 	float distance = length(debugDefaultLight[i].position - CurrentPosition);
 	float attenuation = 1.0 / (distance * distance);
-	vec3 radiance = debugDefaultLight[i].colour * attenuation; 
+	if (attenuation > 0.001) {
+	    vec3 radiance = debugDefaultLight[i].colour * attenuation; 
 
-	vec3 F = fresnel(max(dot(H, V), 0.0), mix(vec3(0.04), CurrentAlbedo, metallic));
+	    vec3 L = normalize(debugDefaultLight[i].position - CurrentPosition);
+	    vec3 H = normalize(V + L);
 
-	// Bidirectional reflectance distribution function (BRDF)
+
+	    vec3 F = fresnel(max(dot(H, V), 0.0), mix(vec3(0.04), CurrentAlbedo, metallic));
+
+	    // Bidirectional reflectance distribution function (BRDF)
 #ifdef OREN_NAYAR
-	vec3 brdf = orenNayarDiffuse(L, V, N, roughness, CurrentAlbedo);
+	    vec3 brdf = orenNayarDiffuse(L, V, N, roughness, CurrentAlbedo);
 #else
-	vec3 brdf = cookTorrance(N, L, V, DistributionGGX(N, H, roughness), F, GeometrySmith(N, V, L, roughness));
+	    vec3 brdf = cookTorrance(N, L, V, DistributionGGX(N, H, roughness), F, GeometrySmith(N, V, L, roughness));
 #endif
 
-	vec3 kS = F;
-	vec3 kD = vec3(1.0) - kS;
-	kD *= 1.0 - metallic;
+	    vec3 kS = F;
+	    vec3 kD = vec3(1.0) - kS;
+	    kD *= 1.0 - metallic;
 
-	float NdotL = max(dot(N, L), 0.0);        
-	Lo += (kD * CurrentAlbedo / PI + brdf) * radiance * NdotL;
+	    float NdotL = max(dot(N, L), 0.0);        
+	    Lo += (kD * CurrentAlbedo / PI + brdf) * radiance * NdotL;
+	}
     }
 
 
     // TODO inacurate ambient term
-    vec3 ambient = vec3(0.01) * CurrentAlbedo * ao;
+    vec3 ambient = vec3(0.00) * CurrentAlbedo * ao;
     vec3 color = ambient + Lo; 
 
 
@@ -654,10 +657,12 @@ void main() {
     debugDefaultLight[1] = Light(-debugDefaultLight[0].position, debugDefaultLight[0].colour);
     debugDefaultLight[2] = Light(mix(vec3(15, (5 * sin(uTime / 900)) + 8, 8), vec3(-17, (5 * sin(uTime / 400)) + 8, 8.5), timeBounce(1400)), vec3(9.8, 9.8, 9.75));
     debugDefaultLight[3] = Light(mix(vec3(-1.5, 5, -2), vec3(-1.5, 21, 7), timeBounce(900)), vec3(12.8, 12.8, 12.75));
-    outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
+    //outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
+    //outColour = pbrDirectIllumination(roughness, metallicness, 1.0f);
     float f = clamp(fresnel(2.5), 0.0, 1.0);
     //outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
     //outColour = SSR(f, vec3(0.0,0.05,0.05));
     //outColour = texture2D(gAlbedoSpec, TexCoords, 6 * timeBounce(600)).xyz;
+    outColour = CurrentNormalWorldSpace;
 }
 

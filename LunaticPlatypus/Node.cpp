@@ -10,7 +10,7 @@ Node& Node::push(std::string&& n_) {
     return _childs.back();
 }
 Node& Node::push() {
-    _childs.emplace_back("");
+    _childs.emplace_back(_name);
     return _childs.back();
 }
 Node& Node::operator[](unsigned long i) {
@@ -25,9 +25,9 @@ glm::mat4& Node::getLocalTransformRef() {
 void Node::linkWorldTransform(glm::mat4* link_) {
     _wTransform = link_;
 }
-void Node::read() {
+void Node::read(Node& parent_) {
     std::cout << "nodePtr: " << this << '\n';
-    std::cout << "name: " << _name << '\n';
+    std::cout << "name: " << _name << " parent: " << parent_._name << '\n';
     std::cout << "WorldtransformPtr: " << _wTransform << '\n';
     if (_wTransform) {
 	std::cout << "world glm::mat4: " << glm::to_string(*_wTransform) << '\n';
@@ -35,11 +35,13 @@ void Node::read() {
     std::cout << "local glm::mat4: " << glm::to_string(_lTransform) << '\n';
     std::cout << "child size: " << _childs.size() << '\n';
 }
-void Node::readFromMe() {
-    read();
+void Node::readFromMe(Node& p_) {
+    std::cout << ">>\n";
+    read(p_);
     for (Node& n : _childs) {
-	n.readFromMe();
+	n.readFromMe(*this);
     }
+    std::cout << "<<\n";
 }
 
 void Node::updateFromMe(Node& p, std::list<glm::mat4*>& del, bool localMode) {
@@ -59,11 +61,14 @@ void Node::updateFromMe(glm::mat4* worldTransformParent_, std::list<glm::mat4*>&
     
     glm::mat4* worldRef;
     glm::mat4 tmpw;
+    if (_name == "nelo_GameClass") {
+	readFromMe(*this);
+    }
     if (_wTransform) {
 	if (localMode) {
 	    _lTransform = *_wTransform * glm::inverse(*worldTransformParent_);
 	} else {
-	    read();
+	    //read();
 	    *_wTransform = _lTransform * *worldTransformParent_;
 	}
 	worldRef = _wTransform;

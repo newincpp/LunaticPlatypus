@@ -36,6 +36,7 @@ void Importer::load(std::string& file, DrawBuffer& d_, Heart::IGamelogic* g_, Gr
     glm::mat4 root(1.0f);
     d_._valid = false;
     visitor(iobj, 0, d_, g_, root, scene_.root);
+    scene_.update(true); //readjusting local matricies
     d_._valid = true;
     d_.addAllUniformsToShaders();
 }
@@ -230,7 +231,7 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	o->second[o->second.size() - 1].uploadElementOnly(indiceBuffer, meshReferance->second[meshBaseVBO]._vbo, meshReferance->second[meshBaseVBO]._vao); // TODO use a iterator instead of meshBaseVBO
 	s_._valid = true;
 	o->second[o->second.size() - 1].uMeshTransform = transform_;
-	o->second[o->second.size() - 1].linkNode(n_);
+	o->second[o->second.size() - 1].linkNode(n_.push());
 	indiceBuffer.clear();
     }
 }

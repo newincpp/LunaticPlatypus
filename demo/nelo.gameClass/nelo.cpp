@@ -10,11 +10,9 @@ nelo::nelo() {
 }
 
 void nelo::test(float deltaTime) {
-    std::cout << ">>>>>>>>>>>>>"<< '\n';
-    g_nelo.hierarchy_->read();
-    std::cout << "<<<<<<<<<<<<<" << '\n';
     glm::mat4& t = g_nelo.hierarchy_->getLocalTransformRef();
-    g_nelo.hierarchy_->setLocalTransform(glm::rotate(t, 5 * deltaTime, glm::vec3(0, 1, 0)));
+    g_nelo.hierarchy_->setLocalTransform(glm::rotate(t, 1.0f * deltaTime, glm::vec3(0.0f, 0.0f, 1.0f)));
+    //g_nelo.hierarchy_->setLocalTransform(glm::translate(t, glm::vec3(0.0f, 0.0f, 1.0f * deltaTime)));
 }
 
 void(*nelo::getTickFun())(float) {

@@ -35,6 +35,6 @@ void main() {
 
     vInfVertexPos_ = (uMeshTransform * vec4(vertexPos_ + displacement, 1.0)).xyz;
     //vInfVertexNormal_ = vertexNormal_;
-    vInfVertexNormal_ = (transpose(inverse(uMeshTransform * uView)) * vec4(vertexNormal_, 1.0)).xyz / 2 + 0.5;
+    vInfVertexNormal_ = (transpose(inverse(uView * uMeshTransform )) * vec4(vertexNormal_, 1.0)).xyz / 2 + 0.5;
     vInfUvCoord_ = uvCoord_;
 }  

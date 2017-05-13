@@ -26,8 +26,8 @@ class Node {
 	void setLocalTransform(glm::mat4&& t_);
 	void linkWorldTransform(glm::mat4*);
 	glm::mat4& getLocalTransformRef();
-	void read(); 
-	void readFromMe();
+	void read(Node&); 
+	void readFromMe(Node&);
 	void updateFromMe(glm::mat4*, std::list<glm::mat4*>&, bool = false);
 	void updateFromMe(Node&, std::list<glm::mat4*>&, bool = false);
 };
