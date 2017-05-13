@@ -15,7 +15,6 @@ class DrawBuffer {
 	bool _valid;
 	std::vector<FrameBuffer> _fb;
 	std::vector<Camera> _cameras;
-	//std::vector<Mesh> _meshes;
 	std::list<std::pair<Shader, std::vector<Mesh>>> _drawList;
 	unsigned int _activeCamera;
 	DrawBuffer();

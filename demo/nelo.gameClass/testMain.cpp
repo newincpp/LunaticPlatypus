@@ -11,7 +11,7 @@ class DynamicGameClass {
 	class PlatyGameClass {
 	    public:
 		PlatyGameClass() : init(nullptr), getRemainingTickFunSize(nullptr), destroy(nullptr) {}
-		void (*init)();
+		void (*init)(void*);
 		TickFunType (*getTickFun)();
 		unsigned int (*getRemainingTickFunSize)();
 		void (*destroy)();
@@ -53,7 +53,7 @@ class DynamicGameClass {
 	    } else {
 		std::cout << "gameClass: " << name << " successfully reconstructed\n";
 	    }
-	    _handle.init();
+	    _handle.init(nullptr);
 	    std::cout << "test: " << _handle.getRemainingTickFunSize() << '\n';
 	    for (unsigned int i = _handle.getRemainingTickFunSize(); i > 0 ; --i) {
 		_tickFunctions.emplace_back(_handle.getTickFun());
@@ -69,7 +69,7 @@ class DynamicGameClass {
 	    LIB_NULL_PROTECT
 	    _handle.destroy();
 	    _tickFunctions.clear();
-	    _handle.init();
+	    _handle.init(nullptr);
 	}
 	~DynamicGameClass() {
 	    LIB_NULL_PROTECT

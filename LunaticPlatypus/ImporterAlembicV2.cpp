@@ -10,8 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
-
-void Importer::load(std::string& file, DrawBuffer& s_, Heart::IGamelogic* g_) {
+void Importer::load(std::string& file, DrawBuffer& d_, Heart::IGamelogic* g_, Graph& scene_) {
     // Create an instance of the Importer class
     Alembic::AbcCoreFactory::IFactory factory;
     factory.setPolicy(Alembic::Abc::ErrorHandler::kQuietNoopPolicy);
@@ -35,15 +34,26 @@ void Importer::load(std::string& file, DrawBuffer& s_, Heart::IGamelogic* g_) {
 
     Alembic::Abc::IObject iobj = archive.getTop();
     glm::mat4 root(1.0f);
-    s_._valid = false;
-    visitor(iobj, 0, s_, g_, root);
-    s_._valid = true;
-    s_.addAllUniformsToShaders();
+    d_._valid = false;
+    visitor(iobj, 0, d_, g_, root, scene_.root);
+    scene_.update(true); //readjusting local matricies
+    d_._valid = true;
+    d_.addAllUniformsToShaders();
 }
 
-void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawBuffer& s_, Heart::IGamelogic* g_, glm::mat4 transform_) {
+glm::mat4 convertTo(Alembic::Abc::M44d&& from) {
+    glm::mat4 to;
+    to[0][0] = (GLfloat)from[0][0]; to[0][1] = (GLfloat)from[0][1];  to[0][2] = (GLfloat)from[0][2]; to[0][3] = (GLfloat)from[0][3];
+    to[1][0] = (GLfloat)from[1][0]; to[1][1] = (GLfloat)from[1][1];  to[1][2] = (GLfloat)from[1][2]; to[1][3] = (GLfloat)from[1][3];
+    to[2][0] = (GLfloat)from[2][0]; to[2][1] = (GLfloat)from[2][1];  to[2][2] = (GLfloat)from[2][2]; to[2][3] = (GLfloat)from[2][3];
+    to[3][0] = (GLfloat)from[3][0]; to[3][1] = (GLfloat)from[3][1];  to[3][2] = (GLfloat)from[3][2]; to[3][3] = (GLfloat)from[3][3];
+    return to;
+}
+
+void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawBuffer& s_, Heart::IGamelogic* g_, glm::mat4 transform_, Node& node_) {
     const Alembic::Abc::MetaData &md = iobj.getMetaData();
 
+    Node& x = node_.push(std::string(iobj.getName()));
     if (Alembic::AbcGeom::ICurves::matches(md)) {
 	std::cout << "Curves not implemented yet\n";
     } else if (Alembic::AbcGeom::INuPatch::matches(md)) {
@@ -57,26 +67,26 @@ void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawB
     } else if (Alembic::AbcGeom::ILight::matches(md)) {
 	std::cout << "Lights not implemented yet\n";
     } else if (Alembic::AbcGeom::IXform::matches(md)) {
-	transformUpdate(iobj, transform_);
+	x.setLocalTransform(transformUpdate(iobj, transform_));
 	std::string gameClassType("_GameClass");
 	if ((gameClassType.size() < iobj.getName().size()) && (gameClassType == iobj.getName().substr(iobj.getName().size() - gameClassType.size()))) {
 	    std::string name = iobj.getName().substr(0, iobj.getName().size() - gameClassType.size());
-	    genGameClass(name, g_, transform_);
+	    genGameClass(name, g_, transform_, x);
 	}
     } else if (Alembic::AbcGeom::ICamera::matches(md)) {
-	genCamera(iobj, s_, transform_);
+	genCamera(iobj, s_, transform_, x);
     } else if (Alembic::AbcGeom::IPolyMesh::matches(md)) {
-	genMesh(iobj, s_, transform_);
+	genMesh(iobj, s_, transform_, x);
     } else {
 	std::cout << "unknown type: " << md.serialize() << '\n';
     }
 
     for (size_t i = 0 ; i < iobj.getNumChildren() ; i++) {
-	visitor(iobj.getChild(i), it + 1, s_, g_, transform_);
+	visitor(iobj.getChild(i), it + 1, s_, g_, transform_, node_);
     }
 }
 
-void Importer::transformUpdate(const Alembic::Abc::IObject& iobj, glm::mat4& transform_) {
+glm::mat4 Importer::transformUpdate(const Alembic::Abc::IObject& iobj, glm::mat4& transform_) {
     Alembic::AbcGeom::IXform matrix(iobj);
     Alembic::AbcGeom::IXformSchema ms = matrix.getSchema();
     Alembic::AbcGeom::XformSample s;
@@ -93,9 +103,10 @@ void Importer::transformUpdate(const Alembic::Abc::IObject& iobj, glm::mat4& tra
     } else {
 	transform_ *= to;
     }
+    return to;
 }
 
-void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_) {
+void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_, Node& n_) {
     Alembic::AbcGeom::IPolyMesh mesh(iobj);
     Alembic::AbcGeom::IPolyMeshSchema schema = mesh.getSchema();
 
@@ -174,6 +185,7 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	} else {
 	    s_._valid = false;
 	    s_._drawList.emplace_back();
+	    s_._drawList.back().second.reserve(1024); // will avoid a lot of realoc (expecting a lot of meshes)
 	    o = &(s_._drawList.back());
 	    o->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
 	    o->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
@@ -219,11 +231,12 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 	o->second[o->second.size() - 1].uploadElementOnly(indiceBuffer, meshReferance->second[meshBaseVBO]._vbo, meshReferance->second[meshBaseVBO]._vao); // TODO use a iterator instead of meshBaseVBO
 	s_._valid = true;
 	o->second[o->second.size() - 1].uMeshTransform = transform_;
+	o->second[o->second.size() - 1].linkNode(n_);
 	indiceBuffer.clear();
     }
 }
 
-void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_) {
+void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_, Node& n_) {
     Alembic::AbcGeom::ICamera cam(iobj);
     Alembic::AbcGeom::ICameraSchema ms = cam.getSchema();
     Alembic::AbcGeom::CameraSample s;
@@ -239,9 +252,10 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm:
     mainCamera.fieldOfview(s.getFieldOfView());
     mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane()));
     mainCamera.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
+    //n_.linkWorldTransform(&(mainCamera.uMeshTransform._value.m4));
 }
 
-void Importer::genGameClass(const std::string& name_, Heart::IGamelogic* g_, glm::mat4&) {
+void Importer::genGameClass(const std::string& name_, Heart::IGamelogic* g_, glm::mat4&, Node& n_) {
     std::cout << "gameClass detected: " << name_ << '\n';
-    g_->_gameClasses.emplace_back(name_);
+    g_->_gameClasses.emplace_back(name_, n_);
 }

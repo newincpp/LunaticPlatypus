@@ -1,5 +1,7 @@
+#include <Node.hh>
+
 extern "C" {
-    void init();
+    void init(Node*);
     void(*getTickFun())(float);
     unsigned int getRemainingTickFunSize();
     void destroy();

@@ -49,8 +49,8 @@ void OglCore::init() {
     _s._fb[0].addBuffer("gAlbedoSpec");
     _s._fb[0].addDepthBuffer("gDepth");
     _s._fb[0].enable();
-    Mesh m;
-    m.uploadToGPU(vertices, elements);
+    //Mesh m;
+    //m.uploadToGPU(vertices, elements);
     _s._cameras.emplace_back(_s._fb[0]);
 
     _renderTarget.uploadToGPU(vertices, elements);

@@ -1,7 +1,7 @@
 #pragma once
 #include "OglCore.hh"
 #include "WindowHandle.hh"
-#include "node.hh"
+#include "Node.hh"
 #include "fileWatcher.hh"
 #include "EventCore.hh"
 #include "DynamicGameClass.hh"
@@ -25,12 +25,13 @@ class Heart {
     private:
 	WindowHandle _win;
 	OglCore _renderer;
-	Graph _scene;
+	static Graph* _scene;
 	FileWatcher* _fw;
     public:
 	static IGamelogic* _game;
 	Heart();
 	inline OglCore& getRenderer() { return _renderer; }
+	static Graph* getScene() { return _scene; }
 	void loadScene();
 	void run();
 };

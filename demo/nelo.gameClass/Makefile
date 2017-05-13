@@ -1,9 +1,10 @@
-SRC	= nelo.cpp
+LUNATICPLATYPUSDIR=../../LunaticPlatypus/
+SRC	= nelo.cpp \
+	  $(LUNATICPLATYPUSDIR)/Node.cpp
 
 OS	:= $(shell uname -s)
 EXT=cpp
 NAME	=nelo.so
-LUNATICPLATYPUSDIR=../../GLnewin
 OPTIM= -march=native -O2 -fno-rtti #-fno-exceptions
 INCLUDE=-I$(LUNATICPLATYPUSDIR)/ -I$(LUNATICPLATYPUSDIR)/imgui/ -I$(LUNATICPLATYPUSDIR)/glm
 CXXFLAGS= -Wconversion -Wall -Wextra -W -std=c++11 -fPIC $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)

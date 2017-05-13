@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
 
+#include "Node.hh"
 #include "Uniform.hh"
 
 template<typename InputType_>
@@ -32,9 +33,11 @@ class Mesh {
 	Uniform uMeshTransform;
 	//std::string _name;
 	Mesh();
+	~Mesh();
 	void uploadToGPU(std::vector<GLfloat>&, std::vector<GLuint>&);
 	void uploadElementOnly(std::vector<GLuint>&, GLuint, GLuint);
 	void uploadVertexOnly(std::vector<GLfloat>&);
+	void linkNode(Node&);
 	void render();
 	void freeVao();
 	void freeVbo();

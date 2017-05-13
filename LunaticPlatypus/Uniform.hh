@@ -33,7 +33,7 @@ class Uniform {
 	    tMat3,
 	    tMat4
 	} _valueType;
-	union toto {
+	union _ {
 		int i; unsigned int ui; float f; glm::vec2 v2; glm::vec3 v3; glm::vec4 v4; glm::mat2 m2; glm::mat3 m3; glm::mat4 m4;
 	    operator int() {return i;}
 	    operator unsigned int() {return ui;}
@@ -44,15 +44,15 @@ class Uniform {
 	    operator glm::mat2() {return m2;}
 	    operator glm::mat3() {return m3;}
 	    operator glm::mat4() {return m4;}
-	    toto(int i_) : i(i_) { }
-	    toto(unsigned int i_) : ui(i_) { }
-	    toto(float i_) : f(i_) { }
-	    toto(glm::vec2 const & i_) : v2(i_) { }
-	    toto(glm::vec3 const & i_) : v3(i_) { }
-	    toto(glm::vec4 const & i_) : v4(i_) { }
-	    toto(glm::mat2 const & i_) : m2(i_) { }
-	    toto(glm::mat3 const & i_) : m3(i_) { }
-	    toto(glm::mat4 const & i_) : m4(i_) { }
+	    _(int i_) : i(i_) { }
+	    _(unsigned int i_) : ui(i_) { }
+	    _(float i_) : f(i_) { }
+	    _(glm::vec2 const & i_) : v2(i_) { }
+	    _(glm::vec3 const & i_) : v3(i_) { }
+	    _(glm::vec4 const & i_) : v4(i_) { }
+	    _(glm::mat2 const & i_) : m2(i_) { }
+	    _(glm::mat3 const & i_) : m3(i_) { }
+	    _(glm::mat4 const & i_) : m4(i_) { }
 	} _value;
 	std::string name;
     	explicit Uniform(int i, std::string const & name_) : _valueType(tInt), _value(i), name(name_) { }

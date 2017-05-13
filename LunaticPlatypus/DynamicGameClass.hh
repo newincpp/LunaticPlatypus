@@ -1,6 +1,7 @@
 #include <dlfcn.h>
 #include <iostream>
 #include <list>
+#include "Node.hh"
 
 class DynamicGameClass {
     private:
@@ -9,7 +10,7 @@ class DynamicGameClass {
 	class PlatyGameClass {
 	    public:
 		PlatyGameClass();
-		void (*init)();
+		void (*init)(Node*);
 		TickFunType (*getTickFun)();
 		unsigned int (*getRemainingTickFunSize)();
 		void (*destroy)();
@@ -30,8 +31,8 @@ class DynamicGameClass {
 	PlatyGameClass _handle;
 	std::list<TickFunType> _tickFunctions;
     public:
-	DynamicGameClass(std::string&& name);
-	DynamicGameClass(const std::string& name);
+	DynamicGameClass(std::string&& name, Node&);
+	DynamicGameClass(const std::string& name, Node&);
 	void update(float deltaTime_);
 	void reset();
 	~DynamicGameClass();

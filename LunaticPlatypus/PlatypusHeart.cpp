@@ -5,6 +5,7 @@
 
 #include "Importer.hh"
 
+Graph* Heart::_scene = nullptr;
 Heart::Heart() : _fw(nullptr) {
     if (_game == nullptr) {
 	std::cout << "SetGameClass() macro has not been called I will now assert\n";
@@ -15,6 +16,7 @@ Heart::Heart() : _fw(nullptr) {
 	_game->_scene = STRINGIZE(DEFAULT_SCENE);
     }
     std::cout << "default scene: " << _game->_scene << "\n";
+    _scene = new Graph();
     loadScene();
     _game->postEngineInit();
 }
@@ -34,7 +36,7 @@ void Heart::run() {
 
 	_renderer.render();
 	for (GameClass& g: _game->_gameClasses) {
-	    g.update(deltaTime);
+	    g.update(deltaTime/1000);
 	}
 	_game->update();
 
@@ -53,7 +55,7 @@ void Heart::run() {
 	    _fw = new FileWatcher(_game->_scene.c_str());
 	    mod = false;
 	}
-	_scene.update();
+	_scene->update();
 	ImGui::Render();
     }
 }
@@ -64,7 +66,7 @@ void Heart::loadScene() {
     }
     _fw = new FileWatcher(_game->_scene.c_str());
     _renderer.getDrawBuffer().reset();
-    Importer iscene(_game->_scene, _renderer.getDrawBuffer(), _game);
+    Importer iscene(_game->_scene, _renderer.getDrawBuffer(), _game, *_scene);
     _fw->callBack = [this]() { std::cout << "automatic file reloader temporarily deleted\n"; };
 }
 

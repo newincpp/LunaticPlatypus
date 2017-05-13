@@ -1,7 +1,11 @@
+#include "PlatypusHeart.hh"
 #include "Mesh.hh"
 
 Mesh::Mesh() : uMeshTransform(glm::mat4(), "uMeshTransform") {
-    uMeshTransform._location = 1; // TODO temporarily fixing auto location bug
+    uMeshTransform._location = 1; // FIXME temporarily fixing auto location bug
+}
+Mesh::~Mesh() {
+    Heart::getScene()->remove(&(uMeshTransform._value.m4));
 }
 
 void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
@@ -101,4 +105,12 @@ void Mesh::render() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
     glDrawElements(GL_TRIANGLES, _size, GL_UNSIGNED_INT, 0); // TODO implement multidraw architecture
+}
+
+#include <glm/gtx/string_cast.hpp>
+
+void Mesh::linkNode(Node& n_) {
+    std::cout << "link to: " << glm::to_string(uMeshTransform._value.m4) << '\n';
+    std::cout << "ptr val: " << &(uMeshTransform._value.m4) << '\n';
+    n_.linkWorldTransform(&(uMeshTransform._value.m4));
 }

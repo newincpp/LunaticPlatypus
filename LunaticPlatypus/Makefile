@@ -19,6 +19,7 @@ SRC	= Camera.cpp \
 	   PlatypusHeart.cpp \
 	   EventCore.cpp \
 	   DynamicGameClass.cpp \
+	   Node.cpp \
 	   fileWatcher.cpp
 
 SRC+=$(IMGUI)
