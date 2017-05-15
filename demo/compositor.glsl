@@ -124,7 +124,7 @@ vec2 raytraceToCamera(vec3 raydir, vec3 rayorg) {
     vec3 cu = getCameraUp();
     vec3 cr = getCameraRight();
 
-    vec3 i = planeInt(cf, cp + cf * 0.218, rayorg, raydir);
+    vec3 i = planeInt(cf, cp + cf * -0.43, rayorg, raydir);
     //i = (transpose(inverse(uProjection)) * vec4(i, 0.0f)).xyz;
     float sideT = dot(i, cu) - (PI / 2.);
     float sideBiT = dot(i, cr) - (PI / 2.);
@@ -657,15 +657,21 @@ void main() {
     debugDefaultLight[1] = Light(-debugDefaultLight[0].position, debugDefaultLight[0].colour);
     debugDefaultLight[2] = Light(mix(vec3(15, (5 * sin(uTime / 900)) + 8, 8), vec3(-17, (5 * sin(uTime / 400)) + 8, 8.5), timeBounce(1400)), vec3(9.8, 9.8, 9.75));
     debugDefaultLight[3] = Light(mix(vec3(-1.5, 5, -2), vec3(-1.5, 21, 7), timeBounce(900)), vec3(12.8, 12.8, 12.75));
-    //outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
+    outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
     //outColour = pbrDirectIllumination(roughness, metallicness, 1.0f);
-    outColour = CurrentAlbedo;
+    //outColour = CurrentAlbedo;
     float f = clamp(fresnel(2.5), 0.0, 1.0);
     //outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
     //outColour = SSR(f, vec3(0.0,0.05,0.05));
     //outColour = texture2D(gAlbedoSpec, TexCoords, 6 * timeBounce(600)).xyz;
     ivec2 coord = ivec2((gl_FragCoord.xy / vec2(1920.0f, 1080.0f)) * vec2(imageSize(uRaytracedShadowBuffer)));
     //if (TexCoords.x < timeBounce(1000)) {
-	//outColour *= imageLoad(uRaytracedShadowBuffer, coord).xyz;
+    //outColour = imageLoad(uRaytracedShadowBuffer, coord).xyz;
     //}
+
+    //vec2 rtUV = getUVfromPosition(CurrentPosition);
+    //outColour = texture2D(gAlbedoSpec, rtUV).xyz;
+
+    //outColour = imageLoad(uRaytracedShadowBuffer, coord).xyz;
+    imageStore(uRaytracedShadowBuffer, coord, vec4(0.0, 0.0, 0.0, 1.0));
 }
