@@ -672,6 +672,6 @@ void main() {
     //vec2 rtUV = getUVfromPosition(CurrentPosition);
     //outColour = texture2D(gAlbedoSpec, rtUV).xyz;
 
-    //outColour = imageLoad(uRaytracedShadowBuffer, coord).xyz;
+    //outColour *= imageLoad(uRaytracedShadowBuffer, coord).xyz;
     imageStore(uRaytracedShadowBuffer, coord, vec4(0.0, 0.0, 0.0, 1.0));
 }

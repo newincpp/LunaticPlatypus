@@ -82,12 +82,12 @@ void main() {
 	vec3 nearestGBufferPosition = texture2D(gPosition, rtUV).xyz;
 	float d = distance(inVertexPos_, nearestGBufferPosition);
 	if (d < 25.0f) {
-	    imageStore(uRaytracedShadowBuffer, projectedCoord, vec4(1.0, 0.0, 0.0, 1.0));
+	    imageStore(uRaytracedShadowBuffer, projectedCoord, vec4(1.0, 1.0, 1.0, 1.0));
 	    //imageStore(uRaytracedShadowBuffer, projectedCoord, texture2D(gAlbedoSpec, rtUV));
-	} else {
+	} //else {
 	    //imageStore(uRaytracedShadowBuffer, projectedCoord, vec4(d, 0.0, 0.0, 1.0));
-	    imageStore(uRaytracedShadowBuffer, projectedCoord, vec4(nearestGBufferPosition, 1.0));
-	}
+	    //imageStore(uRaytracedShadowBuffer, projectedCoord, vec4(nearestGBufferPosition, 1.0));
+	//}
     } 
     //discard; // this shader is used as a compute shader with a raster output in parmater;
 }
