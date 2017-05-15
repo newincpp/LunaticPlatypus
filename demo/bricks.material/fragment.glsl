@@ -13,8 +13,8 @@ out vec3 gPosition;
 out vec3 gNormal;
 out vec3 gAlbedoSpec;
 //out float gDepth;
-uniform layout(binding=1, rgba16f) writeonly image2D uFractalTexture; // float
-//uniform layout(binding=1, rgba16ui) writeonly uimage2D uFractalTexture; // int
+//uniform layout(binding=1, rgba16f) writeonly image2D uImageRam; // float
+//uniform layout(binding=1, rgba16ui) writeonly uimage2D uImageRam; // int
 
 void main() {
     //if (gl_FragCoord.x > 500) {
@@ -31,7 +31,4 @@ void main() {
 	gAlbedoSpec.rgb = vec3(0.4, 0.4, 0.4);
     }
     //gDepth = 1.0f;
-    ivec2 plop = ivec2((gl_FragCoord.xy / vec2(1920.0f, 1080.0f)) * vec2(imageSize(uFractalTexture)));
-
-    imageStore(uFractalTexture, plop, vec4(gNormal, 1.0));
 }

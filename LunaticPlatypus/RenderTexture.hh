@@ -50,7 +50,7 @@ RenderTexture<MODE>::RenderTexture(unsigned short attachment_, std::string&& nam
     init(attachment_, std::move(name_), resolution_);
 }
 
-#define ENABLE_MIPMAP
+//#define ENABLE_MIPMAP
 
 template <GLuint MODE>
 void RenderTexture<MODE>::init(unsigned short attachment_, std::string&& name_, glm::vec2 resolution_) {

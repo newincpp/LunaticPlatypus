@@ -46,6 +46,7 @@ void Camera::addPos(glm::vec3&& Pos_) {
 void Camera::setPos(glm::vec3&& newPos_) {
     _position = newPos_;
 }
+#include <glm/gtx/string_cast.hpp>
 void Camera::use() {
     _gBuffer.enable();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -57,6 +58,10 @@ void Camera::use() {
     ImGui::InputFloat3("upVector", glm::value_ptr(_upVector));
     ImGui::InputFloat2("clipPlane", glm::value_ptr(_clipPlane));
     ImGui::InputFloat("fov", &_fov);
+    //std::cout << "Pos: " << glm::to_string(_position) << '\n';
+    //std::cout << "Right: " << glm::to_string(uView._value.m4[0]) << '\n';
+    //std::cout << "Up: " <<  glm::to_string(uView._value.m4[1]) << '\n';
+    //std::cout << "Forward: " <<  glm::to_string(uView._value.m4[2]) << '\n';
 }
 void Camera::updateUniform(unsigned int currentFrame) {
     uView.updateValue(glm::lookAt(_position, _target, _upVector), currentFrame);

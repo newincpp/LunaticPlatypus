@@ -10,7 +10,7 @@ uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 uniform sampler2D gDepth;
 
-layout(binding=1, rgba16f) uniform image2D uFractalTexture; // float
+layout(binding=1, rgba16f) uniform image2D uRaytracedShadowBuffer; // float
 //uniform layout(binding=1, rgba16ui) uimage2D uFractalTexture; // int
 
 in vec2 TexCoords;
@@ -659,10 +659,13 @@ void main() {
     debugDefaultLight[3] = Light(mix(vec3(-1.5, 5, -2), vec3(-1.5, 21, 7), timeBounce(900)), vec3(12.8, 12.8, 12.75));
     //outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
     //outColour = pbrDirectIllumination(roughness, metallicness, 1.0f);
+    outColour = CurrentAlbedo;
     float f = clamp(fresnel(2.5), 0.0, 1.0);
     //outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
     //outColour = SSR(f, vec3(0.0,0.05,0.05));
     //outColour = texture2D(gAlbedoSpec, TexCoords, 6 * timeBounce(600)).xyz;
-    outColour = CurrentNormalWorldSpace;
+    ivec2 coord = ivec2((gl_FragCoord.xy / vec2(1920.0f, 1080.0f)) * vec2(imageSize(uRaytracedShadowBuffer)));
+    //if (TexCoords.x < timeBounce(1000)) {
+	//outColour *= imageLoad(uRaytracedShadowBuffer, coord).xyz;
+    //}
 }
-

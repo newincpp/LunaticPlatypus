@@ -43,6 +43,10 @@ void OglCore::init() {
     _compositor.add("./compositorVert.glsl",GL_VERTEX_SHADER);
     _compositor.link({"outColour"});
 
+    _s._dynamicShadowCaster.add("./dynamicShadows.glsl",GL_FRAGMENT_SHADER);
+    _s._dynamicShadowCaster.add("./dynamicShadowsVert.glsl",GL_VERTEX_SHADER);
+    _s._dynamicShadowCaster.link({"outColour"});
+
     _s._fb.emplace_back();
     _s._fb[0].addBuffer("gPosition");
     _s._fb[0].addBuffer("gNormal");
@@ -58,6 +62,9 @@ void OglCore::init() {
     _compositor.containUniform(_s._cameras[0].uView);
     _compositor.containUniform(_s._cameras[0].uProjection);
     _compositor.containUniform(uTime);
+
+    _s._lights.emplace_back();
+    _s._dynamicShadowCaster.containUniform(uTime);
     //_renderTarget.uMeshTransform.addItselfToShaders(_s._drawList); //TODO add meshTransform of every mesh loaded to shaders (function addMeshUniformsToShaders of DrawBuffer) when importing stuff; also deal with upload of multiple uniform with same name
 
     //_sgBuffer->first.use();
@@ -66,19 +73,16 @@ void OglCore::init() {
     _s.addCameraUniformsToShaders();
     std::cout << "OpenGL renderer initialized" << std::endl;
 
-
-
-
-    glGenTextures(1, &fractalTex);
-    glBindTexture(GL_TEXTURE_2D, fractalTex);
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-    //glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16UI, 512, 512); // int
-    glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA16F, 512, 512); // float
-    checkGlError;
-    glBindTexture(GL_TEXTURE_2D, 0);
+    //glGenTextures(1, &_illuminationBuffer);
+    //glBindTexture(GL_TEXTURE_2D, _illuminationBuffer);
+    //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
+    //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
+    //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    ////glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16UI, 1920, 1080); // int
+    //glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA16F, 1920, 1080); // float
+    //checkGlError;
+    //glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void OglCore::render() {
@@ -89,23 +93,24 @@ void OglCore::render() {
     _s.update(_currentFrame);
 
     //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
-    glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
+    //glBindImageTexture(1, _illuminationBuffer, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
     //_sgBuffer->first.use();
     checkGlError;
     _s.render();
     checkGlError;
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    _s.castDynamicShadows();
     checkGlError;
 
     //glDisable(GL_CULL_FACE);
     _compositor.use();
     checkGlError;
     _s.bindGBuffer(0);
-    //_s._cameras[0].uploadUniform();
+    Light::_illuminationBuffer->useR();
     //uTime.upload();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _renderTarget.render();
-    //glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
     ++_currentFrame;
 }

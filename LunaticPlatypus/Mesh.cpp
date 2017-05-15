@@ -110,7 +110,5 @@ void Mesh::render() {
 #include <glm/gtx/string_cast.hpp>
 
 void Mesh::linkNode(Node& n_) {
-    std::cout << "link to: " << glm::to_string(uMeshTransform._value.m4) << '\n';
-    std::cout << "ptr val: " << &(uMeshTransform._value.m4) << '\n';
     n_.linkWorldTransform(&(uMeshTransform._value.m4));
 }

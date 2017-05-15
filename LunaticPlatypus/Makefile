@@ -7,6 +7,7 @@ SRC	= Camera.cpp \
 	   FrameBuffer.cpp \
 	   Importer.cpp \
 	   Mesh.cpp \
+	   Light.cpp \
 	   OglCore.cpp \
 	   RenderTexture.cpp \
 	   Texture.cpp \

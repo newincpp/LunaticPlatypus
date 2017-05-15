@@ -34,6 +34,21 @@ void DrawBuffer::render() {
     }
 }
 
+void DrawBuffer::castDynamicShadows() {
+    _dynamicShadowCaster.use();
+    bindGBuffer(0);
+    ImGui::Text("lights in use: %zu", _lights.size());
+    for (Light& l : _lights) {
+	l.use();
+	for (std::pair<Shader, std::vector<Mesh>>& material : _drawList) {
+	    for (Mesh& m : material.second) {
+		m.render();
+	    }
+	}
+	Light::_illuminationBuffer->sync();
+    }
+}
+
 void DrawBuffer::bindGBuffer(unsigned int camera_) {
     _cameras[camera_].bindFramebuffer();
 }

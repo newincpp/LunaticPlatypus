@@ -27,7 +27,4 @@ void main() {
     // And the diffuse per-fragment color
     gAlbedoSpec.rgb = vec3(0.1, 0.1, 0.1);
     //gDepth = 1.0f;
-    ivec2 plop = ivec2((gl_FragCoord.xy / vec2(1920.0f, 1080.0f)) * vec2(imageSize(uFractalTexture)));
-
-    imageStore(uFractalTexture, plop, vec4(gNormal, 1.0));
 }

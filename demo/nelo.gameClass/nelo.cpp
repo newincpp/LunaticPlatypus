@@ -31,15 +31,13 @@ unsigned int nelo::getRemainingTickFunSize() {
 
 void nelo::init(Node* n_) {
     hierarchy_ = n_;
-    std::cout << "I am Nelo\n";
+    std::cout << "nelo.GameClass initialised\n";
 }
 
 void nelo::destroy() {
-    std::cout << "aaaaaannnd am ded =(\n";
 }
 
 nelo::~nelo() {
-    std::cout << "truely destroyed\n";
 }
 
 void init(Node* hierarchy) { g_nelo.init(hierarchy); }

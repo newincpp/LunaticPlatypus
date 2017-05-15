@@ -19,7 +19,7 @@ class OglCore {
 	Shader _compositor;
 	DrawBuffer _s;
 	Mesh _renderTarget;
-	GLuint fractalTex;
+	//GLuint _illuminationBuffer;
 	unsigned int _currentFrame = 0;
     public:
 	OglCore();

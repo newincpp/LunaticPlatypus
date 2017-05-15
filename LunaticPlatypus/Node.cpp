@@ -61,9 +61,9 @@ void Node::updateFromMe(glm::mat4* worldTransformParent_, std::list<glm::mat4*>&
     
     glm::mat4* worldRef;
     glm::mat4 tmpw;
-    if (_name == "nelo_GameClass") {
-	readFromMe(*this);
-    }
+    //if (_name == "nelo_GameClass") {
+    //    readFromMe(*this);
+    //}
     if (_wTransform) {
 	if (localMode) {
 	    _lTransform = *_wTransform * glm::inverse(*worldTransformParent_);
