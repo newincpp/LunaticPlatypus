@@ -1,6 +1,6 @@
 #warning "using tinyObjLoader"
 
-void Importer::load(std::string& file, DrawBuffer& s_) {
+void Importer::load(std::string& file, DrawBuffer& s_, Heart::IGamelogic*, Graph&) {
     std::cout << "Import using tinyObjLoader\n";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
