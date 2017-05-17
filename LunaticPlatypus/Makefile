@@ -15,7 +15,7 @@ SRC	= Camera.cpp \
 	   shader.cpp \
 	   Uniform.cpp \
 	   DrawBuffer.cpp \
-	   node.cpp \
+	   Node.cpp \
 	   WindowHandle.cpp \
 	   PlatypusHeart.cpp \
 	   EventCore.cpp \
