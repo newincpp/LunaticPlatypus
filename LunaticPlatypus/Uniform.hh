@@ -11,15 +11,15 @@ class Mesh;
 class Uniform {
     private:
 	unsigned int _frameUpdated = 0;
-	void setValueType(__attribute__((unused)) int i_) { _valueType = tInt; }
-	void setValueType(__attribute__((unused)) unsigned int i_) { _valueType = tUnsignedInt; }
-	void setValueType(__attribute__((unused)) float i_) { _valueType = tFloat; }
-	void setValueType(__attribute__((unused)) glm::vec2 const & i_) { _valueType = tVec2; }
-	void setValueType(__attribute__((unused)) glm::vec3 const & i_) { _valueType = tVec3; }
-	void setValueType(__attribute__((unused)) glm::vec4 const & i_) { _valueType = tVec4; }
-	void setValueType(__attribute__((unused)) glm::mat2 const & i_) { _valueType = tMat2; }
-	void setValueType(__attribute__((unused)) glm::mat3 const & i_) { _valueType = tMat3; }
-	void setValueType(__attribute__((unused)) glm::mat4 const & i_) { _valueType = tMat4; }
+	void setValueType(int) { _valueType = tInt; }
+	void setValueType(unsigned int) { _valueType = tUnsignedInt; }
+	void setValueType(float) { _valueType = tFloat; }
+	void setValueType(glm::vec2 const &) { _valueType = tVec2; }
+	void setValueType(glm::vec3 const &) { _valueType = tVec3; }
+	void setValueType(glm::vec4 const &) { _valueType = tVec4; }
+	void setValueType(glm::mat2 const &) { _valueType = tMat2; }
+	void setValueType(glm::mat3 const &) { _valueType = tMat3; }
+	void setValueType(glm::mat4 const &) { _valueType = tMat4; }
     public:
 	GLint _location;
 	enum tType {

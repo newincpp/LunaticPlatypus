@@ -2,6 +2,7 @@
 #include "glew.h"
 #include "imgui/imgui.h"
 #include "WindowHandle.hh"
+#include <string>
 
 WindowHandle::WindowHandle() {
     glewExperimental = true;

@@ -9,6 +9,10 @@
 
 #include "glew.h"
 
+#ifdef _WIN32
+#include <malloc.h>
+#endif
+
 #define checkGlError getGlError(__FILE__, __LINE__);
 void getGlError(const char* file_, unsigned long line_);
 class Uniform;
@@ -32,7 +36,11 @@ class Shader {
 	    }
 	    GLint InfoLogLength;
 	    glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	    char ErrorMessage[InfoLogLength];
+#ifdef _WIN32
+        char *ErrorMessage = (char*)alloca(InfoLogLength);
+#else
+        char ErrorMessage[InfoLogLength];
+#endif
 	    glGetShaderInfoLog(id_, InfoLogLength, NULL, ErrorMessage);
 
 	    std::cout << "\033[31mfailed to compile \"" <<  filename_ << "\"\033[0m\n" << 

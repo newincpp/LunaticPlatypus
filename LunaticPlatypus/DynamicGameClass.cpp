@@ -10,10 +10,10 @@ DynamicGameClass::DynamicGameClass(std::string&& name_, Node& n_) : DynamicGameC
 
 DynamicGameClass::DynamicGameClass(const std::string& name_, Node& n_) : _lib_handle(nullptr) {
     std::string libname("./" + name_ + ".gameClass/" + name_ + ".so");
-    _lib_handle = dlopen(libname.c_str(), RTLD_NOW);
+    _lib_handle = LoadLib(libname.c_str());
     if (!_lib_handle) {
-	std::cout << "failed to open \"" << libname << "\"\n";
-	std::cout << "dlerror: " << dlerror() << '\n';
+	std::cout << "failed to open \"" << libname.c_str() << "\"\n";
+	std::cout << "dlerror: " << LoadErr() << '\n';
 	return;
     }
 
@@ -23,10 +23,10 @@ DynamicGameClass::DynamicGameClass(const std::string& name_, Node& n_) : _lib_ha
     autoBuildGameFunc(destroy);
 
     if (!_handle.checkInit()) {
-	std::cout << "failed to reconstruct the gameClass: " << name_ << '\n';
+	std::cout << "failed to reconstruct the gameClass: " << name_.c_str() << '\n';
 	return;
     } else {
-	std::cout << "gameClass: " << name_ << " successfully reconstructed\n";
+	std::cout << "gameClass: " << name_.c_str() << " successfully reconstructed\n";
     }
     _handle.init(&n_);
     _tickFunctions.emplace_back(_handle.getTickFun());
@@ -49,5 +49,5 @@ void DynamicGameClass::reset() {
 DynamicGameClass::~DynamicGameClass() {
     LIB_NULL_PROTECT
 	_handle.destroy();
-    dlclose(_lib_handle);
+    UnloadLib(_lib_handle);
 }

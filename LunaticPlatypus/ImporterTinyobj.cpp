@@ -1,4 +1,4 @@
-#warning "using tinyObjLoader"
+//#warning "using tinyObjLoader"
 
 void Importer::load(std::string& file, DrawBuffer& s_, Heart::IGamelogic*, Graph&) {
     std::cout << "Import using tinyObjLoader\n";

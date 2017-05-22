@@ -1,4 +1,4 @@
-#include <dlfcn.h>
+#include <LibLoading.hh>
 #include <iostream>
 #include <list>
 #include "Node.hh"
@@ -19,9 +19,9 @@ class DynamicGameClass {
 
 	template <typename T>
 	T _buildFunction(const char* name) {
-	    T func = (T)dlsym(_lib_handle, name);
+	    T func = (T)LoadSym(_lib_handle, name);
 	    char *error;
-	    if ((error = dlerror()) != NULL) {
+	    if ((error = LoadErr()) != NULL) {
 		std::cout << "failed to find genClass function:\n" << error << '\n';
 	    } else if (func == nullptr){
 		std::cout << name << " is still null dunno why\n";

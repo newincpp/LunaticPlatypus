@@ -59,7 +59,11 @@ void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
 	std::cout << "failed to Link the shader\n";
 	GLint InfoLogLength;
 	glGetProgramiv(_programId, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	char ErrorMessage[InfoLogLength];
+#ifdef _WIN32
+	char *ErrorMessage = (char*)alloca(InfoLogLength);
+#else
+    char ErrorMessage[InfoLogLength];
+#endif
 	glGetProgramInfoLog(_programId, InfoLogLength, NULL, ErrorMessage);
 	std::cout << "\033[31mfailed to Link with error:\"" << ErrorMessage << std::endl << "-------------------\033[0m" << std::endl;
 	_programId = 0;

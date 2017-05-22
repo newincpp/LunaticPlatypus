@@ -10,7 +10,11 @@ FrameBuffer::FrameBuffer() {
 void FrameBuffer::enable() {
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
     if (_rtt.size()) {
-	GLuint attachments[_rtt.size()];
+#ifdef _WIN32
+    GLuint *attachments = (GLuint*)alloca(_rtt.size());
+#else
+    GLuint attachments[_rtt.size()];
+#endif
 	for (unsigned short i = 0; i < _rtt.size(); ++i) {
 	    attachments[i] = _rtt[i].getAttachment();
 	}

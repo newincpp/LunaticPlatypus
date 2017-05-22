@@ -8,7 +8,7 @@ class MyGame : public Heart::IGamelogic {
 	std::chrono::time_point<std::chrono::system_clock> _start;
 	glm::vec3 p;
 	MyGame() {
-	    _scene = "./sponza.abc";
+	    _scene = "./DemoCity.obj";
 
 	    _start = std::chrono::system_clock::now();
 	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_Q), [this]() { _lunaticPlatypus->getRenderer().getCamera().addPos(glm::vec3(0.0f, 1.0f, 0.0f)); }); //Q

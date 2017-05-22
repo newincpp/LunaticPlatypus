@@ -2,6 +2,8 @@
 #include <iostream>
 #ifdef __APPLE__
 #include <vector>
+#elif _WIN32
+#include <vector>
 #elif __linux__
 #include <deque>
 #endif
@@ -13,8 +15,10 @@ class Node {
 	std::string _name;
 	glm::mat4 _lTransform;
 	glm::mat4* _wTransform;
-#ifdef __APPLE__
+#ifdef __APPLE__ 
 	std::vector<Node> _childs;
+#elif _WIN32
+    std::vector<Node> _childs;
 #elif __linux__
 	std::deque<Node> _childs;
 #endif

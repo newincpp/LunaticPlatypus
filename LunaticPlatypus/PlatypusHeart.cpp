@@ -5,7 +5,9 @@
 
 #include "Importer.hh"
 
+//Heart::IGamelogic *Heart::_game = nullptr;
 Graph* Heart::_scene = nullptr;
+
 Heart::Heart() : _fw(nullptr) {
     if (_game == nullptr) {
 	std::cout << "SetGameClass() macro has not been called I will now assert\n";
