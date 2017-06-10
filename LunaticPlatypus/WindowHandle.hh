@@ -1,3 +1,4 @@
+#pragma once
 #include "GLFW/glfw3.h"
 #include "EventCore.hh"
 #include <map>
@@ -10,5 +11,8 @@ class WindowHandle {
     public:
 	WindowHandle();
 	bool exec();
+	inline void makeContextCurrent() {
+	    glfwMakeContextCurrent(_window);
+	}
 	~WindowHandle();
 };

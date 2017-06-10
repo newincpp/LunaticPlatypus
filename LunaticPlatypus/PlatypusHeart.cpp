@@ -18,6 +18,13 @@ Heart::Heart() : _fw(nullptr) {
     std::cout << "default scene: " << _game->_scene << "\n";
     _scene = new Graph();
     loadScene();
+    _renderThread.uniqueTasks.push_back([this](){
+	    loadScene();
+	    });
+    _renderThread.uniqueTasks.push_back([this](){
+	    getRenderer().init();
+	    });
+    _renderThread.run();
     _game->postEngineInit();
 }
 
@@ -34,7 +41,7 @@ void Heart::run() {
 	ImGui::Text("\nApplication average %f ms/frame (%.1f FPS)", deltaTime, 1000.0/double(std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count()));
 	beginFrame = std::chrono::high_resolution_clock::now();
 
-	_renderer.render();
+	//_renderer.render();
 	for (GameClass& g: _game->_gameClasses) {
 	    g.update(deltaTime/1000);
 	}
@@ -65,9 +72,13 @@ void Heart::loadScene() {
 	delete _fw;
     }
     _fw = new FileWatcher(_game->_scene.c_str());
-    _renderer.getDrawBuffer().reset();
-    Importer iscene(_game->_scene, _renderer.getDrawBuffer(), _game, *_scene);
+    _renderThread.unsafeGetRenderer().getDrawBuffer().reset();
+    Importer iscene(_game->_scene, _renderThread.unsafeGetRenderer().getDrawBuffer(), _game, *_scene);
     _fw->callBack = [this]() { std::cout << "automatic file reloader temporarily deleted\n"; };
+}
+
+void Heart::addScene(std::string filename) {
+    Importer iscene(filename, _renderThread.unsafeGetRenderer().getDrawBuffer(), _game, *_scene);
 }
 
 void Heart::IGamelogic::postEngineInit() {

@@ -21,6 +21,7 @@ SRC	= Camera.cpp \
 	   EventCore.cpp \
 	   DynamicGameClass.cpp \
 	   Node.cpp \
+	   RenderThread.cpp \
 	   fileWatcher.cpp
 
 SRC+=$(IMGUI)

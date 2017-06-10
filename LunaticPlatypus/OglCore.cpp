@@ -16,7 +16,7 @@ void getGlError(const char* file_, unsigned long line_) {
 }
 
 OglCore::OglCore() : uTime(0.0f, "uTime") { 
-    init();
+//    init();
 }
 
 void OglCore::init() {

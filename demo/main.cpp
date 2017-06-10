@@ -20,9 +20,8 @@ class MyGame : public Heart::IGamelogic {
 	}
 	// if you want to call a function after the initialisation of the engine use this function
 	virtual void postEngineInit() {
-	    //_lunaticPlatypus->getRenderer().getCamera().setPos(glm::vec3(9.0,3.0,0.0));
-	    _lunaticPlatypus->getRenderer().getCamera().lookAt(glm::vec3(-1.0, 13.5, 0.0));
-	    _lunaticPlatypus->getRenderer().getCamera().setPos(glm::vec3(17.5, 4, -7.7));
+	    //_lunaticPlatypus->getRenderer().getCamera().lookAt(glm::vec3(-1.0, 13.5, 0.0));
+	    //_lunaticPlatypus->getRenderer().getCamera().setPos(glm::vec3(17.5, 4, -7.7));
 	}
 	virtual void update() {
 	    std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - _start;

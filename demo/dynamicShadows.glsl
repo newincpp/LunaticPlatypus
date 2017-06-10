@@ -17,10 +17,9 @@ layout(binding=1, rgba16f) uniform image2D uRaytracedShadowBuffer; // float
 vec2 resolution = vec2(1920, 1080);
 #define PI    3.14159265
 
-//Pos: vec3(17.500000, 4.000000, -7.700000)
-//Right: vec4(0.384261, -0.395495, 0.834222, 0.000000)
-//Up: vec4(0.000000, -0.903597, -0.428385, 0.000000)
-//Forward: vec4(0.923225, 0.164611, -0.347217, 0.000000)
+float timeBounce(float slow) {
+    return sin(uTime / slow) / 2 + 0.5;
+}
 
 vec3 getCameraPos() {
     return vec3(17.500000, 4.000000, -7.700000);
@@ -50,6 +49,10 @@ vec2 raytraceToCamera(vec3 raydir, vec3 rayorg) {
     vec3 cu = getCameraUp();
     vec3 cr = getCameraRight();
 
+    if (dot(raydir, getCameraForward()) < 0.0f) {
+        return vec2(-1.f, -1.f);
+    }
+
     vec3 i = planeInt(cf, cp + cf * -0.43, rayorg, raydir);
     //i = (transpose(inverse(uProjection)) * vec4(i, 0.0f)).xyz;
     float sideT = dot(i, cu) - (PI / 2.);
@@ -58,7 +61,7 @@ vec2 raytraceToCamera(vec3 raydir, vec3 rayorg) {
     vec2 uv = -(vec2(sideBiT, sideT));
     uv -= vec2(1.0707, 1.2895);
     uv.y *= (resolution.x / resolution.y);
-    return uv;
+    return clamp(uv, 0.0, 1.0);
 }
 
 vec2 getUVfromPosition(vec3 position) {
@@ -74,20 +77,19 @@ void main() {
     vec2 rtUV = getUVfromPosition(inVertexPos_);
     ivec2 projectedCoord = UVCoordToTexelCoord(rtUV, uRaytracedShadowBuffer);
 
-    //imageStore(uRaytracedShadowBuffer, projectedCoord, texture2D(gAlbedoSpec, rtUV));
-    //return;
-
     if (rtUV.x > 0.0f && rtUV.x < 1.0 && rtUV.y > 0.0 && rtUV.y < 1.0) {
-	//imageStore(uRaytracedShadowBuffer, ivec2(gl_FragCoord.xy), vec4(rtUV, 0.0, 1.0));
-	vec3 nearestGBufferPosition = texture2D(gPosition, rtUV).xyz;
-	float d = distance(inVertexPos_, nearestGBufferPosition);
-	if (d < 25.0f) {
-	    imageStore(uRaytracedShadowBuffer, projectedCoord, vec4(1.0, 1.0, 1.0, 1.0));
-	    //imageStore(uRaytracedShadowBuffer, projectedCoord, texture2D(gAlbedoSpec, rtUV));
-	} //else {
-	    //imageStore(uRaytracedShadowBuffer, projectedCoord, vec4(d, 0.0, 0.0, 1.0));
-	    //imageStore(uRaytracedShadowBuffer, projectedCoord, vec4(nearestGBufferPosition, 1.0));
+	//imageStore(uRaytracedShadowBuffer, ivec2(gl_FragCoord.xy), vec4(rtUV, 0.0f, 1.0f));
+	imageStore(uRaytracedShadowBuffer, ivec2(gl_FragCoord.xy), texture2D(gAlbedoSpec, rtUV));
+
+	//vec3 nearestGBufferPosition = texture2D(gPosition, rtUV).xyz;
+	//float d = distance(inVertexPos_, nearestGBufferPosition);
+	//if (d) {
 	//}
-    } 
-    //discard; // this shader is used as a compute shader with a raster output in parmater;
+	//imageStore(uRaytracedShadowBuffer, ivec2(gl_FragCoord.xy), texture2D(gAlbedoSpec, rtUV));
+    } else {
+	imageStore(uRaytracedShadowBuffer, ivec2(gl_FragCoord.xy), vec4(0.0, 0.0, 0.0f, 1.0f));
+    }
+    return;
+
+    discard; // this shader is used as a compute shader with a raster output in parmater;
 }

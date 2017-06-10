@@ -1,5 +1,5 @@
 #pragma once
-#include "OglCore.hh"
+#include "RenderThread.hh"
 #include "WindowHandle.hh"
 #include "Node.hh"
 #include "fileWatcher.hh"
@@ -24,15 +24,16 @@ class Heart {
 	};
     private:
 	WindowHandle _win;
-	OglCore _renderer;
+	RenderThread _renderThread;
 	static Graph* _scene;
 	FileWatcher* _fw;
     public:
 	static IGamelogic* _game;
 	Heart();
-	inline OglCore& getRenderer() { return _renderer; }
+	inline OglCore& getRenderer() { return _renderThread.unsafeGetRenderer(); }
 	static Graph* getScene() { return _scene; }
 	void loadScene();
+	void addScene(std::string);
 	void run();
 };
 #define SetGameClass(GameClass) Heart::IGamelogic* Heart::_game = new GameClass();

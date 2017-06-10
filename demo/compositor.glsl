@@ -1,4 +1,5 @@
 #version 430 core
+//stackoverflow.com/questions/18453302/how-do-you-pack-one-32bit-int-into-4-8bit-ints-in-glsl-webgl //compress data with this ?
 
 layout(location = 0) uniform float uTime;
 layout(location = 1) uniform mat4 uMeshTransform;
@@ -115,28 +116,36 @@ vec2 randomFromUv(vec2 coord) { //generating noise/pattern texture for dithering
 }
 
 vec3 planeInt(vec3 normal, vec3 center, vec3 rayorg, vec3 raydir) {
-    return (center - rayorg) + (raydir * (dot(center - rayorg, normal) / dot(normal, raydir)));
+    //return (center - rayorg) + (raydir * (dot(center - rayorg, normal) / dot(normal, raydir)));
+    //return (rayorg) + (raydir * (dot(center - rayorg, normal) / dot(normal, raydir)));
+    return (rayorg) + (raydir * (dot(rayorg - center, normal) / dot(raydir, normal)));
 }
 
 vec2 raytraceToCamera(vec3 raydir, vec3 rayorg) {
     vec3 cp = getCameraPos();
-    vec3 cf = getCameraForward();
-    vec3 cu = getCameraUp();
-    vec3 cr = getCameraRight();
+    vec3 cf = normalize(getCameraForward());
+    vec3 cu = getCameraUp() * 0.01;
+    vec3 cr = getCameraRight() * (resolution.x / resolution.y) * 0.01;
 
-    vec3 i = planeInt(cf, cp + cf * -0.43, rayorg, raydir);
+    //vec3 i = planeInt(cf, cp + cf * zNear, rayorg, raydir);
+    vec3 i = planeInt(cf, cp + cf * zNear, rayorg, raydir);
     //i = (transpose(inverse(uProjection)) * vec4(i, 0.0f)).xyz;
-    float sideT = dot(i, cu) - (PI / 2.);
-    float sideBiT = dot(i, cr) - (PI / 2.);
+    //float sideT = dot(i, cu) - (PI / 2.);
+    //float sideBiT = dot(i, cr) - (PI / 2.);
 
-    vec2 uv = -(vec2(sideBiT, sideT));
-    uv -= vec2(1.0707, 1.2895);
+    float sideT = dot(i, cu);
+    float sideBiT = dot(i, cr);
+
+    //vec2 uv = -(vec2(sideBiT, sideT));
+    vec2 uv = (vec2(sideBiT, sideT));
+    // uv -= vec2(1.0707, 1.2895);
+    //uv = clamp(uv, 0.0, 1.0);
     uv.y *= (resolution.x / resolution.y);
-    return uv;
+    return abs(sin(uv));
 }
 
 vec2 getUVfromPosition(vec3 position) {
-    return raytraceToCamera(normalize(getCameraPos() - position), getCameraPos());
+    return raytraceToCamera(normalize(position - getCameraPos()), position);
 }
 
 bool isRayTowardCamera(vec3 reflec) {
@@ -613,7 +622,6 @@ vec3 pbrDirectIllumination(float roughness, float metallic, float ao) {
 	}
     }
 
-
     // TODO inacurate ambient term
     vec3 ambient = vec3(0.00) * CurrentAlbedo * ao;
     vec3 color = ambient + Lo; 
@@ -657,8 +665,8 @@ void main() {
     debugDefaultLight[1] = Light(-debugDefaultLight[0].position, debugDefaultLight[0].colour);
     debugDefaultLight[2] = Light(mix(vec3(15, (5 * sin(uTime / 900)) + 8, 8), vec3(-17, (5 * sin(uTime / 400)) + 8, 8.5), timeBounce(1400)), vec3(9.8, 9.8, 9.75));
     debugDefaultLight[3] = Light(mix(vec3(-1.5, 5, -2), vec3(-1.5, 21, 7), timeBounce(900)), vec3(12.8, 12.8, 12.75));
-    outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
-    //outColour = pbrDirectIllumination(roughness, metallicness, 1.0f);
+    //outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
+    outColour = pbrDirectIllumination(roughness, metallicness, 1.0f);
     //outColour = CurrentAlbedo;
     float f = clamp(fresnel(2.5), 0.0, 1.0);
     //outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
@@ -669,9 +677,10 @@ void main() {
     //outColour = imageLoad(uRaytracedShadowBuffer, coord).xyz;
     //}
 
-    //vec2 rtUV = getUVfromPosition(CurrentPosition);
+    vec2 rtUV = getUVfromPosition(CurrentPosition);
+    //outColour = vec3(rtUV, 0.0);
     //outColour = texture2D(gAlbedoSpec, rtUV).xyz;
 
-    //outColour *= imageLoad(uRaytracedShadowBuffer, coord).xyz;
-    imageStore(uRaytracedShadowBuffer, coord, vec4(0.0, 0.0, 0.0, 1.0));
+    //outColour = imageLoad(uRaytracedShadowBuffer, coord).xyz;
+    //imageStore(uRaytracedShadowBuffer, coord, vec4(0.0, 0.0, 0.0, 1.0));
 }
