@@ -1,4 +1,6 @@
+#ifdef IMGUIENABLED
 #include <imgui.h>
+#endif
 #include <iostream>
 #include "Camera.hh"
 
@@ -52,12 +54,14 @@ void Camera::use() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //uCamera = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y) * glm::lookAt( _position, _target, _upVector);
     //autoRelocate(uCamera);
+#ifdef IMGUIENABLED
     //ImGui::Begin("Camera Controls");
     ImGui::InputFloat3("Position", glm::value_ptr(_position));
     ImGui::InputFloat3("Target", glm::value_ptr(_target));
     ImGui::InputFloat3("upVector", glm::value_ptr(_upVector));
     ImGui::InputFloat2("clipPlane", glm::value_ptr(_clipPlane));
     ImGui::InputFloat("fov", &_fov);
+#endif
     //std::cout << "Pos: " << glm::to_string(_position) << '\n';
     //std::cout << "Right: " << glm::to_string(uView._value.m4[0]) << '\n';
     //std::cout << "Up: " <<  glm::to_string(uView._value.m4[1]) << '\n';

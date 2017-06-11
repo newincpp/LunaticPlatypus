@@ -1,5 +1,7 @@
 #include <iostream>
+#ifdef IMGUIENABLED
 #include <imgui.h>
+#endif
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Light.hh"
@@ -26,11 +28,13 @@ Light::Light() : uView(glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 100.0f), "
 void Light::use() {
     //uView = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 900.0f);
 
+#ifdef IMGUIENABLED
     ImGui::InputFloat3("Light Position", glm::value_ptr(_position));
     ImGui::InputFloat3("Light Target", glm::value_ptr(_target));
     ImGui::InputFloat3("Light upVector", glm::value_ptr(_upVector));
     ImGui::InputFloat2("Light clipPlane", glm::value_ptr(_clipPlane));
     ImGui::InputFloat("Light fov", &_fov);
+#endif
 
     uView = glm::lookAt(_position, _target, _upVector);
     uProjection = glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y);

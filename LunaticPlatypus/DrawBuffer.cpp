@@ -1,6 +1,8 @@
 #include "DrawBuffer.hh"
 //#include "Importer.hh"
+#ifdef IMGUIENABLED
 #include <imgui.h>
+#endif
 
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
@@ -20,7 +22,9 @@ void DrawBuffer::render() {
     if (!_valid) {
 	return;
     }
+#ifdef IMGUIENABLED
     ImGui::Text("camera in use: %d", _activeCamera);
+#endif
     for (unsigned int a = 0; a < _activeCamera && a < _cameras.size(); ++a) {
 	_cameras[a].use();
 	for (std::pair<Shader, std::vector<Mesh>>& material : _drawList) {
@@ -37,7 +41,9 @@ void DrawBuffer::render() {
 void DrawBuffer::castDynamicShadows() {
     _dynamicShadowCaster.use();
     bindGBuffer(0);
+#ifdef IMGUIENABLED
     ImGui::Text("lights in use: %zu", _lights.size());
+#endif
     for (Light& l : _lights) {
 	l.use();
 	for (std::pair<Shader, std::vector<Mesh>>& material : _drawList) {

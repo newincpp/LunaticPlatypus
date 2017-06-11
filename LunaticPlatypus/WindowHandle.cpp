@@ -1,6 +1,8 @@
 #include <iostream>
 #include "glew.h"
+#ifdef IMGUIENABLED
 #include "imgui/imgui.h"
+#endif
 #include "WindowHandle.hh"
 
 WindowHandle::WindowHandle() {
@@ -16,18 +18,19 @@ WindowHandle::WindowHandle() {
 
     _window = glfwCreateWindow(1920, 1080, "OpenGL", nullptr, nullptr); // Windowed
     //GLFWwindow* window = glfwCreateWindow(1920, 1080, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
-    glfwMakeContextCurrent(_window);
+    //glfwMakeContextCurrent(_window);
     glewExperimental=true;
-    GLenum err = glewInit();
-    glGetError();
-    if (GLEW_OK != err) {
-	std::cout << "Error: " << glewGetErrorString(err) << '\n';
-    }
+    //GLenum err = glewInit();
+    //glGetError();
+    //if (GLEW_OK != err) {
+    //    std::cout << "Error: " << glewGetErrorString(err) << '\n';
+    //}
     std::cout << "Vendor: " << glGetString(GL_VENDOR) << '\n';
     std::cout << "GL Version: " << glGetString(GL_VERSION) << '\n';
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << '\n';
     std::cout << "Shader Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
 
+#ifdef IMGUIENABLED
     ImGuiIO& io = ImGui::GetIO();
     int w, h;
     int display_w, display_h;
@@ -60,13 +63,13 @@ WindowHandle::WindowHandle() {
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
     glfwSetMouseButtonCallback(_window, ImGui_ImplGlfwGL3_MouseButtonCallback);
     //glfwSetKeyCallback(_window, ImGui_ImplGlfwGL3_KeyCallback);
-    glfwSetKeyCallback(_window, WindowHandle::keyCallback);
     glfwSetCharCallback(_window, ImGui_ImplGlfwGL3_CharCallback);
+#endif
+    glfwSetKeyCallback(_window, WindowHandle::keyCallback);
     std::cout << "glfw initialized" << std::endl;
 }
 
 bool WindowHandle::exec() {
-    glfwSwapBuffers(_window);
     glfwPollEvents();
     if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	glfwSetWindowShouldClose(_window, GL_TRUE);
@@ -78,7 +81,7 @@ WindowHandle::~WindowHandle() {
 }
 
 void WindowHandle::keyCallback(GLFWwindow* w_, int key_, int scanCode_, int keyStatus_, int modsKey_) {
-    ImGui_ImplGlfwGL3_KeyCallback(w_, key_, scanCode_, keyStatus_, modsKey_);
+    //ImGui_ImplGlfwGL3_KeyCallback(w_, key_, scanCode_, keyStatus_, modsKey_);
     EventInterface::sExec(std::to_string(key_));
     EventInterface::sExec("keyboard");
 }

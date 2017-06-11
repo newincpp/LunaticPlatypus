@@ -17,12 +17,18 @@ Heart::Heart() : _fw(nullptr) {
     }
     std::cout << "default scene: " << _game->_scene << "\n";
     _scene = new Graph();
-    loadScene();
+    //loadScene();
+    std::cout << "main thread is: " << std::this_thread::get_id() << std::endl;
     _renderThread.uniqueTasks.push_back([this](){
-	    loadScene();
+	    std::cout << "init ogl in: " << std::this_thread::get_id() << std::endl;
+	    _win.makeContextCurrent();
+	    getRenderer().init();
+	    std::cout << "ogl inited" << std::endl;
 	    });
     _renderThread.uniqueTasks.push_back([this](){
-	    getRenderer().init();
+	    std::cout << "load scene in: " << std::this_thread::get_id() << std::endl;
+	    loadScene();
+	    std::cout << "scene loaded" << std::endl;
 	    });
     _renderThread.run();
     _game->postEngineInit();
@@ -35,10 +41,13 @@ void Heart::run() {
     std::chrono::time_point<std::chrono::high_resolution_clock> beginFrame;
 
     while (_win.exec()) {
-	ImGui::NewFrame();
+	_renderThread.uniqueTasks.push_back([this](){
+		std::cout << "swapBuffer in: " << std::this_thread::get_id() << std::endl;
+		_win.swapBuffer();
+		std::cout << "end swapBuffer" << std::endl;
+		});
 	endFrame = std::chrono::high_resolution_clock::now();
 	float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count();
-	ImGui::Text("\nApplication average %f ms/frame (%.1f FPS)", deltaTime, 1000.0/double(std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count()));
 	beginFrame = std::chrono::high_resolution_clock::now();
 
 	//_renderer.render();
@@ -47,6 +56,7 @@ void Heart::run() {
 	}
 	_game->update();
 
+#ifdef IMGUIENABLED
 	ImGuiIO& io = ImGui::GetIO();
 	if (ImGui::InputText("scene: ", imguistr,  512)) {
 	    _game->_scene = imguistr;
@@ -62,8 +72,9 @@ void Heart::run() {
 	    _fw = new FileWatcher(_game->_scene.c_str());
 	    mod = false;
 	}
+#endif
+
 	_scene->update();
-	ImGui::Render();
     }
 }
 

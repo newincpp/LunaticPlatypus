@@ -1,7 +1,7 @@
-IMGUI	= imgui/imgui.cpp \
-	  imgui/imgui_demo.cpp \
-	  imgui/imgui_draw.cpp \
-	  imgui/imguiImplementation.cpp
+#IMGUI	= imgui/imgui.cpp \
+#	  imgui/imgui_demo.cpp \
+#	  imgui/imgui_draw.cpp \
+#	  imgui/imguiImplementation.cpp
 
 SRC	= Camera.cpp \
 	   FrameBuffer.cpp \
@@ -40,7 +40,7 @@ DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC
 DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE #-DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O0 -fno-rtti #-fno-exceptions
-INCLUDE= -I./imgui  -I./ 
+INCLUDE= -I./ # -I./imgui
 CXXFLAGS= -Wall -Wextra -W -std=c++11 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 LIBS:= ./libs/$(LIBFOLDER)/Objectsoup/libGLEW/*.o \
     ./libs/$(LIBFOLDER)/Objectsoup/libglfw3/*.o

@@ -13,6 +13,14 @@ class WindowHandle {
 	bool exec();
 	inline void makeContextCurrent() {
 	    glfwMakeContextCurrent(_window);
+	    GLenum err = glewInit();
+	    glGetError();
+	    if (GLEW_OK != err) {
+		std::cout << "Error: " << glewGetErrorString(err) << '\n';
+	    }
+	}
+	inline void swapBuffer() {
+	    glfwSwapBuffers(_window);
 	}
 	~WindowHandle();
 };
