@@ -113,4 +113,5 @@ void OglCore::render() {
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     checkGlError;
     ++_currentFrame;
+    swap();
 }

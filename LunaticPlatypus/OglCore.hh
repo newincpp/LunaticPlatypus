@@ -1,5 +1,6 @@
 #pragma once
 #include <list>
+#include <functional>
 #include <iostream>
 #include <utility>
 #include <chrono>
@@ -28,4 +29,5 @@ class OglCore {
 	void init();
 	void renderScene();
 	void render();
+	std::function<void(void)> swap;
 };

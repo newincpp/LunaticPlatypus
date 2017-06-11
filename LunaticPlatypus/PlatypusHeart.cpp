@@ -20,16 +20,16 @@ Heart::Heart() : _fw(nullptr) {
     //loadScene();
     std::cout << "main thread is: " << std::this_thread::get_id() << std::endl;
     _renderThread.uniqueTasks.push_back([this](){
-	    std::cout << "init ogl in: " << std::this_thread::get_id() << std::endl;
 	    _win.makeContextCurrent();
 	    getRenderer().init();
-	    std::cout << "ogl inited" << std::endl;
 	    });
     _renderThread.uniqueTasks.push_back([this](){
-	    std::cout << "load scene in: " << std::this_thread::get_id() << std::endl;
 	    loadScene();
-	    std::cout << "scene loaded" << std::endl;
 	    });
+    getRenderer().swap = [this]() {
+	std::cout << "swapBuffer in: " << std::this_thread::get_id() << std::endl;
+	_win.swapBuffer();
+    };
     _renderThread.run();
     _game->postEngineInit();
 }
@@ -41,11 +41,11 @@ void Heart::run() {
     std::chrono::time_point<std::chrono::high_resolution_clock> beginFrame;
 
     while (_win.exec()) {
-	_renderThread.uniqueTasks.push_back([this](){
-		std::cout << "swapBuffer in: " << std::this_thread::get_id() << std::endl;
-		_win.swapBuffer();
-		std::cout << "end swapBuffer" << std::endl;
-		});
+	//_renderThread.uniqueTasks.push_back([this](){
+	//	std::cout << "swapBuffer in: " << std::this_thread::get_id() << std::endl;
+	//	_win.swapBuffer();
+	//	std::cout << "end swapBuffer" << std::endl;
+	//	});
 	endFrame = std::chrono::high_resolution_clock::now();
 	float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count();
 	beginFrame = std::chrono::high_resolution_clock::now();
@@ -73,8 +73,7 @@ void Heart::run() {
 	    mod = false;
 	}
 #endif
-
-	_scene->update();
+	//_scene->update();
     }
 }
 

@@ -16,20 +16,8 @@ WindowHandle::WindowHandle() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
+    glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
     _window = glfwCreateWindow(1920, 1080, "OpenGL", nullptr, nullptr); // Windowed
-    //GLFWwindow* window = glfwCreateWindow(1920, 1080, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
-    //glfwMakeContextCurrent(_window);
-    glewExperimental=true;
-    //GLenum err = glewInit();
-    //glGetError();
-    //if (GLEW_OK != err) {
-    //    std::cout << "Error: " << glewGetErrorString(err) << '\n';
-    //}
-    std::cout << "Vendor: " << glGetString(GL_VENDOR) << '\n';
-    std::cout << "GL Version: " << glGetString(GL_VERSION) << '\n';
-    std::cout << "Renderer: " << glGetString(GL_RENDERER) << '\n';
-    std::cout << "Shader Language: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
-
 #ifdef IMGUIENABLED
     ImGuiIO& io = ImGui::GetIO();
     int w, h;
