@@ -5,22 +5,17 @@
 
 class WindowHandle {
     private:
-	GLFWwindow* _window;
+	//GLFWwindow* _windowThread;
 	EventInterface _e;
 	static void keyCallback(GLFWwindow*, int, int, int, int);
     public:
+	GLFWwindow* _window;
 	WindowHandle();
+	void init();
 	bool exec();
-	inline void makeContextCurrent() {
-	    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-	    GLFWwindow* threadedWin = glfwCreateWindow(600, 600, "OpenGL", nullptr, _window); // Windowed
-	    glfwMakeContextCurrent(threadedWin);
-	    glewExperimental=true;
-	    GLenum err = glewInit();
-	    glGetError();
-	    if (GLEW_OK != err) {
-		std::cout << "Error: " << glewGetErrorString(err) << '\n';
-	    }
+	inline void makeContextCurrent(GLFWwindow* win) {
+	    glfwMakeContextCurrent(win);
+	    //glGetError();
 	    std::cout << "Vendor: " << glGetString(GL_VENDOR) << '\n';
 	    std::cout << "GL Version: " << glGetString(GL_VERSION) << '\n';
 	    std::cout << "Renderer: " << glGetString(GL_RENDERER) << '\n';

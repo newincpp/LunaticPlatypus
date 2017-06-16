@@ -6,7 +6,7 @@
 #include "Importer.hh"
 
 Graph* Heart::_scene = nullptr;
-Heart::Heart() : _fw(nullptr) {
+Heart::Heart() : _fw(nullptr), _win() {
     if (_game == nullptr) {
 	std::cout << "SetGameClass() macro has not been called I will now assert\n";
     }
@@ -18,18 +18,25 @@ Heart::Heart() : _fw(nullptr) {
     std::cout << "default scene: " << _game->_scene << "\n";
     _scene = new Graph();
     //loadScene();
+
+    
     std::cout << "main thread is: " << std::this_thread::get_id() << std::endl;
     _renderThread.uniqueTasks.push_back([this](){
-	    _win.makeContextCurrent();
+	    std::cout << "thread make context current" << std::endl;
+	    _win.init();
+	    //_win.makeContextCurrent();
 	    getRenderer().init();
 	    });
     _renderThread.uniqueTasks.push_back([this](){
+	    std::cout << "thread load scene\n" << std::endl;
 	    loadScene();
 	    });
+
     getRenderer().swap = [this]() {
-	std::cout << "swapBuffer in: " << std::this_thread::get_id() << std::endl;
-	_win.swapBuffer();
+        std::cout << "swapBuffer in: " << std::this_thread::get_id() << std::endl;
+        _win.swapBuffer();
     };
+    std::cout << "thread creation" << std::endl;
     _renderThread.run();
     _game->postEngineInit();
 }
@@ -41,11 +48,6 @@ void Heart::run() {
     std::chrono::time_point<std::chrono::high_resolution_clock> beginFrame;
 
     while (_win.exec()) {
-	//_renderThread.uniqueTasks.push_back([this](){
-	//	std::cout << "swapBuffer in: " << std::this_thread::get_id() << std::endl;
-	//	_win.swapBuffer();
-	//	std::cout << "end swapBuffer" << std::endl;
-	//	});
 	endFrame = std::chrono::high_resolution_clock::now();
 	float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count();
 	beginFrame = std::chrono::high_resolution_clock::now();

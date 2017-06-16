@@ -6,10 +6,13 @@
 #include "WindowHandle.hh"
 
 WindowHandle::WindowHandle() {
-    glewExperimental = true;
     if (!glfwInit()) {
-	    std::cout << "failed to init glfw3\n";
+	std::cout << "failed to init glfw3\n";
     }
+}
+
+void WindowHandle::init() {
+    glewExperimental = true;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -18,6 +21,18 @@ WindowHandle::WindowHandle() {
 
     glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
     _window = glfwCreateWindow(1920, 1080, "OpenGL", nullptr, nullptr); // Windowed
+
+    //glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+    //_windowThread = glfwCreateWindow(1920, 1080, "OpenGL", nullptr, _window); // Windowed
+    //std::cout << "window created" << std::endl;
+
+    makeContextCurrent(_window);
+
+    glewExperimental=true;
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        std::cout << "Error: " << glewGetErrorString(err) << '\n';
+    }
 #ifdef IMGUIENABLED
     ImGuiIO& io = ImGui::GetIO();
     int w, h;
