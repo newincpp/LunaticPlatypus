@@ -10,7 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
-void Importer::load(std::string& file, DrawBuffer& d_, Heart::IGamelogic* g_, Graph& scene_) {
+void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, Graph& scene_) {
     // Create an instance of the Importer class
     Alembic::AbcCoreFactory::IFactory factory;
     factory.setPolicy(Alembic::Abc::ErrorHandler::kQuietNoopPolicy);
@@ -34,11 +34,9 @@ void Importer::load(std::string& file, DrawBuffer& d_, Heart::IGamelogic* g_, Gr
 
     Alembic::Abc::IObject iobj = archive.getTop();
     glm::mat4 root(1.0f);
-    d_._valid = false;
     visitor(iobj, 0, d_, g_, root, scene_.root);
     scene_.update(true); //readjusting local matricies
-    d_._valid = true;
-    d_.addAllUniformsToShaders();
+    d_.unsafeGetRenderer().getDrawBuffer().addAllUniformsToShaders();
 }
 
 glm::mat4 convertTo(Alembic::Abc::M44d&& from) {
@@ -50,7 +48,7 @@ glm::mat4 convertTo(Alembic::Abc::M44d&& from) {
     return to;
 }
 
-void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, DrawBuffer& s_, Heart::IGamelogic* g_, glm::mat4 transform_, Node& node_) {
+void Importer::visitor(const Alembic::Abc::IObject& iobj, unsigned int it, RenderThread& s_, Heart::IGamelogic* g_, glm::mat4 transform_, Node& node_) {
     const Alembic::Abc::MetaData &md = iobj.getMetaData();
 
     Node& x = node_.push(std::string(iobj.getName()));
@@ -106,12 +104,12 @@ glm::mat4 Importer::transformUpdate(const Alembic::Abc::IObject& iobj, glm::mat4
     return to;
 }
 
-void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_, Node& n_) {
+void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm::mat4& transform_, Node& n_) {
     Alembic::AbcGeom::IPolyMesh mesh(iobj);
     Alembic::AbcGeom::IPolyMeshSchema schema = mesh.getSchema();
 
-    std::vector<GLfloat> vertexBuffer;
-    std::vector<GLuint> indiceBuffer;
+    std::vector<GLfloat>* vertexBuffer = nullptr;
+    std::vector<GLuint>* indiceBuffer = nullptr;
 
     Alembic::AbcCoreAbstract::index_t index = 0;
     Alembic::Abc::P3fArraySamplePtr points = schema.getPositionsProperty().getValue(Alembic::Abc::ISampleSelector(index));
@@ -127,29 +125,30 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     }
 
     unsigned int numPoints = points->size();
-    vertexBuffer.reserve(numPoints);
+    vertexBuffer = new std::vector<GLfloat>();
+    vertexBuffer->reserve(numPoints);
     for (unsigned int i = 0; i < numPoints; ++i) {
-	vertexBuffer.push_back((*points)[i].x);
-	vertexBuffer.push_back((*points)[i].y);
-	vertexBuffer.push_back((*points)[i].z);
+	vertexBuffer->push_back((*points)[i].x);
+	vertexBuffer->push_back((*points)[i].y);
+	vertexBuffer->push_back((*points)[i].z);
 
 	if (schema.getNormalsParam().valid()) {
-	    vertexBuffer.push_back((*normals)[i].x);
-	    vertexBuffer.push_back((*normals)[i].y);
-	    vertexBuffer.push_back((*normals)[i].z);
+	    vertexBuffer->push_back((*normals)[i].x);
+	    vertexBuffer->push_back((*normals)[i].y);
+	    vertexBuffer->push_back((*normals)[i].z);
 	} else {
 	    std::cout << "normal data absent will result in incorrect shading\n";
-	    vertexBuffer.push_back(0.0f);
-	    vertexBuffer.push_back(0.0f);
-	    vertexBuffer.push_back(0.0f);
+	    vertexBuffer->push_back(0.0f);
+	    vertexBuffer->push_back(0.0f);
+	    vertexBuffer->push_back(0.0f);
 	} 
 	
 	if (schema.getUVsParam().valid()) {
-	    vertexBuffer.push_back((*uvs)[i].x);
-	    vertexBuffer.push_back((*uvs)[i].y);
+	    vertexBuffer->push_back((*uvs)[i].x);
+	    vertexBuffer->push_back((*uvs)[i].y);
 	} else {
-	    vertexBuffer.push_back(0.0f);
-	    vertexBuffer.push_back(0.0f);
+	    vertexBuffer->push_back(0.0f);
+	    vertexBuffer->push_back(0.0f);
 	}
     }
 
@@ -159,8 +158,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
     Alembic::Abc::Int32ArraySamplePtr iCounts = samp.getFaceCounts();
     Alembic::Abc::Int32ArraySamplePtr iIndices = samp.getFaceIndices();
     unsigned int numConnects = iIndices->size();
-    indiceBuffer.reserve(numConnects);
-
 
     std::vector<unsigned long> faceBaseOffset;
     faceBaseOffset.reserve(iCounts->size());
@@ -170,33 +167,47 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
         base += (*iCounts)[i];
     }
 
-
     std::pair<Shader, std::vector<Mesh>>* o = nullptr;
     std::pair<Shader, std::vector<Mesh>>* meshReferance =  nullptr;
     std::vector<std::string> oFaceSetNames;
     schema.getFaceSetNames(oFaceSetNames);
     bool isFirst = true;
     unsigned long meshBaseVBO;
+    decltype(_shaderList)* shaderListLambdaHelper = &_shaderList;
+    DrawBuffer& d = s_.unsafeGetRenderer().getDrawBuffer();
+    std::mutex m;
+    std::condition_variable cv;
     for (std::string faceSetName : oFaceSetNames) {
 	std::map<std::string, std::list<std::pair<Shader, std::vector<Mesh>>>::iterator>::iterator shaderN = _shaderList.find(faceSetName);
 
 	if(shaderN != _shaderList.end()) {
 	    o = &(*shaderN->second);
 	} else {
-	    s_._valid = false;
-	    s_._drawList.emplace_back();
-	    s_._drawList.back().second.reserve(1024); // will avoid a lot of realoc (expecting a lot of meshes)
-	    o = &(s_._drawList.back());
-	    o->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
-	    o->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
-	    o->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
-	    s_._valid = true;
-	    _shaderList[faceSetName] = --s_._drawList.end();
+            d._drawList.emplace_back();
+            d._drawList.back().second.reserve(1024); // will avoid a lot of realoc (expecting a lot of meshes)
+	    o = &(d._drawList.back());
+	    bool ready = false;
+	    s_.uniqueTasks.push_back([&m, &ready, &cv, shaderListLambdaHelper, o, &d, faceSetName]() {
+		    std::cout << "allocating shader " << faceSetName << " on " << o << "\n";
+		    std::cout << "in thread: " << std::this_thread::get_id() << '\n';
+		    o->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
+		    o->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
+		    o->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
+		    (*shaderListLambdaHelper)[faceSetName] = --d._drawList.end();
+		    ready = true;
+		    cv.notify_one();
+	    });
+
+	    std::unique_lock<std::mutex> lk(m);
+	    cv.wait(lk, [&ready]{return ready;});
+	    std::cout << "continue\n";
 	}
 
 	Alembic::AbcGeom::IFaceSetSchema fSetSamp = schema.getFaceSet(faceSetName).getSchema();
 	Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
 	fSetSamp.get(faceSet, 0);
+	indiceBuffer = new std::vector<GLuint>();
+	indiceBuffer->reserve(numConnects);
 	for (unsigned int i = 0; i < faceSet.getFaces()->size(); ++i) {
 	    unsigned int faceNumber = (*faceSet.getFaces())[i];
 	    unsigned long base = faceBaseOffset[faceNumber];
@@ -207,51 +218,64 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::m
 		size = (*iCounts)[iCounts->size() - 1];
 	    }
 	    if (size == 3) {
-		indiceBuffer.push_back((*iIndices)[base+0]);
-		indiceBuffer.push_back((*iIndices)[base+2]);
-		indiceBuffer.push_back((*iIndices)[base+1]);
+		indiceBuffer->push_back((*iIndices)[base+0]);
+		indiceBuffer->push_back((*iIndices)[base+2]);
+		indiceBuffer->push_back((*iIndices)[base+1]);
 	    } else if (size == 4) {
-		indiceBuffer.push_back((*iIndices)[base+0]);
-		indiceBuffer.push_back((*iIndices)[base+3]);
-		indiceBuffer.push_back((*iIndices)[base+1]);
+		indiceBuffer->push_back((*iIndices)[base+0]);
+		indiceBuffer->push_back((*iIndices)[base+3]);
+		indiceBuffer->push_back((*iIndices)[base+1]);
 
-		indiceBuffer.push_back((*iIndices)[base+1]);
-		indiceBuffer.push_back((*iIndices)[base+3]);
-		indiceBuffer.push_back((*iIndices)[base+2]);
+		indiceBuffer->push_back((*iIndices)[base+1]);
+		indiceBuffer->push_back((*iIndices)[base+3]);
+		indiceBuffer->push_back((*iIndices)[base+2]);
 	    } 
 	}
-	s_._valid = false;
-	o->second.emplace_back();
+	s_.uniqueTasks.push_back([o](){
+		o->second.emplace_back();
+		});
 	if (isFirst) {
 	    meshBaseVBO = o->second.size() - 1;
 	    meshReferance = o;
-	    o->second[meshBaseVBO].uploadVertexOnly(vertexBuffer);
+	    s_.uniqueTasks.push_back([o, meshBaseVBO, vertexBuffer](){
+                    if (vertexBuffer) {
+                        std::cout << "vertexBuffer thread id: " << std::this_thread::get_id() << '\n';
+                        o->second[meshBaseVBO].uploadVertexOnly(*vertexBuffer);
+                        delete vertexBuffer;
+                    }
+	    });
 	    isFirst = false;
 	}
-	o->second[o->second.size() - 1].uploadElementOnly(indiceBuffer, meshReferance->second[meshBaseVBO]._vbo, meshReferance->second[meshBaseVBO]._vao); // TODO use a iterator instead of meshBaseVBO
-	s_._valid = true;
-	o->second[o->second.size() - 1].uMeshTransform = transform_;
-	o->second[o->second.size() - 1].linkNode(n_.push());
-	indiceBuffer.clear();
+        Node& nod = n_.push();
+        s_.uniqueTasks.push_back([o, indiceBuffer, meshReferance, meshBaseVBO, transform_, &nod](){
+                if (indiceBuffer) {
+                        std::cout << "indiceBuffer thread id: " << std::this_thread::get_id() << '\n';
+                        o->second[o->second.size() - 1].uploadElementOnly(*indiceBuffer, meshReferance->second[meshBaseVBO]._vbo, meshReferance->second[meshBaseVBO]._vao); // TODO use a iterator instead of meshBaseVBO
+                        o->second[o->second.size() - 1].uMeshTransform = transform_;
+                        o->second[o->second.size() - 1].linkNode(nod);
+                        delete indiceBuffer;
+                }
+	});
     }
 }
 
-void Importer::genCamera(const Alembic::Abc::IObject& iobj, DrawBuffer& s_, glm::mat4& transform_, Node& n_) {
+void Importer::genCamera(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm::mat4& transform_, Node& n_) {
     Alembic::AbcGeom::ICamera cam(iobj);
     Alembic::AbcGeom::ICameraSchema ms = cam.getSchema();
     Alembic::AbcGeom::CameraSample s;
 
     ms.get(s, 0);
-    s_._valid = false;
-    s_._cameras.emplace_back(s_._fb[0]);
-    s_._valid = true;
-    Camera& mainCamera = s_._cameras[s_._cameras.size() - 1];
+    DrawBuffer& d = s_.unsafeGetRenderer().getDrawBuffer();
+    s_.uniqueTasks.push_back([&d, &s](){
+	    d._cameras.emplace_back(d._fb[0]);
+	    Camera& mainCamera = d._cameras[d._cameras.size() - 1];
 
-    mainCamera.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
-    mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9));
-    mainCamera.fieldOfview(s.getFieldOfView());
-    mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane()));
-    mainCamera.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
+	    mainCamera.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
+	    mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9));
+	    mainCamera.fieldOfview(s.getFieldOfView());
+	    mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane()));
+	    mainCamera.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
+    });
     //n_.linkWorldTransform(&(mainCamera.uMeshTransform._value.m4));
 }
 

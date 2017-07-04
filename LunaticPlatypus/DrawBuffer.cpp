@@ -1,7 +1,7 @@
 #include "DrawBuffer.hh"
 //#include "Importer.hh"
 #ifdef IMGUIENABLED
-#include <imgui.h>
+#include "imgui/imgui.h"
 #endif
 
 #define STRINGIZE2(s) #s
@@ -27,7 +27,6 @@ void DrawBuffer::render() {
 #endif
     for (unsigned int a = 0; a < _activeCamera && a < _cameras.size(); ++a) {
 	_cameras[a].use();
-	std::cout << "rendering: " << _drawList.size() << std::endl;
 	for (std::pair<Shader, std::vector<Mesh>>& material : _drawList) {
 	    if (material.first.use()) {
 		for (Mesh& m : material.second) {

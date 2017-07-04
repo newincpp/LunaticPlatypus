@@ -26,11 +26,11 @@ class Importer {
 	void genMesh(const tinyobj::shape_t&, const tinyobj::attrib_t&, int , std::vector<Mesh>&);
 #elif defined(ALEMBICV2)
 	std::map<std::string, std::list<std::pair<Shader, std::vector<Mesh>>>::iterator> _shaderList;
-	void genMesh(const Alembic::Abc::IObject&, DrawBuffer&, glm::mat4&, Node&);
-	void genCamera(const Alembic::Abc::IObject&, DrawBuffer&, glm::mat4&, Node&);
+	void genMesh(const Alembic::Abc::IObject&, RenderThread&, glm::mat4&, Node&);
+	void genCamera(const Alembic::Abc::IObject&, RenderThread&, glm::mat4&, Node&);
 	void genGameClass(const std::string&, Heart::IGamelogic*, glm::mat4&, Node&);
 	glm::mat4 transformUpdate(const Alembic::Abc::IObject&, glm::mat4&);
-	void visitor(const Alembic::Abc::IObject&, unsigned int, DrawBuffer&, Heart::IGamelogic*, glm::mat4, Node&);
+	void visitor(const Alembic::Abc::IObject&, unsigned int, RenderThread&, Heart::IGamelogic*, glm::mat4, Node&);
 #elif defined(ALEMBIC)
 	inline glm::mat4 createTransformMatrix(const glm::vec3 &, const glm::vec3 &, const glm::vec3 &);
 	inline glm::vec3 AlembicVec3toGlmVec3(Alembic::Abc::V3d const &);
@@ -39,9 +39,9 @@ class Importer {
 	void visitObject(Alembic::Abc::IObject, std::string const &, DrawBuffer&);
 #else
 	inline glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4& from);
-	void genMesh(const aiScene* scene_, DrawBuffer&);
+	void genMesh(const aiScene* scene_, RenderThread&);
 #endif
     public:
-	Importer(std::string file, DrawBuffer&, Heart::IGamelogic*, Graph&);
-	void load(std::string& file, DrawBuffer&, Heart::IGamelogic*, Graph&);
+	Importer(std::string file, RenderThread&, Heart::IGamelogic*, Graph&);
+	void load(std::string& file, RenderThread&, Heart::IGamelogic*, Graph&);
 };

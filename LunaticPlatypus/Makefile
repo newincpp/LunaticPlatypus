@@ -1,7 +1,7 @@
-#IMGUI	= imgui/imgui.cpp \
-#	  imgui/imgui_demo.cpp \
-#	  imgui/imgui_draw.cpp \
-#	  imgui/imguiImplementation.cpp
+IMGUI	= imgui/imgui.cpp \
+	  imgui/imgui_demo.cpp \
+	  imgui/imgui_draw.cpp \
+	  imgui/imguiImplementation.cpp
 
 SRC	= Camera.cpp \
 	   FrameBuffer.cpp \
@@ -36,7 +36,7 @@ ifeq ($(OS),Darwin)
 endif
 NAME	=LunaticPlatypus
 IMPORTER=ALEMBIC
-DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC 
+DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC #-DIMGUIENABLED
 DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE #-DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O0 -fno-rtti #-fno-exceptions

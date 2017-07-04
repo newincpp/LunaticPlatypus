@@ -2,6 +2,10 @@
 #include "Uniform.hh"
 
 Shader::Shader() : _vertexId(std::make_pair("", 0)), _fragmentId(std::make_pair("", 0)), _geometryId(std::make_pair("", 0)), _programId(0), uniformList(), containedUniformNames() {
+	_vertexId.first.reserve(63);
+	_fragmentId.first.reserve(63);
+	_geometryId.first.reserve(63);
+    std::cout << "shader constructed\n";
 }
 
 void Shader::add(std::string sourceFile_, GLenum type_) {
@@ -10,6 +14,8 @@ void Shader::add(std::string sourceFile_, GLenum type_) {
         std::cout << "\033[31mfailed to open the shader: \"" << sourceFile_ << "\"\n";
 	return;
     }
+
+    std::cout << "\033[32mcompiling: \'" << sourceFile_ << "\'\033[0m\n";
     std::string str((std::istreambuf_iterator<char>(t)),
 	    std::istreambuf_iterator<char>());
     const char* s = str.c_str();
@@ -17,7 +23,7 @@ void Shader::add(std::string sourceFile_, GLenum type_) {
     GLuint* id;
     if (type_ == GL_VERTEX_SHADER) {
 	id = &_vertexId.second;
-	_vertexId.first = sourceFile_;
+	_vertexId.first = sourceFile_; //crash in separated thread "unreadable data" said lldb
     } else if (type_ == GL_FRAGMENT_SHADER) {
 	id = &_fragmentId.second;
 	_fragmentId.first = sourceFile_;

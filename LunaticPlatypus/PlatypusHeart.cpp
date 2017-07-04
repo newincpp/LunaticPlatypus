@@ -17,27 +17,23 @@ Heart::Heart() : _fw(nullptr), _win() {
     }
     std::cout << "default scene: " << _game->_scene << "\n";
     _scene = new Graph();
-    //loadScene();
-
-    
-    std::cout << "main thread is: " << std::this_thread::get_id() << std::endl;
     _renderThread.uniqueTasks.push_back([this](){
-	    std::cout << "thread make context current" << std::endl;
 	    _win.init();
 	    //_win.makeContextCurrent();
-	    getRenderer().init();
-	    });
-    _renderThread.uniqueTasks.push_back([this](){
-	    std::cout << "thread load scene\n" << std::endl;
-	    loadScene();
+	_renderThread.unsafeGetRenderer().init();
 	    });
 
-    getRenderer().swap = [this]() {
-        std::cout << "swapBuffer in: " << std::this_thread::get_id() << std::endl;
+    //_renderThread.uniqueTasks.push_back([this](){
+    //    loadScene();
+    //    });
+
+    _renderThread.unsafeGetRenderer().swap = [this]() {
+	//std::cout << "thread: " << std::this_thread::get_id() << '\n';
+	_win.pollEvents();
         _win.swapBuffer();
     };
-    std::cout << "thread creation" << std::endl;
     _renderThread.run();
+    loadScene();
     _game->postEngineInit();
 }
 
@@ -52,7 +48,6 @@ void Heart::run() {
 	float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count();
 	beginFrame = std::chrono::high_resolution_clock::now();
 
-	//_renderer.render();
 	for (GameClass& g: _game->_gameClasses) {
 	    g.update(deltaTime/1000);
 	}
@@ -85,12 +80,13 @@ void Heart::loadScene() {
     }
     _fw = new FileWatcher(_game->_scene.c_str());
     _renderThread.unsafeGetRenderer().getDrawBuffer().reset();
-    Importer iscene(_game->_scene, _renderThread.unsafeGetRenderer().getDrawBuffer(), _game, *_scene);
+    // should take _renderThread in parameter and add mesh via uniquetask
+    Importer iscene(_game->_scene, _renderThread, _game, *_scene);
     _fw->callBack = [this]() { std::cout << "automatic file reloader temporarily deleted\n"; };
 }
 
 void Heart::addScene(std::string filename) {
-    Importer iscene(filename, _renderThread.unsafeGetRenderer().getDrawBuffer(), _game, *_scene);
+    Importer iscene(filename, _renderThread, _game, *_scene);
 }
 
 void Heart::IGamelogic::postEngineInit() {

@@ -23,14 +23,15 @@ class Heart {
 		virtual void update() = 0;
 	};
     private:
+	FileWatcher* _fw;
 	WindowHandle _win;
 	RenderThread _renderThread;
 	static Graph* _scene;
-	FileWatcher* _fw;
     public:
 	static IGamelogic* _game;
 	Heart();
-	inline OglCore& getRenderer() { return _renderThread.unsafeGetRenderer(); }
+	//inline OglCore& getRenderer() { return _renderThread.unsafeGetRenderer(); }
+	inline RenderThread& getRenderThread() { return _renderThread; }
 	static Graph* getScene() { return _scene; }
 	void loadScene();
 	void addScene(std::string);

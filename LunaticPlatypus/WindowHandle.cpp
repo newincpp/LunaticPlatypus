@@ -1,14 +1,17 @@
 #include <iostream>
+#include <thread>
 #include "glew.h"
 #ifdef IMGUIENABLED
 #include "imgui/imgui.h"
 #endif
 #include "WindowHandle.hh"
 
+bool WindowHandle::_shouldClose;
 WindowHandle::WindowHandle() {
     if (!glfwInit()) {
 	std::cout << "failed to init glfw3\n";
     }
+    _shouldClose = false;
 }
 
 void WindowHandle::init() {
@@ -73,10 +76,16 @@ void WindowHandle::init() {
 }
 
 bool WindowHandle::exec() {
-    glfwPollEvents();
-    if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (!_window) {
+	return true; // ugly spinlock
+    }
+    //std::cout << "exec: " << std::this_thread::get_id() << '\n';
+    if (_shouldClose) {
+	//std::cout << "shouldClose=true\n";
 	glfwSetWindowShouldClose(_window, GL_TRUE);
+    }
     return !glfwWindowShouldClose(_window);
+    //}
 }
 
 WindowHandle::~WindowHandle() {
@@ -84,7 +93,15 @@ WindowHandle::~WindowHandle() {
 }
 
 void WindowHandle::keyCallback(GLFWwindow* w_, int key_, int scanCode_, int keyStatus_, int modsKey_) {
-    //ImGui_ImplGlfwGL3_KeyCallback(w_, key_, scanCode_, keyStatus_, modsKey_);
+#ifdef IMGUIENABLED
+    ImGui_ImplGlfwGL3_KeyCallback(w_, key_, scanCode_, keyStatus_, modsKey_);
+#endif
+    //std::cout << "keyCallBack thread: " << std::this_thread::get_id() << '\n';
+    if (keyStatus_ == 1 && key_ == 256) {
+	_shouldClose = true; // TODO need to be replaced by en event
+	//std::cout << "check\n";
+    }
+    //std::cout << key_ << " " << scanCode_ << " " << keyStatus_ << '\n';
     EventInterface::sExec(std::to_string(key_));
     EventInterface::sExec("keyboard");
 }

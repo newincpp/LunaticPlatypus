@@ -3,7 +3,7 @@
 #include <map>
 #include "Importer.hh"
 
-Importer::Importer(std::string file, DrawBuffer& d_, Heart::IGamelogic* g_, Graph& s_) {
+Importer::Importer(std::string file, RenderThread& d_, Heart::IGamelogic* g_, Graph& s_) {
     load(file, d_, g_, s_);
 }
 
