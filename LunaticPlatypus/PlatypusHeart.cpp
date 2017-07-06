@@ -21,6 +21,7 @@ Heart::Heart() : _fw(nullptr), _win() {
 	    _win.init();
 	    //_win.makeContextCurrent();
 	_renderThread.unsafeGetRenderer().init();
+        std::cout << "renderer initialised\n";
 	    });
 
     //_renderThread.uniqueTasks.push_back([this](){
@@ -33,8 +34,9 @@ Heart::Heart() : _fw(nullptr), _win() {
         _win.swapBuffer();
     };
     _renderThread.run();
-    loadScene();
+    std::this_thread::sleep_for(std::chrono::milliseconds(33)); // wait for 1 frame before the opengl init to avoid mutax architecture
     _game->postEngineInit();
+    loadScene();
 }
 
 void Heart::run() {

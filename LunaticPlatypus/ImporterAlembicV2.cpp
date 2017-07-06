@@ -36,7 +36,11 @@ void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, 
     glm::mat4 root(1.0f);
     visitor(iobj, 0, d_, g_, root, scene_.root);
     scene_.update(true); //readjusting local matricies
-    d_.unsafeGetRenderer().getDrawBuffer().addAllUniformsToShaders();
+    d_.uniqueTasks.push_back([&d_](){
+            d_.unsafeGetRenderer().getDrawBuffer().addAllUniformsToShaders();
+            });
+    std::cout << "load finished" << std::endl;
+
 }
 
 glm::mat4 convertTo(Alembic::Abc::M44d&& from) {
@@ -167,95 +171,100 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
         base += (*iCounts)[i];
     }
 
-    std::pair<Shader, std::vector<Mesh>>* o = nullptr;
-    std::pair<Shader, std::vector<Mesh>>* meshReferance =  nullptr;
     std::vector<std::string> oFaceSetNames;
     schema.getFaceSetNames(oFaceSetNames);
-    bool isFirst = true;
-    unsigned long meshBaseVBO;
-    decltype(_shaderList)* shaderListLambdaHelper = &_shaderList;
+    //decltype(_shaderList)* shaderListLambdaHelper = &_shaderList;
     DrawBuffer& d = s_.unsafeGetRenderer().getDrawBuffer();
-    std::mutex m;
-    std::condition_variable cv;
+
+    Mesh* meshReferance = nullptr;
+    std::list<std::pair<Shader, std::vector<Mesh>>>::iterator selectedShader;
     for (std::string faceSetName : oFaceSetNames) {
-	std::map<std::string, std::list<std::pair<Shader, std::vector<Mesh>>>::iterator>::iterator shaderN = _shaderList.find(faceSetName);
+        // -------- extracting data ----------
+        Alembic::AbcGeom::IFaceSetSchema fSetSamp = schema.getFaceSet(faceSetName).getSchema();
+        Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
+        fSetSamp.get(faceSet, 0);
+        indiceBuffer = new std::vector<GLuint>();
+        indiceBuffer->reserve(numConnects);
+        for (unsigned int i = 0; i < faceSet.getFaces()->size(); ++i) {
+            unsigned int faceNumber = (*faceSet.getFaces())[i];
+            unsigned long base = faceBaseOffset[faceNumber];
+            unsigned short size = 3;
+            if (faceNumber < (faceSet.getFaces()->size() - 1)) {
+                size = faceBaseOffset[faceNumber+1] - base;
+            } else {
+                size = (*iCounts)[iCounts->size() - 1];
+            }
+            if (size == 3) {
+                indiceBuffer->push_back((*iIndices)[base+0]);
+                indiceBuffer->push_back((*iIndices)[base+2]);
+                indiceBuffer->push_back((*iIndices)[base+1]);
+            } else if (size == 4) {
+                indiceBuffer->push_back((*iIndices)[base+0]);
+                indiceBuffer->push_back((*iIndices)[base+3]);
+                indiceBuffer->push_back((*iIndices)[base+1]);
 
-	if(shaderN != _shaderList.end()) {
-	    o = &(*shaderN->second);
-	} else {
+                indiceBuffer->push_back((*iIndices)[base+1]);
+                indiceBuffer->push_back((*iIndices)[base+3]);
+                indiceBuffer->push_back((*iIndices)[base+2]);
+            } 
+        }
+
+        // --------- pushing it to the renderThread -----------
+        std::map<std::string, std::list<std::pair<Shader, std::vector<Mesh>>>::iterator>::iterator shaderN = _shaderList.find(faceSetName);
+        if(shaderN != _shaderList.end()) {
+            //std::cout << "select second()" << selectedShader << '\n';
+            selectedShader = shaderN->second;
+            std::cout << "  |||  NOT found\n";
+        } else {
+            std::cout << "d._drawList.emplace_back()\n";
             d._drawList.emplace_back();
-            d._drawList.back().second.reserve(1024); // will avoid a lot of realoc (expecting a lot of meshes)
-	    o = &(d._drawList.back());
-	    bool ready = false;
-	    s_.uniqueTasks.push_back([&m, &ready, &cv, shaderListLambdaHelper, o, &d, faceSetName]() {
-		    std::cout << "allocating shader " << faceSetName << " on " << o << "\n";
-		    std::cout << "in thread: " << std::this_thread::get_id() << '\n';
-		    o->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
-		    o->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
-		    o->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
-		    (*shaderListLambdaHelper)[faceSetName] = --d._drawList.end();
-		    ready = true;
-		    cv.notify_one();
-	    });
+            std::cout << "d._drawList.size(): " << d._drawList.size() << "\n";
+            selectedShader = std::prev(d._drawList.end());
+            _shaderList[faceSetName] = selectedShader;
+            std::cout << " ===  found\n";
 
-	    std::unique_lock<std::mutex> lk(m);
-	    cv.wait(lk, [&ready]{return ready;});
-	    std::cout << "continue\n";
-	}
+            s_.uniqueTasks.push_back([selectedShader, faceSetName]() {
+                    std::cout << "allocating shader " << faceSetName << '\n';
+                    std::cout << "in thread: " << std::this_thread::get_id() << '\n';
+                    selectedShader->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
+                    selectedShader->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
+                    selectedShader->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
+                    selectedShader->second.reserve(1024);
+                    });
+        }
 
-	Alembic::AbcGeom::IFaceSetSchema fSetSamp = schema.getFaceSet(faceSetName).getSchema();
-	Alembic::AbcGeom::IFaceSetSchema::Sample faceSet;
-	fSetSamp.get(faceSet, 0);
-	indiceBuffer = new std::vector<GLuint>();
-	indiceBuffer->reserve(numConnects);
-	for (unsigned int i = 0; i < faceSet.getFaces()->size(); ++i) {
-	    unsigned int faceNumber = (*faceSet.getFaces())[i];
-	    unsigned long base = faceBaseOffset[faceNumber];
-	    unsigned short size = 3;
-	    if (faceNumber < (faceSet.getFaces()->size() - 1)) {
-		size = faceBaseOffset[faceNumber+1] - base;
-	    } else {
-		size = (*iCounts)[iCounts->size() - 1];
-	    }
-	    if (size == 3) {
-		indiceBuffer->push_back((*iIndices)[base+0]);
-		indiceBuffer->push_back((*iIndices)[base+2]);
-		indiceBuffer->push_back((*iIndices)[base+1]);
-	    } else if (size == 4) {
-		indiceBuffer->push_back((*iIndices)[base+0]);
-		indiceBuffer->push_back((*iIndices)[base+3]);
-		indiceBuffer->push_back((*iIndices)[base+1]);
-
-		indiceBuffer->push_back((*iIndices)[base+1]);
-		indiceBuffer->push_back((*iIndices)[base+3]);
-		indiceBuffer->push_back((*iIndices)[base+2]);
-	    } 
-	}
-	s_.uniqueTasks.push_back([o](){
-		o->second.emplace_back();
-		});
-	if (isFirst) {
-	    meshBaseVBO = o->second.size() - 1;
-	    meshReferance = o;
-	    s_.uniqueTasks.push_back([o, meshBaseVBO, vertexBuffer](){
-                    if (vertexBuffer) {
-                        std::cout << "vertexBuffer thread id: " << std::this_thread::get_id() << '\n';
-                        o->second[meshBaseVBO].uploadVertexOnly(*vertexBuffer);
-                        delete vertexBuffer;
-                    }
-	    });
-	    isFirst = false;
-	}
-        Node& nod = n_.push();
-        s_.uniqueTasks.push_back([o, indiceBuffer, meshReferance, meshBaseVBO, transform_, &nod](){
-                if (indiceBuffer) {
-                        std::cout << "indiceBuffer thread id: " << std::this_thread::get_id() << '\n';
-                        o->second[o->second.size() - 1].uploadElementOnly(*indiceBuffer, meshReferance->second[meshBaseVBO]._vbo, meshReferance->second[meshBaseVBO]._vao); // TODO use a iterator instead of meshBaseVBO
-                        o->second[o->second.size() - 1].uMeshTransform = transform_;
-                        o->second[o->second.size() - 1].linkNode(nod);
-                        delete indiceBuffer;
+        std::cout << "        -> checking meshref\n";
+        if (!meshReferance) { // first mesh case
+            if (selectedShader->second.size()) {
+                std::cout << "++++++++++++++ resetting meshReference\n";
+                meshReferance = &(selectedShader->second.back());
+            }
+        }
+        s_.uniqueTasks.push_back([selectedShader, meshReferance, &vertexBuffer, indiceBuffer, &n_, &transform_]() {
+                // upload the mesh
+                Mesh* internalMeshRef = meshReferance; // avoiding "cannot assign to a variable captured by copy in a non-mutable lambda" error
+                selectedShader->second.emplace_back();
+                std::cout << "allocate mesh: " << selectedShader->second.capacity() << " " <<  selectedShader->second.size() << "\n";
+                if (vertexBuffer) {
+                    std::cout << "vertexBuffer thread id: " << std::this_thread::get_id() << '\n';
+                    internalMeshRef = &(selectedShader->second.back()); // in the first mesh case the mesh reference will still be nullptr
+                    // it is still beter to do it that way because it avoir passing meshReference bu reference and set it in the lambda
+                    // passing meshReference by reference mean adding conditionnal mutex (and therefore breaking multithreading advantages)
+                    // mutex will be mandatory because genMesh function can finish before this lambda is executed.
+                    // (this case can happen if there is a lot of task pushed to the renderthread or when the frametime budget will be added)
+                    internalMeshRef->uploadVertexOnly(*vertexBuffer);
+                    delete vertexBuffer;
+                    vertexBuffer = nullptr;
                 }
-	});
+                if (indiceBuffer) {
+                    std::cout << "indiceBuffer thread id: " << std::this_thread::get_id() << '\n';
+                    Mesh& meshRef = selectedShader->second.back();
+                    meshRef.uploadElementOnly(*indiceBuffer, internalMeshRef->_vbo, internalMeshRef->_vao); // TODO use a iterator instead of meshBaseVBO
+                    meshRef.uMeshTransform = transform_;
+                    meshRef.linkNode(n_.push());
+                    delete indiceBuffer;
+                }
+                });
     }
 }
 
@@ -272,8 +281,9 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, RenderThread& s_, gl
 
 	    mainCamera.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
 	    mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9));
-	    mainCamera.fieldOfview(s.getFieldOfView());
-	    mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane()));
+	    mainCamera.fieldOfview(90.0f);
+	    //mainCamera.fieldOfview(s.getFieldOfView()); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
+	    //mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane())); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
 	    mainCamera.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
     });
     //n_.linkWorldTransform(&(mainCamera.uMeshTransform._value.m4));

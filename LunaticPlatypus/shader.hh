@@ -23,7 +23,7 @@ class Shader {
 	std::vector<std::pair<Uniform &, unsigned int>> uniformList;
 	std::vector<std::string> containedUniformNames;
 
-	inline bool _checkValidity(GLenum id_, const char* src_, std::string& filename_)const {
+	inline bool _checkValidity(GLenum id_, const char* src_, const std::string& filename_)const {
 	    GLint compileStatus;
 	    glGetShaderiv(id_, GL_COMPILE_STATUS, &compileStatus);
 	    if (compileStatus) {
@@ -44,7 +44,7 @@ class Shader {
 
     public:
 	Shader();
-	void add(std::string, GLenum);
+	void add(const std::string&, GLenum);
 	bool containUniform(Uniform &u_);
 	void link(const std::vector<std::string>&& fragDataOutPut_);
 	template <typename T>
