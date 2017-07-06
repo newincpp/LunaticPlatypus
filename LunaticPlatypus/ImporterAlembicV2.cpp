@@ -214,14 +214,14 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
         if(shaderN != _shaderList.end()) {
             //std::cout << "select second()" << selectedShader << '\n';
             selectedShader = shaderN->second;
-            std::cout << "  |||  NOT found\n";
+            std::cout << "  ||| sheder found\n";
         } else {
             std::cout << "d._drawList.emplace_back()\n";
             d._drawList.emplace_back();
             std::cout << "d._drawList.size(): " << d._drawList.size() << "\n";
             selectedShader = std::prev(d._drawList.end());
             _shaderList[faceSetName] = selectedShader;
-            std::cout << " ===  found\n";
+            std::cout << " ===  shader NOT found\n";
 
             s_.uniqueTasks.push_back([selectedShader, faceSetName]() {
                     std::cout << "allocating shader " << faceSetName << '\n';
@@ -233,17 +233,19 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
                     });
         }
 
-        std::cout << "        -> checking meshref\n";
         if (!meshReferance && selectedShader->second.size()) {
-            std::cout << "++++++++++++++ resetting meshReference\n";
             meshReferance = &(selectedShader->second.back());
+            vertexBuffer = nullptr;
+        }
+        if (!vertexBuffer) {
+            std::cout << "vertexBuffer is null\n";
         }
         s_.uniqueTasks.push_back([selectedShader, meshReferance, vertexBuffer, indiceBuffer, &n_, transform_]() {
                 // upload the mesh
                 Mesh* internalMeshRef = meshReferance; // avoiding "cannot assign to a variable captured by copy in a non-mutable lambda" error
                 selectedShader->second.emplace_back();
                 std::cout << "allocate mesh: " << selectedShader->second.capacity() << " " <<  selectedShader->second.size() << "\n";
-                if (!internalMeshRef) { // internalMeshRef will be null for the first mesh (because it's the reference)
+                if (vertexBuffer && !internalMeshRef) { // internalMeshRef will be null for the first mesh (because it's the reference)
                     std::cout << "vertexBuffer thread id: " << std::this_thread::get_id() << '\n';
                     internalMeshRef = &(selectedShader->second.back()); // in the first mesh case the mesh reference will still be nullptr
                     // it is still beter to do it that way because it avoir passing meshReference bu reference and set it in the lambda
@@ -251,7 +253,6 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
                     // mutex will be mandatory because genMesh function can finish before this lambda is executed.
                     // (this case can happen if there is a lot of task pushed to the renderthread or when the frametime budget will be added)
                     internalMeshRef->uploadVertexOnly(*vertexBuffer);
-                    delete vertexBuffer; // it has to be deleted here because if genMesh leave before this event gets executed it will crash
                 }
                 if (indiceBuffer) {
                     std::cout << "indiceBuffer thread id: " << std::this_thread::get_id() << '\n';
@@ -263,6 +264,10 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
                 }
                 });
     }
+
+    s_.uniqueTasks.push_back([vertexBuffer]() {
+            delete vertexBuffer;
+            });
 }
 
 void Importer::genCamera(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm::mat4& transform_, Node& n_) {
