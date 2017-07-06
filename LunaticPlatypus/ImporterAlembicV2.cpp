@@ -234,18 +234,16 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
         }
 
         std::cout << "        -> checking meshref\n";
-        if (!meshReferance) { // first mesh case
-            if (selectedShader->second.size()) {
-                std::cout << "++++++++++++++ resetting meshReference\n";
-                meshReferance = &(selectedShader->second.back());
-            }
+        if (!meshReferance && selectedShader->second.size()) {
+            std::cout << "++++++++++++++ resetting meshReference\n";
+            meshReferance = &(selectedShader->second.back());
         }
-        s_.uniqueTasks.push_back([selectedShader, meshReferance, &vertexBuffer, indiceBuffer, &n_, &transform_]() {
+        s_.uniqueTasks.push_back([selectedShader, meshReferance, vertexBuffer, indiceBuffer, &n_, transform_]() {
                 // upload the mesh
                 Mesh* internalMeshRef = meshReferance; // avoiding "cannot assign to a variable captured by copy in a non-mutable lambda" error
                 selectedShader->second.emplace_back();
                 std::cout << "allocate mesh: " << selectedShader->second.capacity() << " " <<  selectedShader->second.size() << "\n";
-                if (vertexBuffer) {
+                if (!internalMeshRef) { // internalMeshRef will be null for the first mesh (because it's the reference)
                     std::cout << "vertexBuffer thread id: " << std::this_thread::get_id() << '\n';
                     internalMeshRef = &(selectedShader->second.back()); // in the first mesh case the mesh reference will still be nullptr
                     // it is still beter to do it that way because it avoir passing meshReference bu reference and set it in the lambda
@@ -253,8 +251,7 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
                     // mutex will be mandatory because genMesh function can finish before this lambda is executed.
                     // (this case can happen if there is a lot of task pushed to the renderthread or when the frametime budget will be added)
                     internalMeshRef->uploadVertexOnly(*vertexBuffer);
-                    delete vertexBuffer;
-                    vertexBuffer = nullptr;
+                    delete vertexBuffer; // it has to be deleted here because if genMesh leave before this event gets executed it will crash
                 }
                 if (indiceBuffer) {
                     std::cout << "indiceBuffer thread id: " << std::this_thread::get_id() << '\n';
