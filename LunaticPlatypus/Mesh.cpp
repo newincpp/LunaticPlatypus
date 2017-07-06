@@ -8,13 +8,20 @@ Mesh::~Mesh() {
     Heart::getScene()->remove(&(uMeshTransform._value.m4));
 }
 
+#define BUFFER_STORAGE
+#define STORAGE_FLAGS GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT
+
 void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
     glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
 
     glGenBuffers(1, &_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+#ifdef BUFFER_STORAGE
+    glBufferStorage(GL_ARRAY_BUFFER, vbo_.size() * sizeof(__remove_reference__<decltype(vbo_)>::type::value_type), &(vbo_[0]), STORAGE_FLAGS);
+#else
     glBufferData(GL_ARRAY_BUFFER, vbo_.size() * sizeof(__remove_reference__<decltype(vbo_)>::type::value_type), &(vbo_[0]), GL_STATIC_DRAW);
+#endif
 
     //vertex
     glEnableVertexAttribArray(0);
@@ -31,7 +38,12 @@ void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
 
     glGenBuffers(1, &_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+#ifdef BUFFER_STORAGE
+    glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), STORAGE_FLAGS);
+#else
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), GL_STATIC_DRAW);
+#endif
+
     _size = ebo_.size();
 
     //std::cout << "vertex[" << vbo_.size() << "] = {\n";
@@ -51,7 +63,11 @@ void Mesh::uploadVertexOnly(std::vector<GLfloat>& vbo_) {
 
     glGenBuffers(1, &_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+#ifdef BUFFER_STORAGE
+    glBufferStorage(GL_ARRAY_BUFFER, vbo_.size() * sizeof(__remove_reference__<decltype(vbo_)>::type::value_type), &(vbo_[0]), STORAGE_FLAGS);
+#else
     glBufferData(GL_ARRAY_BUFFER, vbo_.size() * sizeof(__remove_reference__<decltype(vbo_)>::type::value_type), &(vbo_[0]), GL_STATIC_DRAW);
+#endif
 
     //vertex
     glEnableVertexAttribArray(0);
@@ -76,7 +92,11 @@ void Mesh::uploadElementOnly(std::vector<GLuint>& ebo_, GLuint vbo_, GLuint vao_
 
     glGenBuffers(1, &_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+#ifdef BUFFER_STORAGE
+    glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), STORAGE_FLAGS);
+#else
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), GL_STATIC_DRAW);
+#endif
     _size = ebo_.size();
 }
 

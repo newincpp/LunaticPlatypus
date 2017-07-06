@@ -12,31 +12,27 @@ Heart::Heart() : _fw(nullptr), _win() {
     }
     assert(_game != nullptr);
     _game->_lunaticPlatypus = this;
+    _scene = new Graph();
     if (_game->_scene.empty()) {
 	_game->_scene = STRINGIZE(DEFAULT_SCENE);
     }
     std::cout << "default scene: " << _game->_scene << "\n";
-    _scene = new Graph();
-    _renderThread.uniqueTasks.push_back([this](){
+    _renderThread.uniqueTasks.push_back([this]() {
 	    _win.init();
 	    //_win.makeContextCurrent();
 	_renderThread.unsafeGetRenderer().init();
         std::cout << "renderer initialised\n";
 	    });
-
-    //_renderThread.uniqueTasks.push_back([this](){
-    //    loadScene();
-    //    });
-
     _renderThread.unsafeGetRenderer().swap = [this]() {
 	//std::cout << "thread: " << std::this_thread::get_id() << '\n';
 	_win.pollEvents();
         _win.swapBuffer();
     };
     _renderThread.run();
+    loadScene();
+
     std::this_thread::sleep_for(std::chrono::milliseconds(33)); // wait for 1 frame before the opengl init to avoid mutax architecture
     _game->postEngineInit();
-    loadScene();
 }
 
 void Heart::run() {
@@ -74,6 +70,7 @@ void Heart::run() {
 #endif
 	//_scene->update();
     }
+    _renderThread.setKeepAlive(false);
 }
 
 void Heart::loadScene() {

@@ -24,10 +24,6 @@ void WindowHandle::init() {
     glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
     _window = glfwCreateWindow(1920, 1080, "OpenGL", nullptr, nullptr); // Windowed
 
-    //glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-    //_windowThread = glfwCreateWindow(1920, 1080, "OpenGL", nullptr, _window); // Windowed
-    //std::cout << "window created" << std::endl;
-
     makeContextCurrent(_window);
 
     glewExperimental=true;
@@ -78,13 +74,7 @@ bool WindowHandle::exec() {
     if (!_window) {
 	return true; // ugly spinlock
     }
-    //std::cout << "exec: " << std::this_thread::get_id() << '\n';
-    if (_shouldClose) {
-	//std::cout << "shouldClose=true\n";
-	glfwSetWindowShouldClose(_window, GL_TRUE);
-    }
-    return !glfwWindowShouldClose(_window);
-    //}
+    return !_shouldClose;
 }
 
 WindowHandle::~WindowHandle() {
@@ -96,10 +86,11 @@ void WindowHandle::keyCallback(GLFWwindow* w_, int key_, int scanCode_, int keyS
     ImGui_ImplGlfwGL3_KeyCallback(w_, key_, scanCode_, keyStatus_, modsKey_);
 #endif
     //std::cout << "keyCallBack thread: " << std::this_thread::get_id() << '\n';
-    if (keyStatus_ == 1 && key_ == 256) {
+    if ((keyStatus_ == 1 && key_ == 256) || glfwWindowShouldClose(w_)) {
 	_shouldClose = true; // TODO need to be replaced by en event
-	//std::cout << "check\n";
+        std::cout << "check\n";
     }
+    std::cout << !glfwWindowShouldClose(w_) << '\n';
     //std::cout << key_ << " " << scanCode_ << " " << keyStatus_ << '\n';
     EventInterface::sExec(std::to_string(key_));
     EventInterface::sExec("keyboard");

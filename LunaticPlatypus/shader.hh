@@ -27,7 +27,7 @@ class Shader {
 	    GLint compileStatus;
 	    glGetShaderiv(id_, GL_COMPILE_STATUS, &compileStatus);
 	    if (compileStatus) {
-		std::cout << "\033[32m\"" << filename_ << "\" succesfully compiled\033[0m\n";
+		std::cout << "\033[32m\'" << filename_ << "\' succesfully compiled\033[0m\n";
 		return true;
 	    }
 	    GLint InfoLogLength;
