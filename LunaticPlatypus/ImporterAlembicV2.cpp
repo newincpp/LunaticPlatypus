@@ -247,9 +247,12 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
                     meshRef.uploadElementOnly(*indiceBuffer, internalMeshRef->_vbo, internalMeshRef->_vao); // TODO use a iterator instead of meshBaseVBO
                     meshRef.uMeshTransform = transform_;
                     meshRef.linkNode(n_.push());
-                    delete indiceBuffer;
                 }
                 });
+
+        s_.uniqueTasks.push_back([indiceBuffer]() {
+                delete indiceBuffer;
+        });
     }
 
     s_.uniqueTasks.push_back([vertexBuffer]() {

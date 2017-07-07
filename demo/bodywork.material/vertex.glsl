@@ -13,7 +13,6 @@ layout(location = 2) in vec2 uvCoord_;
 layout(location = 0) out vec3 vInfVertexPos_;
 layout(location = 1) out vec3 vInfVertexNormal_;
 layout(location = 2) out vec2 vInfUvCoord_;
-layout(location = 3) out vec2 vInfDepth_;
 
 float timeBounce(float slow) {
     return sin(uTime / slow) / 2 + 0.5;

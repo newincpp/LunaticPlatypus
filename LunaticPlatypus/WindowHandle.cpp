@@ -66,7 +66,9 @@ void WindowHandle::init() {
     //glfwSetKeyCallback(_window, ImGui_ImplGlfwGL3_KeyCallback);
     glfwSetCharCallback(_window, ImGui_ImplGlfwGL3_CharCallback);
 #endif
-    glfwSetKeyCallback(_window, WindowHandle::keyCallback);
+    if (_window) {
+        glfwSetKeyCallback(_window, WindowHandle::keyCallback);
+    }
     std::cout << "glfw initialized" << std::endl;
 }
 
