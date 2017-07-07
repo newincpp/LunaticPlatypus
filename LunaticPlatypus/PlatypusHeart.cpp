@@ -68,7 +68,7 @@ void Heart::run() {
 	    mod = false;
 	}
 #endif
-	//_scene->update();
+	_scene->update();
     }
     _renderThread.setKeepAlive(false);
 }
