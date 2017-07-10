@@ -6,8 +6,8 @@
 #include "Node.hh"
 #include "PlatypusHeart.hh"
 
-#ifdef TINYOBJLOADER
-#include "tiny_obj_loader.h"
+#ifdef GLTF2
+#include "tiny_gltf.h"
 #elif defined(ALEMBIC) || defined(ALEMBICV2)
 #define register // deleting some warnings in alembic
 #include <map>
@@ -22,8 +22,11 @@
 
 class Importer {
     private:
-#ifdef TINYOBJLOADER
-	void genMesh(const tinyobj::shape_t&, const tinyobj::attrib_t&, int , std::vector<Mesh>&);
+#ifdef GLTF2
+	void visitor(const tinygltf::Model*, const tinygltf::Node&, unsigned int, RenderThread&, Heart::IGamelogic*, glm::mat4, Node&);
+	void genMesh(const tinygltf::Model*, const tinygltf::Mesh&, RenderThread*, glm::mat4, Node&);
+	void genCamera(const tinygltf::Node&, RenderThread&, glm::mat4&, Node&);
+	void genGameClass(const std::string&, Heart::IGamelogic*, glm::mat4&, Node&);
 #elif defined(ALEMBICV2)
 	std::map<std::string, std::list<std::pair<Shader, std::vector<Mesh>>>::iterator> _shaderList;
 	void genMesh(const Alembic::Abc::IObject&, RenderThread&, glm::mat4&, Node&);

@@ -6,7 +6,9 @@
 #include "EventCore.hh"
 #include "DynamicGameClass.hh"
 
+#ifdef IMGUIENABLED
 #include "imgui/imgui.h"
+#endif
 
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)

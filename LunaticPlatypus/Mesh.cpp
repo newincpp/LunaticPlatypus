@@ -19,7 +19,7 @@ void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 #ifdef BUFFER_STORAGE
     glBufferStorage(GL_ARRAY_BUFFER, vbo_.size() * sizeof(__remove_reference__<decltype(vbo_)>::type::value_type), &(vbo_[0]), STORAGE_FLAGS);
-#else
+#elif BUFFER_DATA
     glBufferData(GL_ARRAY_BUFFER, vbo_.size() * sizeof(__remove_reference__<decltype(vbo_)>::type::value_type), &(vbo_[0]), GL_STATIC_DRAW);
 #endif
 
@@ -40,7 +40,7 @@ void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 #ifdef BUFFER_STORAGE
     glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), STORAGE_FLAGS);
-#else
+#elif BUFFER_DATA
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), GL_STATIC_DRAW);
 #endif
 
@@ -65,7 +65,7 @@ void Mesh::uploadVertexOnly(std::vector<GLfloat>& vbo_) {
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 #ifdef BUFFER_STORAGE
     glBufferStorage(GL_ARRAY_BUFFER, vbo_.size() * sizeof(__remove_reference__<decltype(vbo_)>::type::value_type), &(vbo_[0]), STORAGE_FLAGS);
-#else
+#elif BUFFER_DATA
     glBufferData(GL_ARRAY_BUFFER, vbo_.size() * sizeof(__remove_reference__<decltype(vbo_)>::type::value_type), &(vbo_[0]), GL_STATIC_DRAW);
 #endif
 
@@ -94,7 +94,7 @@ void Mesh::uploadElementOnly(std::vector<GLuint>& ebo_, GLuint vbo_, GLuint vao_
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 #ifdef BUFFER_STORAGE
     glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), STORAGE_FLAGS);
-#else
+#elif BUFFER_DATA
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo_.size() * sizeof(__remove_reference__<decltype(ebo_)>::type::value_type), &(ebo_[0]), GL_STATIC_DRAW);
 #endif
     _size = ebo_.size();
