@@ -27,8 +27,10 @@ void DrawBuffer::render() {
     for (unsigned int a = 0; a < _activeCamera && a < _cameras.size(); ++a) {
 	_cameras[a].use();
 	for (std::pair<Shader, std::vector<Mesh>>& material : _drawList) {
+            std::cout << "shader\n";
 	    if (material.first.use()) {
 		for (Mesh& m : material.second) {
+                    std::cout << "mesh\n";
 		    m.render();
 		}
 	    } 

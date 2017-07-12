@@ -34,7 +34,16 @@ void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, 
         visitor(model, model->nodes[node], 0, d_, g_, root, scene_.root);
     }
     d_.uniqueTasks.push_back([&d_, model](){
-        d_.unsafeGetRenderer().getDrawBuffer().addAllUniformsToShaders();
+        DrawBuffer& d = d_.unsafeGetRenderer().getDrawBuffer();
+        d.addAllUniformsToShaders();
+        if (d._cameras.empty()) { // add a default camera if empty
+            std::cout << "no camera was detected in the file: generating a default one\n";
+	    d._cameras.emplace_back(d._fb[0]);
+	    Camera& mainCamera = d._cameras[d._cameras.size() - 1];
+	    mainCamera.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
+	    mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9));
+	    mainCamera.fieldOfview(90.0f);
+        }
         delete model;
     });
     std::cout << "load finished" << std::endl;
@@ -50,11 +59,18 @@ glm::mat4 convertTo(const decltype(tinygltf::Node::matrix)& from) {
 }
 
 void Importer::visitor(const tinygltf::Model* model_, const tinygltf::Node& nod_, unsigned int depth, RenderThread& renderThread_, Heart::IGamelogic* glog_, glm::mat4 transf_, Node& sceneGraph_) {
-    std::cout << "node name: \"" << nod_.name << "\"\n";
     transf_ *= convertTo(nod_.matrix);
     if (nod_.mesh >= 0) {
         std::cout << "mesh id: " << nod_.mesh << '\n';
         renderThread_.uniqueTasks.push_back(std::bind(&Importer::genMesh, this, model_, model_->meshes[nod_.mesh], &renderThread_, transf_, sceneGraph_));
+    }
+    if (nod_.camera >= 0) {
+        std::cout << "camera id: " << nod_.mesh << '\n';
+        renderThread_.uniqueTasks.push_back(std::bind(&Importer::genCamera, this, tinygltf::Camera(), &renderThread_, transf_, sceneGraph_));
+    }
+    if (nod_.mesh == -1 && nod_.camera == -1) {
+        std::cout << "empty detected: \"" << nod_.name << "\"\n";
+        genGameClass(nod_.name, glog_, transf_, sceneGraph_);
     }
     for (unsigned int child: nod_.children) {
         std::cout << "node id: " << child << '\n';
@@ -142,7 +158,18 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
     }
 }
 
-void Importer::genCamera(const tinygltf::Node&, RenderThread&, glm::mat4&, Node&) {
+void Importer::genCamera(const tinygltf::Camera& gltfCam_, RenderThread* rt_, glm::mat4 transform_, Node&) {
+    DrawBuffer& d = rt_->unsafeGetRenderer().getDrawBuffer();
+
+    d._cameras.emplace_back(d._fb[0]);
+    Camera& cam = d._cameras.back();
+    cam.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
+    cam.setPos(glm::vec3(-9.3, 8.4f, 15.9));
+    cam.fieldOfview(90.0f);
+    //cam.fieldOfview(s.getFieldOfView()); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
+    //cam.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane())); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
+    cam.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
 }
-void Importer::genGameClass(const std::string&, Heart::IGamelogic*, glm::mat4&, Node&) {
+void Importer::genGameClass(const std::string& name_, Heart::IGamelogic* g_, glm::mat4& transf, Node& n_) {
+    g_->_gameClasses.emplace_back(name_, n_);
 }
