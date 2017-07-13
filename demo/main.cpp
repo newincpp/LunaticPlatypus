@@ -8,8 +8,9 @@ class MyGame : public Heart::IGamelogic {
 	std::chrono::time_point<std::chrono::system_clock> _start;
 	glm::vec3 p;
 	MyGame() {
-	    //_scene = "./sponza.abc";
-	    _scene = "/home/newin/project/glTF-Sample-Models/2.0/2CylinderEngine/glTF-Embedded/2CylinderEngine.gltf";
+	    _scene = "./sponza.abc";
+	    //_scene = "./.glb";
+
 
 	    _start = std::chrono::system_clock::now();
 	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_Q), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 1.0f, 0.0f)); }); //Q
