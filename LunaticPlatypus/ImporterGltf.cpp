@@ -65,8 +65,8 @@ void Importer::visitor(const tinygltf::Model* model_, const tinygltf::Node& nod_
         renderThread_.uniqueTasks.push_back(std::bind(&Importer::genMesh, this, model_, model_->meshes[nod_.mesh], &renderThread_, transf_, sceneGraph_));
     }
     if (nod_.camera >= 0) {
-        std::cout << "camera id: " << nod_.mesh << '\n';
-        renderThread_.uniqueTasks.push_back(std::bind(&Importer::genCamera, this, tinygltf::Camera(), &renderThread_, transf_, sceneGraph_));
+        std::cout << "camera id: " << nod_.camera << '\n';
+        renderThread_.uniqueTasks.push_back(std::bind(&Importer::genCamera, this, model_->cameras[nod_.camera], &renderThread_, transf_, sceneGraph_));
     }
     if (nod_.mesh == -1 && nod_.camera == -1) {
         std::cout << "empty detected: \"" << nod_.name << "\"\n";
@@ -164,11 +164,15 @@ void Importer::genCamera(const tinygltf::Camera& gltfCam_, RenderThread* rt_, gl
     d._cameras.emplace_back(d._fb[0]);
     Camera& cam = d._cameras.back();
     cam.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
-    cam.setPos(glm::vec3(-9.3, 8.4f, 15.9));
-    cam.fieldOfview(90.0f);
-    //cam.fieldOfview(s.getFieldOfView()); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
-    //cam.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane())); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
+    glm::vec4 position = glm::vec4(0.0, 0.0, 0.0, 1.0) * transform_;
+    cam.setPos(glm::vec3(position.x, position.y, position.z));
     cam.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
+    if (gltfCam_.type.compare("perspective") == 0) {
+        std::cout << "aspect ratio: " << gltfCam_.perspective.aspectRatio << "\n";
+        std::cout << "calculated fov :" << gltfCam_.perspective.yfov * gltfCam_.perspective.aspectRatio << '\n';
+        cam.fieldOfview(90.0f);
+        cam.clipPlane(glm::vec2(gltfCam_.perspective.znear, gltfCam_.perspective.zfar));
+    }
 }
 void Importer::genGameClass(const std::string& name_, Heart::IGamelogic* g_, glm::mat4& transf, Node& n_) {
     g_->_gameClasses.emplace_back(name_, n_);

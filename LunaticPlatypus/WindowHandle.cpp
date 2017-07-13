@@ -24,12 +24,20 @@ void WindowHandle::init() {
     glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
     _window = glfwCreateWindow(1920, 1080, "OpenGL", nullptr, nullptr); // Windowed
 
-    makeContextCurrent(_window);
+    if (!_window) {
+        std::cout << "FAILED TO OPEN WINDOW\n";
+        _shouldClose = true;
+        return;
+    } else {
+        makeContextCurrent(_window);
+    }
 
     glewExperimental=true;
     GLenum err = glewInit();
     if (GLEW_OK != err) {
         std::cout << "Error: " << glewGetErrorString(err) << '\n';
+        _shouldClose = true;
+        return;
     }
 #ifdef IMGUIENABLED
     ImGuiIO& io = ImGui::GetIO();
