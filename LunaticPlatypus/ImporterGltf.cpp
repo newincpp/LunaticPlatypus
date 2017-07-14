@@ -68,8 +68,8 @@ void Importer::visitor(const tinygltf::Model* model_, const tinygltf::Node& nod_
         std::cout << "camera id: " << nod_.camera << '\n';
         renderThread_.uniqueTasks.push_back(std::bind(&Importer::genCamera, this, model_->cameras[nod_.camera], &renderThread_, transf_, sceneGraph_));
     }
-    if (nod_.mesh == -1 && nod_.camera == -1) {
-        std::cout << "empty detected: \"" << nod_.name << "\"\n";
+    if ((nod_.mesh == -1) && (nod_.camera == -1) && (nod_.name.size() > 10) && !(nod_.name.substr(nod_.name.size() - 10).compare("_GameClass"))) {
+        std::cout << "gameclass detected: \"" << nod_.name << "\"\n";
         genGameClass(nod_.name, glog_, transf_, sceneGraph_);
     }
     for (unsigned int child: nod_.children) {
@@ -169,7 +169,8 @@ void Importer::genCamera(const tinygltf::Camera& gltfCam_, RenderThread* rt_, gl
     cam.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
     if (gltfCam_.type.compare("perspective") == 0) {
         std::cout << "aspect ratio: " << gltfCam_.perspective.aspectRatio << "\n";
-        std::cout << "calculated fov :" << gltfCam_.perspective.yfov * gltfCam_.perspective.aspectRatio << '\n';
+        std::cout << "fovy :" << gltfCam_.perspective.yfov << '\n';
+        std::cout << "calculated fovx :" << gltfCam_.perspective.yfov * gltfCam_.perspective.aspectRatio << '\n';
         cam.fieldOfview(90.0f);
         cam.clipPlane(glm::vec2(gltfCam_.perspective.znear, gltfCam_.perspective.zfar));
     }

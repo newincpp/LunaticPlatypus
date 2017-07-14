@@ -9,7 +9,7 @@ class MyGame : public Heart::IGamelogic {
 	glm::vec3 p;
 	MyGame() {
 	    //_scene = "./sponza.abc";
-	    _scene = "./vega.gltf";
+	    _scene = "./sponza.gltf";
 
 
 	    _start = std::chrono::system_clock::now();
