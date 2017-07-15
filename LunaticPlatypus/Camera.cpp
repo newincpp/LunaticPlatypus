@@ -4,6 +4,16 @@
 #include <iostream>
 #include "Camera.hh"
 
+// cinemascopeV1: 47/20 (2.35/1)
+// cinemascopeV2: 239/100
+// cinemascopeV3: 12/5 (2.40/1)
+// wide: 16/9
+// extendedWide: 16/10
+// VGAStandard: 4/3
+// portrait transformation-> 1/
+//
+// FOV = 2 * arctan(sensorSize / focalLengh) // focal length to fov for a given sensor size (8mm seems to be the standard)
+
 Camera::Camera(FrameBuffer& fb_) :
     uView(glm::mat4(1.0f), "uView"),
     uProjection(glm::mat4(1.0f), "uProjection"),

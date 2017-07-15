@@ -160,6 +160,7 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 
 void Importer::genCamera(const tinygltf::Camera& gltfCam_, RenderThread* rt_, glm::mat4 transform_, Node&) {
     DrawBuffer& d = rt_->unsafeGetRenderer().getDrawBuffer();
+    std::cout << "camera Name: " << gltfCam_.name << '\n';
 
     d._cameras.emplace_back(d._fb[0]);
     Camera& cam = d._cameras.back();
@@ -168,10 +169,12 @@ void Importer::genCamera(const tinygltf::Camera& gltfCam_, RenderThread* rt_, gl
     cam.setPos(glm::vec3(position.x, position.y, position.z));
     cam.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
     if (gltfCam_.type.compare("perspective") == 0) {
-        std::cout << "aspect ratio: " << gltfCam_.perspective.aspectRatio << "\n";
-        std::cout << "fovy :" << gltfCam_.perspective.yfov << '\n';
-        std::cout << "calculated fovx :" << gltfCam_.perspective.yfov * gltfCam_.perspective.aspectRatio << '\n';
-        cam.fieldOfview(90.0f);
+        //std::cout << "aspect ratio: " << gltfCam_.perspective.aspectRatio << "\n";
+        //std::cout << "fovy :" << gltfCam_.perspective.yfov << '\n';
+        //std::cout << "calculated fovx rad:" << (gltfCam_.perspective.yfov * gltfCam_.perspective.aspectRatio) << '\n';
+        //std::cout << "calculated fovx deg:" << ((gltfCam_.perspective.yfov * 180 / 3.14159)) * gltfCam_.perspective.aspectRatio << '\n';
+        //cam.fieldOfview(90.0f);
+        cam.fieldOfview(((gltfCam_.perspective.yfov * 180 / 3.14159)) * gltfCam_.perspective.aspectRatio);
         cam.clipPlane(glm::vec2(gltfCam_.perspective.znear, gltfCam_.perspective.zfar));
     }
 }

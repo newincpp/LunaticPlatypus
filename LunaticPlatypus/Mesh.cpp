@@ -120,7 +120,7 @@ void Mesh::freeEbo() {
 
 void Mesh::render() {
     uMeshTransform.upload();
-    glBindVertexArray(_vao);
+    glBindVertexArray(_vao); // the vao contain the vbo and the ebo in its state, it's useless to bind everyone
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
