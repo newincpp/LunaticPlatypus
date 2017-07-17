@@ -8,8 +8,12 @@ class MyGame : public Heart::IGamelogic {
 	std::chrono::time_point<std::chrono::system_clock> _start;
 	glm::vec3 p;
 	MyGame() {
-	    _scene = "./sponza.abc";
-	    //_scene = "./vega.glb";
+	    //_scene = "./sponza.abc";
+	    //_scene = "./Duck.gltf";
+	    //_scene = "./sponza.gltf";
+	    //_scene = "./sponza.glb";
+            //_scene = "./vega.gltf";
+            _scene = "2CylinderEngine.gltf";
 
 
 	    _start = std::chrono::system_clock::now();

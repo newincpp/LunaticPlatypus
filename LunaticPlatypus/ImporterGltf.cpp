@@ -30,7 +30,6 @@ void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, 
     }
     std::cout << "loading the default one: " << scene.name << '\n';
     for (unsigned int node : scene.nodes) {
-        std::cout << "node id: " << node << '\n';
         visitor(model, model->nodes[node], 0, d_, g_, root, scene_.root);
     }
     d_.uniqueTasks.push_back([&d_, model](){
@@ -47,7 +46,6 @@ void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, 
         delete model;
     });
     std::cout << "load finished" << std::endl;
-
 }
 
 glm::mat4 convertTo(const decltype(tinygltf::Node::matrix)& from) {
@@ -62,7 +60,7 @@ void Importer::visitor(const tinygltf::Model* model_, const tinygltf::Node& nod_
     transf_ *= convertTo(nod_.matrix);
     if (nod_.mesh >= 0) {
         std::cout << "mesh id: " << nod_.mesh << '\n';
-        renderThread_.uniqueTasks.push_back(std::bind(&Importer::genMesh, this, model_, model_->meshes[nod_.mesh], &renderThread_, transf_, sceneGraph_));
+        renderThread_.uniqueTasks.push_back(std::bind(&Importer::genMesh, this, model_, model_->meshes[nod_.mesh], &renderThread_, transf_, sceneGraph_)); // TODO: this code will diplicate meshes if an index gets loaded twice, as a Mesh contain its transform matrix this is fine until glDrawElementsInstanced is implemented
     }
     if (nod_.camera >= 0) {
         std::cout << "camera id: " << nod_.camera << '\n';
@@ -70,15 +68,13 @@ void Importer::visitor(const tinygltf::Model* model_, const tinygltf::Node& nod_
     }
     if ((nod_.mesh == -1) && (nod_.camera == -1) && (nod_.name.size() > 10) && !(nod_.name.substr(nod_.name.size() - 10).compare("_GameClass"))) {
         std::cout << "gameclass detected: \"" << nod_.name << "\"\n";
-        genGameClass(nod_.name, glog_, transf_, sceneGraph_);
+        genGameClass(nod_.name.substr(0, nod_.name.size() - 10), glog_, transf_, sceneGraph_);
     }
     for (unsigned int child: nod_.children) {
-        std::cout << "node id: " << child << '\n';
         visitor(model_, model_->nodes[child], depth + 1, renderThread_, glog_, transf_, sceneGraph_);
     }
 }
 void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh_, RenderThread* renderThread_, glm::mat4, Node& sceneGraph_) {
-    std::cout << "----> generating mesh" << std::endl;
     Node& n = sceneGraph_.push();
 
     std::map<std::string, GLuint> attributeLocation = {{"POSITION", 0}, {"NORMAL", 1}, {"TEXCOORD_0", 2} };
@@ -90,52 +86,58 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
         dlist.back().first.add("default.material/fragment.glsl", GL_FRAGMENT_SHADER);
         dlist.back().first.link({"gPosition", "gNormal", "gAlbedoSpec"});
     }
-    dlist.back().second.emplace_back();
-    Mesh& m = dlist.back().second.back();
 
-    glGenVertexArrays(1, &m._vao);
-    glBindVertexArray(m._vao);
+    // this code is shit
+    //for (size_t i = 0; i < model_->bufferViews.size(); i++) {
+    //    dlist.back().second.emplace_back();
+    //    Mesh& m = dlist.back().second.back();
 
-    for (size_t i = 0; i < model_->bufferViews.size(); i++) {
-        const tinygltf::BufferView &bufferView = model_->bufferViews[i];
-        if (bufferView.target == 0) {
-            std::cout << "WARN: bufferView.target is zero" << std::endl;
-            continue;  // Unsupported bufferView.
-        } else if (bufferView.target == GL_ELEMENT_ARRAY_BUFFER){
-            glGenBuffers(1, &m._ebo);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m._ebo);
-            std::cout << "generating GL_ELEMENT_ARRAY_BUFFER\n";
-        } else if (bufferView.target == GL_ARRAY_BUFFER){
-            glGenBuffers(1, &m._vbo);
-            glBindBuffer(bufferView.target, m._vbo);
-            std::cout << "generating GL_ARRAY_BUFFER\n";
-        }
-        const tinygltf::Buffer &buffer = model_->buffers[bufferView.buffer];
-        std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset = " << bufferView.byteOffset << std::endl;
-#ifdef BUFFER_STORAGE
-        glBufferStorage(bufferView.target, bufferView.byteLength, &buffer.data.at(0) + bufferView.byteOffset, STORAGE_FLAGS);
-#elif BUFFER_DATA
-        glBufferData(bufferView.target, bufferView.byteLength, &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
-#endif
-    }
+    //    glGenVertexArrays(1, &m._vao);
+    //    glBindVertexArray(m._vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m._vbo);
+    //    const tinygltf::BufferView &bufferView = model_->bufferViews[i];
+    //    if (bufferView.target == 0) {
+    //        std::cout << "WARN: bufferView.target is zero" << std::endl;
+    //        continue;  // Unsupported bufferView.
+    //    } else if (bufferView.target == GL_ELEMENT_ARRAY_BUFFER){
+    //        glGenBuffers(1, &m._ebo);
+    //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m._ebo);
+    //        //std::cout << "generating GL_ELEMENT_ARRAY_BUFFER\n";
+    //    } else if (bufferView.target == GL_ARRAY_BUFFER){
+    //        glGenBuffers(1, &m._vbo);
+    //        glBindBuffer(bufferView.target, m._vbo);
+    //        //std::cout << "generating GL_ARRAY_BUFFER\n";
+    //    }
+    //    const tinygltf::Buffer &buffer = model_->buffers[bufferView.buffer];
+    //    std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset = " << bufferView.byteOffset << std::endl;
+    //#ifdef BUFFER_STORAGE
+    //    glBufferStorage(bufferView.target, bufferView.byteLength, &buffer.data.at(0) + bufferView.byteOffset, STORAGE_FLAGS);
+    //#elif BUFFER_DATA
+    //    glBufferData(bufferView.target, bufferView.byteLength, &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
+    //#endif
+    //}
+
     std::cout << "primitive size: " << mesh_.primitives.size() << '\n';
+
     for (const tinygltf::Primitive &primitive : mesh_.primitives) {
-        const tinygltf::Accessor &indexAccessor = model_->accessors[primitive.indices];
-        m._size = indexAccessor.count;
         if (primitive.indices >= 0) {
+            std::cout << "----> generating mesh" << std::endl;
+            dlist.back().second.emplace_back();
+            Mesh& m = dlist.back().second.back();
+
+            glGenVertexArrays(1, &m._vao);
+            glBindVertexArray(m._vao);
             for (const std::pair<const std::string, int>& attribute : primitive.attributes) {
                 const tinygltf::Accessor &accessor = model_->accessors[attribute.second];
-                int count = 1;
+                int size = 1;
                 if (accessor.type == TINYGLTF_TYPE_SCALAR) {
-                    count = 1;
+                    size = 1;
                 } else if (accessor.type == TINYGLTF_TYPE_VEC2) {
-                    count = 2;
+                    size = 2;
                 } else if (accessor.type == TINYGLTF_TYPE_VEC3) {
-                    count = 3;
+                    size = 3;
                 } else if (accessor.type == TINYGLTF_TYPE_VEC4) {
-                    count = 4;
+                    size = 4;
                 } else {
                     assert(0);
                 }
@@ -145,13 +147,41 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
                     if (attributeLocation.find(attribute.first) != attributeLocation.end()) {
                         std::cout << " at location: " << attributeLocation[attribute.first] << '\n';
                         glEnableVertexAttribArray(attributeLocation[attribute.first]);
-                        glVertexAttribPointer(attributeLocation[attribute.first], count, accessor.componentType, GL_FALSE, 0, BUFFER_OFFSET(accessor.byteOffset));
-                        std::cout << "--------->> offset inplace: " << accessor.byteOffset << '\n';
+                        glVertexAttribPointer(attributeLocation[attribute.first], size, accessor.componentType, GL_FALSE, 0, BUFFER_OFFSET(accessor.byteOffset));
+                        if (accessor.componentType == GL_FLOAT) {
+                            std::cout << "type is glFloat\n";
+                        }
+                        std::cout << "offset inplace: " << accessor.byteOffset << " size is: " << size << '\n';
                     } else {
-                        std::cout << attribute.first << "will be in the vertex buffer object but not enabled\n";
+                        std::cout << attribute.first << "this attribute isn't a vertex buffer\n";
                     }
                 }
+
+                //model_->bufferViews[accessor.bufferView];
+                const tinygltf::BufferView &bufferView = model_->bufferViews[accessor.bufferView];
+                if (bufferView.target == 0) {
+                    std::cout << "WARN: bufferView.target is zero" << std::endl;
+                    continue;  // Unsupported bufferView.
+                } else if (bufferView.target == GL_ELEMENT_ARRAY_BUFFER){
+                    glGenBuffers(1, &m._ebo);
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m._ebo);
+                    m._size = accessor.count;
+                    std::cout << "generating GL_ELEMENT_ARRAY_BUFFER\n";
+                } else if (bufferView.target == GL_ARRAY_BUFFER){
+                    glGenBuffers(1, &m._vbo);
+                    glBindBuffer(bufferView.target, m._vbo);
+                    std::cout << "generating GL_ARRAY_BUFFER\n";
+                }
+                const tinygltf::Buffer &buffer = model_->buffers[bufferView.buffer];
+                std::cout << "BUFFERVIEW INDEX --> " << accessor.bufferView << " of " <<  model_->accessors.size() << std::endl;
+                std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset = " << bufferView.byteOffset << std::endl;
+                #ifdef BUFFER_STORAGE
+                glBufferStorage(bufferView.target, bufferView.byteLength, &buffer.data.at(0) + bufferView.byteOffset, STORAGE_FLAGS);
+                #elif BUFFER_DATA
+                glBufferData(bufferView.target, bufferView.byteLength, &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);
+                #endif
             }
+            std::cout << "---------------------- mesh loaded" << std::endl;
         } else {
             std::cout << "primitive indices wrong \n";
         }
