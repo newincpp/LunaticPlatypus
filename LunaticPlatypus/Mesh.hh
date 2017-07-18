@@ -23,7 +23,6 @@ struct __remove_reference__<InputType_&&> {
     typedef InputType_ type;
 };
 
-
 class Mesh {
     public:
 	GLuint _vao;
@@ -44,3 +43,6 @@ class Mesh {
 	void freeEbo();
 	void GpuFree();
 };
+
+#define BUFFER_STORAGE
+#define STORAGE_FLAGS GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT

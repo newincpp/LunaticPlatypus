@@ -11,9 +11,9 @@ class MyGame : public Heart::IGamelogic {
 	    //_scene = "./sponza.abc";
 	    //_scene = "./Duck.gltf";
 	    //_scene = "./sponza.gltf";
-	    //_scene = "./sponza.glb";
-            //_scene = "./vega.gltf";
-            _scene = "2CylinderEngine.gltf";
+	    _scene = "./sponza.glb";
+            //_scene = "./vega.glb";
+            //_scene = "2CylinderEngine.gltf";
 
 
 	    _start = std::chrono::system_clock::now();

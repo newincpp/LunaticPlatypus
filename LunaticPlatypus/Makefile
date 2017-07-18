@@ -37,7 +37,7 @@ endif
 NAME	=LunaticPlatypus
 IMPORTER=GLTF2
 DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC #-DIMGUIENABLED
-DEBUG 	= -g -fno-limit-debug-info
+DEBUG 	= -g
 GLM_DEFINE=-DGLM_SWIZZLE #-DGLM_FORCE_AVX
 OPTIM= $(GLM_DEFINE) -march=native -O0 -fno-rtti #-fno-exceptions
 INCLUDE= -I./ # -I./imgui

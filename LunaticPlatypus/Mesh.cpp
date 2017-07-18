@@ -8,8 +8,6 @@ Mesh::~Mesh() {
     Heart::getScene()->remove(&(uMeshTransform._value.m4));
 }
 
-#define BUFFER_STORAGE
-#define STORAGE_FLAGS GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT
 
 void Mesh::uploadToGPU(std::vector<GLfloat>& vbo_, std::vector<GLuint>& ebo_) {
     glGenVertexArrays(1, &_vao);

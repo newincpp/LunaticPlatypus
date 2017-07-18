@@ -77,7 +77,7 @@ void Importer::visitor(const tinygltf::Model* model_, const tinygltf::Node& nod_
 void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh_, RenderThread* renderThread_, glm::mat4, Node& sceneGraph_) {
     Node& n = sceneGraph_.push();
 
-    std::map<std::string, GLuint> attributeLocation = {{"POSITION", 0}, {"NORMAL", 1}, {"TEXCOORD_0", 2} };
+    std::map<std::string, GLuint> attributeLocation = {{"POSITION", 0}, {"NORMAL", 1}, {"TEXCOORD_0", 2}};
 
     std::list<std::pair<Shader, std::vector<Mesh>>>& dlist = renderThread_->unsafeGetRenderer().getDrawBuffer()._drawList;
     if (dlist.empty()) {
@@ -119,6 +119,10 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 
     std::cout << "primitive size: " << mesh_.primitives.size() << '\n';
 
+
+    // gltf documentation cf:
+    // "Implementation note: Each primitive corresponds to one WebGL draw call"
+    // a lunatic Platypus "Mesh" also represent a DrawCall
     for (const tinygltf::Primitive &primitive : mesh_.primitives) {
         if (primitive.indices >= 0) {
             std::cout << "----> generating mesh" << std::endl;
@@ -127,6 +131,7 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 
             glGenVertexArrays(1, &m._vao);
             glBindVertexArray(m._vao);
+
             for (const std::pair<const std::string, int>& attribute : primitive.attributes) {
                 const tinygltf::Accessor &accessor = model_->accessors[attribute.second];
                 int size = 1;
@@ -141,39 +146,59 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
                 } else {
                     assert(0);
                 }
+
                 // it->first would be "POSITION", "NORMAL", "TEXCOORD_0", ...
-                std::cout << "set attribute: " << attribute.first;
+                std::cout << "set attribute: " << attribute.first << " ";
                 if ((attribute.first.compare("POSITION") == 0) || (attribute.first.compare("NORMAL") == 0) || (attribute.first.compare("TEXCOORD_0") == 0)) {
                     if (attributeLocation.find(attribute.first) != attributeLocation.end()) {
                         std::cout << " at location: " << attributeLocation[attribute.first] << '\n';
                         glEnableVertexAttribArray(attributeLocation[attribute.first]);
                         glVertexAttribPointer(attributeLocation[attribute.first], size, accessor.componentType, GL_FALSE, 0, BUFFER_OFFSET(accessor.byteOffset));
                         if (accessor.componentType == GL_FLOAT) {
-                            std::cout << "type is glFloat\n";
+                            //std::cout << "type is glFloat\n";
                         }
-                        std::cout << "offset inplace: " << accessor.byteOffset << " size is: " << size << '\n';
+                        //std::cout << "offset inplace: " << accessor.byteOffset << " size is: " << size << '\n';
                     } else {
                         std::cout << attribute.first << "this attribute isn't a vertex buffer\n";
                     }
                 }
 
-                //model_->bufferViews[accessor.bufferView];
-                const tinygltf::BufferView &bufferView = model_->bufferViews[accessor.bufferView];
-                if (bufferView.target == 0) {
-                    std::cout << "WARN: bufferView.target is zero" << std::endl;
-                    continue;  // Unsupported bufferView.
-                } else if (bufferView.target == GL_ELEMENT_ARRAY_BUFFER){
-                    glGenBuffers(1, &m._ebo);
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m._ebo);
-                    m._size = accessor.count;
-                    std::cout << "generating GL_ELEMENT_ARRAY_BUFFER\n";
-                } else if (bufferView.target == GL_ARRAY_BUFFER){
-                    glGenBuffers(1, &m._vbo);
-                    glBindBuffer(bufferView.target, m._vbo);
-                    std::cout << "generating GL_ARRAY_BUFFER\n";
-                }
+            }
+
+            const tinygltf::Accessor &positionAccessor = model_->accessors[(*primitive.attributes.find("POSITION")).second];
+            const tinygltf::BufferView &bufferView = model_->bufferViews[positionAccessor.bufferView];
+            // gltf documentation cf:
+            // "When a primitive's indices property is defined, it references the accessor to use for index data, and GL's drawElements"
+            const tinygltf::BufferView &indiceBufferView = model_->bufferViews[primitive.indices];
+            if (bufferView.target == 0 || indiceBufferView.target == 0) {
+                std::cout << "WARN: bufferView.target is zero" << std::endl;
+                continue;  // Unsupported bufferView.
+            }
+            if (indiceBufferView.target == GL_ELEMENT_ARRAY_BUFFER) {
+                glGenBuffers(1, &m._ebo);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m._ebo);
+                m._size = positionAccessor.count;
+                //m._size = accessor.count;
+                std::cout << "generating GL_ELEMENT_ARRAY_BUFFER\n";
+
+                const tinygltf::Buffer &buffer = model_->buffers[indiceBufferView.buffer];
+                //std::cout << "BUFFERVIEW INDEX --> " << primitive.indices << " of " <<  model_->accessors.size() << std::endl;
+                //std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset = " << indiceBufferView.byteOffset << std::endl;
+                #ifdef BUFFER_STORAGE
+                glBufferStorage(indiceBufferView.target, indiceBufferView.byteLength, &buffer.data.at(0) + indiceBufferView.byteOffset, STORAGE_FLAGS);
+                #elif BUFFER_DATA
+                glBufferData(indiceBufferView.target, indiceBufferView.byteLength, &buffer.data.at(0) + indiceBufferView.byteOffset, GL_STATIC_DRAW);
+                #endif
+            } else {
+                std::cout << "this mesh is fucked up ?" << std::endl;
+            }
+            if (bufferView.target == GL_ARRAY_BUFFER) {
+                glGenBuffers(1, &m._vbo);
+                glBindBuffer(bufferView.target, m._vbo);
+                std::cout << "generating GL_ARRAY_BUFFER\n";
+
                 const tinygltf::Buffer &buffer = model_->buffers[bufferView.buffer];
-                std::cout << "BUFFERVIEW INDEX --> " << accessor.bufferView << " of " <<  model_->accessors.size() << std::endl;
+                std::cout << "Buffer INDEX --> " << bufferView.buffer << " offset " << bufferView.byteOffset << std::endl;
                 std::cout << "buffer.size= " << buffer.data.size() << ", byteOffset = " << bufferView.byteOffset << std::endl;
                 #ifdef BUFFER_STORAGE
                 glBufferStorage(bufferView.target, bufferView.byteLength, &buffer.data.at(0) + bufferView.byteOffset, STORAGE_FLAGS);
