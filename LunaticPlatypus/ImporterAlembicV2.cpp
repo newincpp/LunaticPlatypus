@@ -11,6 +11,7 @@
 #include <glm/gtx/transform.hpp>
 
 void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, Graph& scene_) {
+    std::chrono::time_point<std::chrono::high_resolution_clock> beginLoad = std::chrono::high_resolution_clock::now();
     // Create an instance of the Importer class
     Alembic::AbcCoreFactory::IFactory factory;
     factory.setPolicy(Alembic::Abc::ErrorHandler::kQuietNoopPolicy);
@@ -32,15 +33,20 @@ void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, 
 
     std::cout << "file written by: " << appName << ' ' << "using: " << libraryVersionString << '\n' << "user description : " << userDescription << '\n';
 
+    if (std::this_thread::get_id() != d_.getThreadId()) {
+        std::cout << "\033[31mloading from a separated thread (this is unstable for now so expect glitches)\n\033[0m";
+    }
     Alembic::Abc::IObject iobj = archive.getTop();
     glm::mat4 root(1.0f);
     visitor(iobj, 0, d_, g_, root, scene_.root);
     scene_.update(true); //readjusting local matricies
-    d_.uniqueTasks.push_back([&d_](){
-            d_.unsafeGetRenderer().getDrawBuffer().addAllUniformsToShaders();
-            });
-    std::cout << "load finished" << std::endl;
 
+
+    std::function<void(void)> f = [&d_](){ d_.unsafeGetRenderer().getDrawBuffer().addAllUniformsToShaders(); };
+    d_.uniqueTasks.push_back(f);
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> endLoad = std::chrono::high_resolution_clock::now();
+    std::cout << "load finished: " << std::chrono::duration_cast<std::chrono::milliseconds>(endLoad - beginLoad).count() << " ms" << std::endl;
 }
 
 glm::mat4 convertTo(Alembic::Abc::M44d&& from) {
@@ -218,46 +224,53 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
             selectedShader = std::prev(d._drawList.end());
             _shaderList[faceSetName] = selectedShader;
 
-            s_.uniqueTasks.push_back([selectedShader, faceSetName]() {
-                    selectedShader->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
-                    selectedShader->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
-                    selectedShader->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
-                    selectedShader->second.reserve(1024);
-                    });
+
+            std::function<void(void)> createShader = [selectedShader, faceSetName]() {
+                        selectedShader->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
+                        selectedShader->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
+                        selectedShader->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
+                        selectedShader->second.reserve(1024);
+                };
+            s_.uniqueTasks.push_back(createShader);
         }
 
         if (!meshReferance && selectedShader->second.size()) {
             meshReferance = &(selectedShader->second.back());
             vertexBuffer = nullptr;
         }
-        s_.uniqueTasks.push_back([selectedShader, meshReferance, vertexBuffer, indiceBuffer, &n_, transform_]() {
-                // upload the mesh
-                Mesh* internalMeshRef = meshReferance; // avoiding "cannot assign to a variable captured by copy in a non-mutable lambda" error
-                selectedShader->second.emplace_back();
-                if (vertexBuffer && !internalMeshRef) { // internalMeshRef will be null for the first mesh (because it's the reference)
-                    internalMeshRef = &(selectedShader->second.back()); // in the first mesh case the mesh reference will still be nullptr
-                    // it is still beter to do it that way because it avoir passing meshReference bu reference and set it in the lambda
-                    // passing meshReference by reference mean adding conditionnal mutex (and therefore breaking multithreading advantages)
-                    // mutex will be mandatory because genMesh function can finish before this lambda is executed.
-                    // (this case can happen if there is a lot of task pushed to the renderthread or when the frametime budget will be added)
-                    internalMeshRef->uploadVertexOnly(*vertexBuffer);
-                }
-                if (indiceBuffer) {
-                    Mesh& meshRef = selectedShader->second.back();
-                    meshRef.uploadElementOnly(*indiceBuffer, internalMeshRef->_vbo, internalMeshRef->_vao); // TODO use a iterator instead of meshBaseVBO
-                    meshRef.uMeshTransform = transform_;
-                    meshRef.linkNode(n_.push());
-                }
-                });
 
-        s_.uniqueTasks.push_back([indiceBuffer]() {
-                delete indiceBuffer;
-        });
+
+        std::function<void(void)> meshUpload = [selectedShader, meshReferance, vertexBuffer, indiceBuffer, &n_, transform_]() {
+            // upload the mesh
+            Mesh* internalMeshRef = meshReferance; // avoiding "cannot assign to a variable captured by copy in a non-mutable lambda" error
+            selectedShader->second.emplace_back();
+            if (vertexBuffer && !internalMeshRef) { // internalMeshRef will be null for the first mesh (because it's the reference)
+                internalMeshRef = &(selectedShader->second.back()); // in the first mesh case the mesh reference will still be nullptr
+                // it is still beter to do it that way because it avoir passing meshReference bu reference and set it in the lambda
+                // passing meshReference by reference mean adding conditionnal mutex (and therefore breaking multithreading advantages)
+                // mutex will be mandatory because genMesh function can finish before this lambda is executed.
+                // (this case can happen if there is a lot of task pushed to the renderthread or when the frametime budget will be added)
+                internalMeshRef->uploadVertexOnly(*vertexBuffer);
+            }
+            if (indiceBuffer) {
+                Mesh& meshRef = selectedShader->second.back();
+                meshRef.uploadElementOnly(*indiceBuffer, internalMeshRef->_vbo, internalMeshRef->_vao); // TODO use a iterator instead of meshBaseVBO
+                meshRef.uMeshTransform = transform_;
+                meshRef.linkNode(n_.push());
+            }
+        };
+
+        std::function<void(void)> delayedIndexFree = [indiceBuffer]() {
+            delete indiceBuffer;
+        };
+        s_.uniqueTasks.push_back(meshUpload);
+        s_.uniqueTasks.push_back(delayedIndexFree);
     }
 
-    s_.uniqueTasks.push_back([vertexBuffer]() {
-            delete vertexBuffer;
-            });
+    std::function<void(void)> delayedVertexFree = [vertexBuffer]() {
+        delete vertexBuffer;
+    };
+    s_.uniqueTasks.push_back(delayedVertexFree);
 }
 
 void Importer::genCamera(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm::mat4& transform_, Node& n_) {

@@ -7,7 +7,7 @@ layout(location = 1) uniform mat4 uMeshTransform;
 layout(location = 0) in vec3 vInfVertexPos_;
 layout(location = 1) in vec3 vInfVertexNormal_;
 layout(location = 2) in vec2 vInfUvCoord_;
-layout(location = 3) in vec2 vInfDepth_;
+//layout(location = 3) in vec2 vInfDepth_;
 
 out vec3 gPosition;
 out vec3 gNormal;

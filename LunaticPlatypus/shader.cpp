@@ -9,7 +9,7 @@ Shader::Shader() : _vertexId("looooooooooooooooooooooooooooong string", 0), _fra
 void Shader::add(const std::string& sourceFile_, GLenum type_) {
     std::ifstream t(sourceFile_);
     if (t.fail()) {
-        std::cout << "\033[31mfailed to open the shader: \"" << sourceFile_ << "\"\n";
+        std::cout << "\033[31mfailed to open the shader: \"" << sourceFile_ << "\"\n\033[0m";
 	return;
     }
 

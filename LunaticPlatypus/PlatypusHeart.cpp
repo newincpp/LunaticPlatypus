@@ -68,7 +68,7 @@ void Heart::run() {
 	    mod = false;
 	}
 #endif
-	_scene->update();
+	//_scene->update();
     }
     _renderThread.setKeepAlive(false);
 }
@@ -80,7 +80,11 @@ void Heart::loadScene() {
     _fw = new FileWatcher(_game->_scene.c_str());
     _renderThread.unsafeGetRenderer().getDrawBuffer().reset();
     // should take _renderThread in parameter and add mesh via uniquetask
-    Importer iscene(_game->_scene, _renderThread, _game, *_scene);
+
+    _renderThread.uniqueTasks.push_back([this](){
+            Importer iscene(_game->_scene, _renderThread, _game, *_scene);
+    });
+
     _fw->callBack = [this]() { std::cout << "automatic file reloader temporarily deleted\n"; };
 }
 
