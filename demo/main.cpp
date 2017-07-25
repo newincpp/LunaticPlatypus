@@ -9,6 +9,7 @@ class MyGame : public Heart::IGamelogic {
 	glm::vec3 p;
 	MyGame() {
 	    _scene = "./sponza.abc";
+	    //_scene = "./vega.abc"; // didn't wrote the materials yet...
 	    //_scene = "./Duck.gltf";
 	    //_scene = "./sponza.gltf";
 	    //_scene = "./sponza.glb";

@@ -6,11 +6,15 @@
 Node::Node(const std::string& n) : _name(n), _lTransform(1.0f), _wTransform(nullptr) {
 }
 Node& Node::push(std::string&& n_) {
-    _childs.emplace_back(std::move(n_));
+    if (_childs.empty()) {
+        _childs.emplace_back(std::move(n_));
+    }
     return _childs.back();
 }
 Node& Node::push() {
-    _childs.emplace_back(_name);
+    if (_childs.empty()) {
+        _childs.emplace_back(_name);
+    }
     return _childs.back();
 }
 Node& Node::operator[](unsigned long i) {
@@ -49,6 +53,9 @@ void Node::updateFromMe(Node& p, std::list<glm::mat4*>& del, bool localMode) {
 }
 
 void Node::updateFromMe(glm::mat4* worldTransformParent_, std::list<glm::mat4*>& del, bool localMode) {
+    if (_name.empty()) { // considering a node valid if it has a name
+        return;
+    }
     std::list<glm::mat4*>::iterator it = std::find(del.begin(), del.end(), _wTransform);
     if (it != del.end()) {
 	_wTransform = nullptr;
@@ -87,6 +94,7 @@ Graph::Graph() : root("root") {
 }
 
 void Graph::update(bool localMode) {
+    return;
     for (std::pair<int,Node*>& d : dirty) {
 	d.second->updateFromMe(root, toBeDeleted, localMode);
     }

@@ -30,6 +30,9 @@ Heart::Heart() : _fw(nullptr), _win() {
     };
     _renderThread.run();
     loadScene();
+    _fw = new FileWatcher(_game->_scene.c_str());
+    _fw->callBack = std::bind(&Heart::loadScene, this);
+    //_fw->callBack = []() { std::cout << "---------------------------\nautomatic file reloader temporarily deleted\n-------------------------------\n"; };
 
     std::this_thread::sleep_for(std::chrono::milliseconds(33)); // wait for 1 frame before the opengl init to avoid mutax architecture
     _game->postEngineInit();
@@ -68,24 +71,16 @@ void Heart::run() {
 	    mod = false;
 	}
 #endif
-	//_scene->update();
+	_scene->update();
     }
     _renderThread.setKeepAlive(false);
 }
 
 void Heart::loadScene() {
-    if (_fw) {
-	delete _fw;
-    }
-    _fw = new FileWatcher(_game->_scene.c_str());
-    _renderThread.unsafeGetRenderer().getDrawBuffer().reset();
-    // should take _renderThread in parameter and add mesh via uniquetask
-
     _renderThread.uniqueTasks.push_back([this](){
+            _renderThread.unsafeGetRenderer().getDrawBuffer().reset();
             Importer iscene(_game->_scene, _renderThread, _game, *_scene);
     });
-
-    _fw->callBack = [this]() { std::cout << "automatic file reloader temporarily deleted\n"; };
 }
 
 void Heart::addScene(std::string filename) {

@@ -34,6 +34,7 @@ class Node {
 
 class Graph {
     public:
+        bool _valid;
 	Node root;
 	std::list<std::pair<int, Node*>> dirty;
 	std::list<glm::mat4*> toBeDeleted;

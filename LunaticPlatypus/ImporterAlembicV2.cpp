@@ -38,7 +38,9 @@ void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, 
     }
     Alembic::Abc::IObject iobj = archive.getTop();
     glm::mat4 root(1.0f);
+    scene_._valid = false;
     visitor(iobj, 0, d_, g_, root, scene_.root);
+    scene_._valid = true;
     scene_.update(true); //readjusting local matricies
 
 
@@ -289,7 +291,7 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, RenderThread& s_, gl
 	    mainCamera.fieldOfview(90.0f);
 	    //mainCamera.fieldOfview(s.getFieldOfView()); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
 	    //mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane())); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
-	    mainCamera.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
+	    mainCamera.upVector(glm::vec3(0.0f, 1.0f, 0.0f));
     });
     //n_.linkWorldTransform(&(mainCamera.uMeshTransform._value.m4));
 }

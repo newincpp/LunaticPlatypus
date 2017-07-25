@@ -14,11 +14,7 @@ FileWatcher::FileWatcher(const char* f_, bool watchStyle) : _still(true), callBa
 	std::cout << "file \"" << f_ << "\" is not valid\n";
 	return;
     }
-    if (watchStyle) {
-	_wd = inotify_add_watch(_fd, f_, IN_MODIFY);
-    } else {
-	_wd = inotify_add_watch(_fd, f_, IN_OPEN);
-    }
+    _wd = inotify_add_watch(_fd, f_, IN_CLOSE_WRITE);
 
     _t = std::thread(std::bind(&FileWatcher::fileChecker, this));
 }
@@ -30,7 +26,7 @@ void FileWatcher::fileChecker() {
     struct pollfd ufds = {_fd, POLLIN, 0};
     struct inotify_event e;
     while (_still) {
-	int r = poll(&ufds, 1, 500); // 500ms timeout
+	int r = poll(&ufds, 1, 200); // 500ms timeout
 	if (r == -1) { // error
 	    std::cout << "error occured\n";
 	} else if (r == 0) { // timeout
@@ -39,10 +35,12 @@ void FileWatcher::fileChecker() {
 	    int len = 0;
 	    len = read(_fd, &e, sizeof(struct inotify_event));
 	    if (len != -1) {
-		sleep(5);
 		callBack();
-	    }
-	    while (sizeof(struct inotify_event) != (len = read(_fd, &e, sizeof(struct inotify_event)))) {
+	    } else {
+                //std::cout << "nothing wrote\n" << std::endl;
+            }
+	    while (-1 != (len = read(_fd, &e, sizeof(struct inotify_event)))) {
+                //std::cout << "empty events :" << len << "\n";
 	    }
 	}
     }

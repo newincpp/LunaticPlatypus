@@ -28,7 +28,6 @@ void RenderThread::_renderLogic(RenderThread* t_) {
 #ifdef IMGUIENABLED
         ImGui::NewFrame();
 #endif
-
         std::chrono::time_point<std::chrono::high_resolution_clock> beginFrame = std::chrono::high_resolution_clock::now();
         std::list<std::function<void(void)>>::iterator endStamp = t_->uniqueTasks.end(); // to avoid looping if permanently adding tasks
         std::list<std::function<void(void)>>::iterator lastTask;
@@ -39,11 +38,9 @@ void RenderThread::_renderLogic(RenderThread* t_) {
             t_->uniqueTasks.erase(lastTask); // according to the cppref iterators aren't invalidated after an erase
 
             if (t_->_budget < std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - beginFrame).count()) {
-                std::cout << "budget exeeded, other task will be delayed\nthere is still " << t_->uniqueTasks.size() << "tasks" << std::endl;
                 break;
             }
         }
-        std::cout << ">>> task time: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - beginFrame).count() << "ms\n";
         t_->_renderer.render();
 
 #ifdef IMGUIENABLED
