@@ -6,7 +6,7 @@
 
 #include <unistd.h>
 
-FileWatcher::FileWatcher(const char* f_, bool watchStyle) : _still(true), callBack([](){}) {
+FileWatcher::FileWatcher(const char* f_) : _still(true), callBack([](){}) {
     //_fd = inotify_init();
     _fd = inotify_init1(IN_NONBLOCK);
 
@@ -19,7 +19,7 @@ FileWatcher::FileWatcher(const char* f_, bool watchStyle) : _still(true), callBa
     _t = std::thread(std::bind(&FileWatcher::fileChecker, this));
 }
 
-FileWatcher::FileWatcher(std::string& f_, bool watchStyle)  : FileWatcher(f_.c_str(), watchStyle) {
+FileWatcher::FileWatcher(std::string& f_)  : FileWatcher(f_.c_str()) {
 }
 
 void FileWatcher::fileChecker() {

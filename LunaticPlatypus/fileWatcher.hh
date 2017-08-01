@@ -15,8 +15,8 @@ class FileWatcher {
     public:
 	std::function<void(void)> callBack;
 	//void(*_callBack)(void);
-	FileWatcher(std::string&, bool = true);
-	FileWatcher(const char*, bool = true);
+	FileWatcher(std::string&);
+	FileWatcher(const char*);
 	//bool isModified();
 	~FileWatcher();
 };

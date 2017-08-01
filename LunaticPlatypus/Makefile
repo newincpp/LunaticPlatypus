@@ -1,8 +1,12 @@
-IMGUI	= imgui/imgui.cpp \
-	  imgui/imgui_demo.cpp \
-	  imgui/imgui_draw.cpp \
-	  imgui/imguiImplementation.cpp
+include Master.mk
 
+ifeq ($(IMGUIENABLED), true)
+    IMGUI	= imgui/imgui.cpp \
+    	  	imgui/imgui_demo.cpp \
+    	  	imgui/imgui_draw.cpp \
+    	  	imgui/imguiImplementation.cpp
+endif
+    
 SRC	= Camera.cpp \
 	   FrameBuffer.cpp \
 	   Importer.cpp \
@@ -24,33 +28,23 @@ SRC	= Camera.cpp \
 	   RenderThread.cpp \
 	   fileWatcher.cpp
 
-SRC+=$(IMGUI)
+ifeq ($(IMGUIENABLED), true)
+	SRC+=$(IMGUI)
+endif
 
-EXT=cpp
-OS	:= $(shell uname -s)
+NAME	=LunaticPlatypus
+
 ifeq ($(OS),Linux)
     LIBFOLDER=linux
 endif
 ifeq ($(OS),Darwin)
     LIBFOLDER=OSX
 endif
-NAME	=LunaticPlatypus
-IMPORTER=ALEMBIC
-DEFINE 	= -DDEFAULT_SCENE=nelo.obj -DGLEW_STATIC #-DIMGUIENABLED
-DEBUG 	= -g
-GLM_DEFINE=-DGLM_SWIZZLE #-DGLM_FORCE_AVX
-OPTIM= $(GLM_DEFINE) -march=native -O0 -fno-rtti #-fno-exceptions
-INCLUDE= -I./ # -I./imgui
-CXXFLAGS= -Wall -Wextra -W -std=c++11 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 LIBS:= ./libs/$(LIBFOLDER)/Objectsoup/libGLEW/*.o \
     ./libs/$(LIBFOLDER)/Objectsoup/libglfw3/*.o
     
-LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS)
-OBJS	= $(SRC:.$(EXT)=.o)
-RM	= rm -f
-CXX	= clang++
-LINKER	= $(CXX)
 INSTALL = ../demo
+
 
 ifeq ($(IMPORTER),GLTF2)
     DEFINE+=-DGLTF2
@@ -70,6 +64,7 @@ endif
 
 RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 
+OBJS	= $(SRC:.$(EXT)=.o)
 
 all: $(NAME)
 
@@ -83,7 +78,7 @@ extractLibs:
 
 install:
 	cp lib$(NAME).a $(INSTALL)
-	cp Makefile.base $(INSTALL)/Makefile
+	#cp project.mk $(INSTALL)/Makefile
 
 project:
 	make -C $(INSTALL) -$(MAKEFLAGS) -B
