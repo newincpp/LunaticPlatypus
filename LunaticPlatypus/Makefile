@@ -45,7 +45,6 @@ LIBS:= ./libs/$(LIBFOLDER)/Objectsoup/libGLEW/*.o \
     
 INSTALL = ../demo
 
-
 ifeq ($(IMPORTER),GLTF2)
     DEFINE+=-DGLTF2
 endif
@@ -78,10 +77,36 @@ extractLibs:
 
 install:
 	cp lib$(NAME).a $(INSTALL)
-	#cp project.mk $(INSTALL)/Makefile
 
 project:
-	make -C $(INSTALL) -$(MAKEFLAGS) -B
+	make -C $(INSTALL) -$(MAKEFLAGS) relink
+
+
+defaultMakefileGen:
+	@echo "LUNATICPLATYPUSDIR=../LunaticPlatypus"
+	@echo "include  \$$(LUNATICPLATYPUSDIR)/project.mk"
+	@echo "SRC     += main.cpp"
+	@echo "NAME    =demo"
+	@echo ""
+	@echo "OBJS    = \$$(SRC:.\$$(EXT)=.o)"
+	@echo ""
+	@echo "all: \$$(NAME)"
+	@echo ""
+	@echo "\$$(NAME): \$$(OBJS)"
+	@echo "	        \$$(LINKER)  \$$(OBJS) -o \$$(NAME) \$$(LDFLAGS)"
+	@echo ""
+	@echo "relink: \$$(OBJS)"
+	@echo "	        \$$(LINKER)  \$$(OBJS) -o \$$(NAME) \$$(LDFLAGS)"
+	@echo ""
+	@echo "clean:"
+	@echo "	        \$$(RM) \$$(OBJS) *.swp *~ *#"
+	@echo ""
+	@echo "fclean: clean"
+	@echo "	        \$$(RM) \$$(NAME)"
+
+re: make -B -j4
+
+.PHONY: all clean fclean re
 
 full: extractLibs $(NAME) install project
 

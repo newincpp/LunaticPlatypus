@@ -10,6 +10,9 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(LINKER)  $(OBJS) -o $(NAME) $(LDFLAGS)
 
+relink: $(OBJS)
+	$(LINKER)  $(OBJS) -o $(NAME) $(LDFLAGS)
+
 clean:
 	$(RM) $(OBJS) *.swp *~ *#
 
