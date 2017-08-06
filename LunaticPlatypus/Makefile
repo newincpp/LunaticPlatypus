@@ -26,6 +26,7 @@ SRC	= Camera.cpp \
 	   DynamicGameClass.cpp \
 	   Node.cpp \
 	   RenderThread.cpp \
+	   StaticGameClass.cpp \
 	   fileWatcher.cpp
 
 ifeq ($(IMGUIENABLED), true)

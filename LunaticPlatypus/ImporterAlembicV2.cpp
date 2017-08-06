@@ -10,6 +10,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 
+#include "StaticGameClass.hh"
+
 void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, Graph& scene_) {
     std::chrono::time_point<std::chrono::high_resolution_clock> beginLoad = std::chrono::high_resolution_clock::now();
     // Create an instance of the Importer class
@@ -298,5 +300,7 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, RenderThread& s_, gl
 
 void Importer::genGameClass(const std::string& name_, Heart::IGamelogic* g_, glm::mat4&, Node& n_) {
     std::cout << "gameClass detected: " << name_ << '\n';
-    g_->_gameClasses.emplace_back(name_, n_);
+    if (!StaticGameClass::gen(name_)) {
+        g_->_gameClasses.emplace_back(name_, n_);
+    }
 }

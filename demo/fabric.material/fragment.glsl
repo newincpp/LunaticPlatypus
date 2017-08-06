@@ -15,7 +15,6 @@ out vec3 gAlbedoSpec;
 //out float gDepth;
 uniform layout(binding=1, rgba16f) writeonly image2D uFractalTexture; // float
 //uniform layout(binding=1, rgba16ui) writeonly uimage2D uFractalTexture; // int
-
 void main() {
     //if (gl_FragCoord.x > 500) {
     //    discard;
