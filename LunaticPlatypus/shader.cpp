@@ -83,7 +83,7 @@ void Shader::add(const std::string& sourceFile_, GLenum type_) {
                 "void main() {\n"
                 "    gPosition = vInfVertexPos_;\n"
                 "    gNormal = vInfVertexNormal_;\n"
-                "    gAlbedoSpec.rgb = vec3(0.0, 1.0, 0.0);\n"
+                "    gAlbedoSpec.rgb = vec3(1.0, 1.0, 1.0);\n"
                 "}\n";
             defaultFragmentShader= glCreateShader(GL_FRAGMENT_SHADER);
             glShaderSource(defaultFragmentShader, 1, &defF, NULL);
