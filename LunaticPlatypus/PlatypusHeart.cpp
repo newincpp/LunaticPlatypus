@@ -29,6 +29,9 @@ Heart::Heart() : _fw(nullptr), _win() {
         _win.swapBuffer();
     };
     _renderThread.run();
+    if (_fillMap) {
+        _fillMap();
+    }
     loadScene();
     _fw = new FileWatcher(_game->_scene.c_str());
     _fw->callBack = std::bind(&Heart::loadScene, this);
@@ -49,8 +52,8 @@ void Heart::run() {
 	float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(endFrame-beginFrame).count();
 	beginFrame = std::chrono::high_resolution_clock::now();
 
-	for (GameClass& g: _game->_gameClasses) {
-	    g.update(deltaTime/1000);
+	for (GameClass* g: _game->_gameClasses) {
+	    g->update(deltaTime / 1000);
 	}
 	_game->update();
 

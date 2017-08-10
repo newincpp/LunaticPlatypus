@@ -10,6 +10,7 @@ void Shader::add(const std::string& sourceFile_, GLenum type_) {
     std::ifstream t(sourceFile_);
     if (t.fail()) {
         std::cout << "\033[31mfailed to open the shader: \"" << sourceFile_ << "\"\n\033[0m";
+        bindDefaultShader();
 	return;
     }
 
@@ -36,62 +37,7 @@ void Shader::add(const std::string& sourceFile_, GLenum type_) {
     glShaderSource(*id, 1, &s, NULL);
     glCompileShader(*id);
     if (!_checkValidity(*id, s, sourceFile_)) {
-        static GLuint defaultVertexShader = 0;
-        static GLuint defaultFragmentShader = 0;
-        if (!defaultVertexShader) {
-            const char* defV = "#version 430 core\n"
-            "layout(location = 0) uniform float uTime;\n"
-            "layout(location = 1) uniform mat4 uMeshTransform;\n"
-            "layout(location = 2) uniform mat4 uView;\n"
-            "layout(location = 3) uniform mat4 uProjection;\n"
-            "\n"
-            "layout(location = 0) in vec3 vertexPos_;\n"
-            "layout(location = 1) in vec3 vertexNormal_;\n"
-            "layout(location = 2) in vec2 uvCoord_\n;"
-            "\n"
-            "layout(location = 0) out vec3 vInfVertexPos_;\n"
-            "layout(location = 1) out vec3 vInfVertexNormal_;\n"
-            "layout(location = 2) out vec2 vInfUvCoord_\n;"
-            "layout(location = 3) out vec2 vInfDepth_\n;"
-            "\n"
-            "void main() {\n"
-            "        vec3 displacement = vec3(0.);\n"
-            "        gl_Position = uProjection * uView * uMeshTransform * vec4(vertexPos_ + displacement, 1.0);\n"
-            "        vInfVertexPos_ = (uMeshTransform * vec4(vertexPos_ + displacement, 1.0)).xyz;\n"
-            "        vInfVertexNormal_ = (transpose(inverse(uView * uMeshTransform )) * vec4(vertexNormal_, 1.0)).xyz / 2 + 0.5;\n"
-            "        vInfUvCoord_ = uvCoord_;\n"
-            "}";
-            defaultVertexShader = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(defaultVertexShader, 1, &defV, NULL);
-            glCompileShader(defaultVertexShader);
-        }
-        if (!defaultFragmentShader) {
-            const char* defF = "#version 430 core\n"
-                "\n"
-                "layout(location = 0) uniform float uTime;\n"
-                "layout(location = 1) uniform mat4 uMeshTransform;\n"
-                "\n"
-                "layout(location = 0) in vec3 vInfVertexPos_;\n"
-                "layout(location = 1) in vec3 vInfVertexNormal_;\n"
-                "layout(location = 2) in vec2 vInfUvCoord_;\n"
-                "layout(location = 3) in vec2 vInfDepth_;\n"
-                "\n"
-                "out vec3 gPosition;\n"
-                "out vec3 gNormal;\n"
-                "out vec3 gAlbedoSpec;\n"
-                "\n"
-                "void main() {\n"
-                "    gPosition = vInfVertexPos_;\n"
-                "    gNormal = vInfVertexNormal_;\n"
-                "    gAlbedoSpec.rgb = vec3(1.0, 1.0, 1.0);\n"
-                "}\n";
-            defaultFragmentShader= glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(defaultFragmentShader, 1, &defF, NULL);
-            glCompileShader(defaultFragmentShader);
-        }
-        std::cout << "setting default shaders instead\n" << std::endl;
-        _vertexId.second = defaultVertexShader;
-        _fragmentId.second = defaultFragmentShader;
+        bindDefaultShader();
     }
 }
 
@@ -128,8 +74,6 @@ void Shader::link(const std::vector<std::string>&& fragDataOutPut_) {
 	std::cout << "\033[31mfailed to Link with error:\"" << ErrorMessage << std::endl << "-------------------\033[0m" << std::endl;
 	_programId = 0;
 	return;
-    } else {
-	std::cout << "\033[32mshader program" << _programId << " succesfully linked\033[0m\n";
     }
     glUseProgram(_programId);
     int count;
@@ -185,4 +129,63 @@ bool Shader::use() {
 	}
     }
     return true;
+}
+
+void Shader::bindDefaultShader() {
+    static GLuint defaultVertexShader = 0;
+    static GLuint defaultFragmentShader = 0;
+    if (!defaultVertexShader) {
+        const char* defV = "#version 430 core\n"
+            "layout(location = 0) uniform float uTime;\n"
+            "layout(location = 1) uniform mat4 uMeshTransform;\n"
+            "layout(location = 2) uniform mat4 uView;\n"
+            "layout(location = 3) uniform mat4 uProjection;\n"
+            "\n"
+            "layout(location = 0) in vec3 vertexPos_;\n"
+            "layout(location = 1) in vec3 vertexNormal_;\n"
+            "layout(location = 2) in vec2 uvCoord_\n;"
+            "\n"
+            "layout(location = 0) out vec3 vInfVertexPos_;\n"
+            "layout(location = 1) out vec3 vInfVertexNormal_;\n"
+            "layout(location = 2) out vec2 vInfUvCoord_\n;"
+            "layout(location = 3) out vec2 vInfDepth_\n;"
+            "\n"
+            "void main() {\n"
+            "        vec3 displacement = vec3(0.);\n"
+            "        gl_Position = uProjection * uView * uMeshTransform * vec4(vertexPos_ + displacement, 1.0);\n"
+            "        vInfVertexPos_ = (uMeshTransform * vec4(vertexPos_ + displacement, 1.0)).xyz;\n"
+            "        vInfVertexNormal_ = (transpose(inverse(uView * uMeshTransform )) * vec4(vertexNormal_, 1.0)).xyz / 2 + 0.5;\n"
+            "        vInfUvCoord_ = uvCoord_;\n"
+            "}";
+        defaultVertexShader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(defaultVertexShader, 1, &defV, NULL);
+        glCompileShader(defaultVertexShader);
+    }
+    if (!defaultFragmentShader) {
+        const char* defF = "#version 430 core\n"
+            "\n"
+            "layout(location = 0) uniform float uTime;\n"
+            "layout(location = 1) uniform mat4 uMeshTransform;\n"
+            "\n"
+            "layout(location = 0) in vec3 vInfVertexPos_;\n"
+            "layout(location = 1) in vec3 vInfVertexNormal_;\n"
+            "layout(location = 2) in vec2 vInfUvCoord_;\n"
+            "layout(location = 3) in vec2 vInfDepth_;\n"
+            "\n"
+            "out vec3 gPosition;\n"
+            "out vec3 gNormal;\n"
+            "out vec3 gAlbedoSpec;\n"
+            "\n"
+            "void main() {\n"
+            "    gPosition = vInfVertexPos_;\n"
+            "    gNormal = vInfVertexNormal_;\n"
+            "    gAlbedoSpec.rgb = vec3(1.0, 1.0, 1.0);\n"
+            "}\n";
+        defaultFragmentShader= glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(defaultFragmentShader, 1, &defF, NULL);
+        glCompileShader(defaultFragmentShader);
+    }
+    std::cout << "setting default shaders instead\n" << std::endl;
+    _vertexId.second = defaultVertexShader;
+    _fragmentId.second = defaultFragmentShader;
 }

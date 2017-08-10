@@ -2,14 +2,16 @@
 #include <iostream>
 #include <chrono>
 
+#include "StaticClassTest.hh"
+
 // This class represent your entiere application
 class MyGame : public Heart::IGamelogic {
     public:
 	std::chrono::time_point<std::chrono::system_clock> _start;
 	glm::vec3 p;
 	MyGame() {
-	    _scene = "./sponza.abc";
-	    //_scene = "./vega.abc"; // didn't wrote the materials yet...
+	    //_scene = "./sponza.abc";
+	    _scene = "./vega.abc"; // didn't wrote the materials yet...
 	    //_scene = "./Duck.gltf";
 	    //_scene = "./sponza.gltf";
 	    //_scene = "./sponza.glb";
@@ -55,3 +57,9 @@ class MyGame : public Heart::IGamelogic {
 };
 
 SetGameClass(MyGame)
+
+void __Platy_FillMap__() {
+     STATIC_CLASS_ADD(Vega);
+}
+
+IntrospectionDBFunc(__Platy_FillMap__);

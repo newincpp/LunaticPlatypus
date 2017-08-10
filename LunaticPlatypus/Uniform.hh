@@ -70,6 +70,9 @@ class Uniform {
 	void operator=(T v_) { _value = v_; setValueType(v_); }
 	template <typename T>
 	void updateValue(T v_, unsigned int frame) { _value = v_; _frameUpdated = frame; setValueType(v_); }
+	template <typename T>
+	void forceSetValue(T v_) { _value = v_; setValueType(v_); }
+	void forceUpdateValue(unsigned int frame) { _frameUpdated = frame; }
 	unsigned int getFrameUpdated() const { return _frameUpdated; }
 	void upload() const;
 	void addItselfToShaders(std::list<std::pair<Shader, std::vector<Mesh>>> & shaderList);

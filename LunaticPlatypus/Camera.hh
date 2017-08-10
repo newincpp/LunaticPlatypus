@@ -25,10 +25,10 @@ class Camera {
 	void lookAt(glm::vec3&&);
 	void addPos(glm::vec3&&);
 	void setPos(glm::vec3&&);
+	void upVector(glm::vec3&&);
 	void fieldOfview(float);
 	void clipPlane(glm::vec2&&);
-	void upVector(glm::vec3&&);
-	void setMatrix(glm::mat4&&);
+	void setViewMatrix(glm::mat4&&);
 	void use();
 	void updateUniform(unsigned int currentFrame = 0);
 	void unUse();

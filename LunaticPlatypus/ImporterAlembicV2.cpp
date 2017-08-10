@@ -284,23 +284,32 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, RenderThread& s_, gl
 
     ms.get(s, 0);
     DrawBuffer& d = s_.unsafeGetRenderer().getDrawBuffer();
-    s_.uniqueTasks.push_back([&d, &s](){
+    s_.uniqueTasks.push_back([&d, s, transform_](){
 	    d._cameras.emplace_back(d._fb[0]);
 	    Camera& mainCamera = d._cameras[d._cameras.size() - 1];
 
-	    mainCamera.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
-	    mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9));
-	    mainCamera.fieldOfview(90.0f);
-	    //mainCamera.fieldOfview(s.getFieldOfView()); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
-	    //mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane())); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
-	    mainCamera.upVector(glm::vec3(0.0f, 1.0f, 0.0f));
+	    //mainCamera.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
+	    //mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9));
+	    //mainCamera.upVector(glm::vec3(0.0f, 1.0f, 0.0f));
+            
+            mainCamera.setViewMatrix(glm::mat4(transform_));
+
+	    //mainCamera.fieldOfview(90.0f);
+	    mainCamera.fieldOfview(s.getFieldOfView()); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
+	    mainCamera.clipPlane(glm::vec2(s.getNearClippingPlane(), s.getFarClippingPlane())); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"
     });
     //n_.linkWorldTransform(&(mainCamera.uMeshTransform._value.m4));
 }
 
 void Importer::genGameClass(const std::string& name_, Heart::IGamelogic* g_, glm::mat4&, Node& n_) {
     std::cout << "gameClass detected: " << name_ << '\n';
-    if (!StaticGameClass::gen(name_)) {
-        g_->_gameClasses.emplace_back(name_, n_);
+    GameClass* gc = nullptr;
+    gc = StaticGameClassGenerator::gen(name_, n_);
+    if (!gc) {
+        std::cout << name_ << " is loaded as Dynamic\n";
+        gc = new DynamicGameClass(name_, n_);
+    } else {
+        std::cout << name_ << " is loaded as static\n";
     }
+    g_->_gameClasses.push_back(gc);
 }

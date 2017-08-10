@@ -1,20 +1,16 @@
 #include "StaticGameClass.hh"
 
-std::map<std::string, std::function<void(void)>> StaticGameClass::_ctorMap;
-std::list<void*> StaticGameClass::_allocated;
-void StaticGameClass::addImpl(std::string& name_, std::function<void(void)>& ctor_) {
+std::map<std::string, GameClass*(*)(Node&)> StaticGameClassGenerator::_ctorMap;
+void StaticGameClassGenerator::addImpl(std::string name_, GameClass*(*ctor_)(Node&)) {
     _ctorMap[name_] = ctor_;
 }
 
-bool StaticGameClass::gen(const std::string& name_) {
+GameClass* StaticGameClassGenerator::gen(const std::string& name_, Node& n_) {
     decltype(_ctorMap)::iterator ctor = _ctorMap.find(name_);
     if(ctor != _ctorMap.end()) {
-        ctor->second();
-        return true;
+        return ctor->second(n_);
+    } else {
+        std::cout << "failed to find as static:" << name_ << '\n';
     }
-    return false;
-}
-
-void StaticGameClass::freeAll() {
-    _allocated.clear();
+    return nullptr;
 }

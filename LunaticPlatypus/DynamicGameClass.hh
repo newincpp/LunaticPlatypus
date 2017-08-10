@@ -1,17 +1,28 @@
+#pragma once
 #include <dlfcn.h>
 #include <iostream>
 #include <list>
 #include "Node.hh"
 
-class DynamicGameClass {
+class GameClass {
+    protected:
+	typedef void (*TickFunType)(float);
+	std::list<TickFunType> _tickFunctions;
+    public:
+        GameClass() = default;
+        virtual void update(float deltaTime_);
+	virtual void reset();
+};
+
+class DynamicGameClass : public GameClass {
     private:
 	void* _lib_handle;
-	typedef void (*TickFunType)(float);
+        bool isStatic;
 	class PlatyGameClass {
 	    public:
 		PlatyGameClass();
 		void (*init)(Node*);
-		TickFunType (*getTickFun)();
+                GameClass::TickFunType (*getTickFun)();
 		unsigned int (*getRemainingTickFunSize)();
 		void (*destroy)();
 		inline bool checkInit();
@@ -29,13 +40,12 @@ class DynamicGameClass {
 	    return func;
 	}
 	PlatyGameClass _handle;
-	std::list<TickFunType> _tickFunctions;
+        void _dynamicLoading(std::string&&, const std::string&, Node&);
     public:
 	DynamicGameClass(std::string&& name, Node&);
 	DynamicGameClass(const std::string& name, Node&);
-	void update(float deltaTime_);
-	void reset();
+	virtual void reset();
 	~DynamicGameClass();
 };
 
-typedef DynamicGameClass GameClass; // TODO scripting support
+//typedef DynamicGameClass GameClass; // TODO scripting support

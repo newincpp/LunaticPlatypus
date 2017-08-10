@@ -1,6 +1,8 @@
 LUNATICPLATYPUSDIR=../LunaticPlatypus
 include  $(LUNATICPLATYPUSDIR)/project.mk
-SRC	+= main.cpp
+SRC	+= main.cpp \
+	   StaticClassTest.cpp
+
 NAME	=demo
 
 OBJS	= $(SRC:.$(EXT)=.o)

@@ -41,7 +41,7 @@ class Shader {
 		"error log:\n" << ErrorMessage << std::endl << "-------------------\033[0m\n";
 	    return false;
 	}
-
+        void bindDefaultShader();
     public:
 	Shader();
 	void add(const std::string&, GLenum);

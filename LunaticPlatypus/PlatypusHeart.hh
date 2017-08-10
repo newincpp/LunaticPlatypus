@@ -20,7 +20,7 @@ class Heart {
 		Heart* _lunaticPlatypus;
 		EventInterface _event;
 		std::string _scene;
-		std::list<GameClass> _gameClasses;
+		std::list<GameClass*> _gameClasses;
 		virtual void postEngineInit();
 		virtual void update() = 0;
 	};
@@ -31,6 +31,7 @@ class Heart {
 	static Graph* _scene;
     public:
 	static IGamelogic* _game;
+        static void (*_fillMap)();
 	Heart();
 	//inline OglCore& getRenderer() { return _renderThread.unsafeGetRenderer(); }
 	inline RenderThread& getRenderThread() { return _renderThread; }
@@ -40,3 +41,8 @@ class Heart {
 	void run();
 };
 #define SetGameClass(GameClass) Heart::IGamelogic* Heart::_game = new GameClass();
+
+//void __Platy_FillMap__() {
+//     STATIC_CLASS_ADD(className);
+//}
+#define IntrospectionDBFunc(Func) void (*Heart::_fillMap)() = &Func;

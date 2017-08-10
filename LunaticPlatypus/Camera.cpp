@@ -44,19 +44,23 @@ Camera::Camera(Camera&& c_) :
     _clipPlane(c_._clipPlane), _gBuffer(c_._gBuffer) {
     }
 
-void Camera::setMatrix(glm::mat4&& m_) {
-    glm::vec4 p = m_ * glm::vec4(0.0f,0.0f,0.0f,1.0f) ;
-    std::cout << "setMatrix pos: " << p[0] << ' ' << p[1] << ' ' << p[2] << '\n';
+void Camera::setViewMatrix(glm::mat4&& m_) {
+    //glm::vec4 p = m_ * glm::vec4(0.0f,0.0f,0.0f,1.0f) ;
+    //std::cout << "setMatrix pos: " << p[0] << ' ' << p[1] << ' ' << p[2] << '\n';
+    uView.forceSetValue(glm::inverse(m_));
 }
 
 void Camera::lookAt(glm::vec3&& target_) {
     _target = target_;
+    uView.forceSetValue(glm::lookAt(_position, _target, _upVector));
 }
 void Camera::addPos(glm::vec3&& Pos_) {
     _position += Pos_;
+    uView.forceSetValue(glm::lookAt(_position, _target, _upVector));
 }
 void Camera::setPos(glm::vec3&& newPos_) {
     _position = newPos_;
+    uView.forceSetValue(glm::lookAt(_position, _target, _upVector));
 }
 #include <glm/gtx/string_cast.hpp>
 void Camera::use() {
@@ -78,8 +82,10 @@ void Camera::use() {
     //std::cout << "Forward: " <<  glm::to_string(uView._value.m4[2]) << '\n';
 }
 void Camera::updateUniform(unsigned int currentFrame) {
-    uView.updateValue(glm::lookAt(_position, _target, _upVector), currentFrame);
-    uProjection.updateValue(glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y), currentFrame);
+    uView.forceUpdateValue(currentFrame);
+    uProjection.forceUpdateValue(currentFrame);
+    //uView.updateValue(glm::lookAt(_position, _target, _upVector), currentFrame);
+    //uProjection.updateValue(glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y), currentFrame);
 }
 void Camera::unUse() {
     _gBuffer.disable();
@@ -89,10 +95,12 @@ void Camera::bindFramebuffer() {
 }
 void Camera::fieldOfview(float fov_) {
     _fov = fov_;
+    uProjection.forceSetValue(glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y));
     std::cout << "fov: " << _fov << '\n';
 }
 void Camera::clipPlane(glm::vec2&& clip_) {
     _clipPlane = clip_;
+    uProjection.forceSetValue(glm::perspective(_fov, 1920.0f / 1080.0f, _clipPlane.x, _clipPlane.y));
     std::cout << "clip: " << _clipPlane[0] << ' ' << _clipPlane[1] << '\n';
 }
 void Camera::upVector(glm::vec3&& up_) {
