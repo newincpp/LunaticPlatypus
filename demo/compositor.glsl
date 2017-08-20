@@ -686,6 +686,7 @@ void main() {
     debugDefaultLight[1] = Light(-debugDefaultLight[0].position, debugDefaultLight[0].colour);
     debugDefaultLight[2] = Light(mix(vec3(15, (5 * sin(uTime / 900)) + 8, 8), vec3(-17, (5 * sin(uTime / 400)) + 8, 8.5), timeBounce(1400)), vec3(9.8, 9.8, 9.75));
     debugDefaultLight[3] = Light(mix(vec3(-1.5, 5, -2), vec3(-1.5, 21, 7), timeBounce(900)), vec3(12.8, 12.8, 12.75));
+    //outColour = CurrentAlbedo;
     outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
     //outColour = pbrDirectIllumination(roughness, metallicness, 1.0f);
     //outColour = CurrentAlbedo;

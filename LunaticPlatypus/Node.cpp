@@ -6,20 +6,16 @@
 Node::Node(const std::string& n) : _name(n), _lTransform(1.0f), _wTransform(nullptr) {
 }
 Node& Node::push(std::string&& n_) {
-    if (_childs.empty()) {
-        _childs.emplace_back(std::move(n_));
-    }
+    _childs.emplace_back(std::move(n_));
     return _childs.back();
 }
 Node& Node::push() {
-    if (_childs.empty()) {
-        _childs.emplace_back(_name);
-    }
+    _childs.emplace_back(_name);
     return _childs.back();
 }
-Node& Node::operator[](unsigned long i) {
-    return _childs[i];
-}
+//Node& Node::operator[](unsigned long i) {
+//    return _childs[i];
+//}
 void Node::setLocalTransform(glm::mat4&& t_) {
     _lTransform = t_;
 }

@@ -11,7 +11,7 @@ class MyGame : public Heart::IGamelogic {
 	glm::vec3 p;
 	MyGame() {
 	    //_scene = "./sponza.abc";
-	    _scene = "./vega.abc"; // didn't wrote the materials yet...
+	    _scene = "./vega.abc";
 	    //_scene = "./Duck.gltf";
 	    //_scene = "./sponza.gltf";
 	    //_scene = "./sponza.glb";
@@ -20,12 +20,22 @@ class MyGame : public Heart::IGamelogic {
 
 
 	    _start = std::chrono::system_clock::now();
-	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_Q), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 1.0f, 0.0f)); }); //Q
-	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_W), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 0.0f, 1.0f)); }); //W
-	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_E), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, -1.0f, 0.0f)); }); //E
-	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_A), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(-1.0f, 0.0f, 0.0f)); }); //A
-	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_S), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 0.0f, -1.0f)); }); //S
-	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_D), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(1.0f, 0.0f, 0.0f)); }); //D
+	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_Q), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 1.0f, 0.0f)); }); //Q
+	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_W), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 0.0f, 1.0f)); }); //W
+	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_E), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, -1.0f, 0.0f)); }); //E
+	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_A), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(-1.0f, 0.0f, 0.0f)); }); //A
+	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_S), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 0.0f, -1.0f)); }); //S
+	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_D), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(1.0f, 0.0f, 0.0f)); }); //D
+
+
+	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_Q), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveUp(0.1f); }); //Q
+	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_W), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveForward(0.1f); }); //W
+	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_E), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveUp(-0.1f); }); //E
+	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_A), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveRight(0.1f); }); //A
+	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_S), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveForward(-0.1f); }); //S
+	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_D), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveRight(-0.1f); }); //D
+
+	    _lunaticPlatypus->_game->_event.bind("mouse", [this]() { glm::vec2 v = WindowHandle::getMouseMovement() * 0.005f; _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().rotate(glm::vec3(0.0f, v.x, v.y)); });
 	}
 	// if you want to call a function after the initialisation of the engine use this function
 	virtual void postEngineInit() {

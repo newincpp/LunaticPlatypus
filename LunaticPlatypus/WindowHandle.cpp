@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <thread>
 #include "glew.h"
 #ifdef IMGUIENABLED
@@ -7,11 +8,14 @@
 #include "WindowHandle.hh"
 
 bool WindowHandle::_shouldClose;
-WindowHandle::WindowHandle() {
+GLFWwindow* WindowHandle::_lastUsedWindow; // to make static callback work
+std::list<std::string> WindowHandle::_pressed;
+WindowHandle::WindowHandle() : _window(nullptr) {
     if (!glfwInit()) {
 	std::cout << "failed to init glfw3\n";
     }
     _shouldClose = false;
+    _pressed.clear();
 }
 
 void WindowHandle::init() {
@@ -76,6 +80,7 @@ void WindowHandle::init() {
 #endif
     if (_window) {
         glfwSetKeyCallback(_window, WindowHandle::keyCallback);
+        glfwSetCursorPosCallback(_window, WindowHandle::mouseCallback);
     }
     std::cout << "glfw initialized" << std::endl;
 }
@@ -98,6 +103,43 @@ void WindowHandle::keyCallback(GLFWwindow* w_, int key_, int scanCode_, int keyS
     if ((keyStatus_ == 1 && key_ == 256) || glfwWindowShouldClose(w_)) {
 	_shouldClose = true; // TODO need to be replaced by en event
     }
-    EventInterface::sExec(std::to_string(key_));
+
+    std::string k = std::to_string(key_);
+    std::list<std::string>::iterator i = std::find(_pressed.begin(), _pressed.end(), k);
+    if (keyStatus_ == GLFW_PRESS) {
+        if (i == _pressed.end()) {
+            _pressed.push_back(k);
+            std::cout << "adding: " << k << '\n';
+        }
+    } else if (keyStatus_ == GLFW_RELEASE) {
+        if (i != _pressed.end()) {
+            std::cout << "releasing: " << k << '\n';
+            _pressed.erase(i);
+        }
+    }
     EventInterface::sExec("keyboard");
+}
+
+void WindowHandle::mouseCallback(GLFWwindow* _window, double, double) {
+    _lastUsedWindow = _window;
+    EventInterface::sExec("mouse");
+}
+
+glm::vec2 WindowHandle::getMousePos() {
+    double xpos;
+    double ypos;
+    glfwGetCursorPos(_lastUsedWindow, &xpos, &ypos);
+    return glm::vec2(xpos, ypos);
+}
+glm::vec2 WindowHandle::getMouseMovement() {
+    static glm::vec2 oldPos(-1.0f, -1.0f);
+    if (oldPos.x <= 0.0f && oldPos.y <= 0.0f) {
+        oldPos = getMousePos();
+        return glm::vec2(0.0f, 0.0f);
+    } else {
+        glm::vec2 newp = getMousePos();
+        glm::vec2 v = oldPos - newp;
+        oldPos = newp;
+        return v;
+    }
 }

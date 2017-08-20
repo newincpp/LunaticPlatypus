@@ -9,9 +9,9 @@ INCLUDE= -I./ # -I./imgui
 CXXFLAGS= -Wall -Wextra -W -std=c++11 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 IMGUIENABLED=false
 
-LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS)
-
+LDFLAGS	=  $(OPTIM) $(DEBUG) $(LIBS) -flto -use-gold-plugin
 
 CXX	= clang++
 LINKER	= $(CXX)
+#LINKER	= $(CXX)
 EXT=cpp

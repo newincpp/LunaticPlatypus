@@ -292,7 +292,9 @@ void Importer::genCamera(const Alembic::Abc::IObject& iobj, RenderThread& s_, gl
 	    //mainCamera.setPos(glm::vec3(-9.3, 8.4f, 15.9));
 	    //mainCamera.upVector(glm::vec3(0.0f, 1.0f, 0.0f));
             
-            mainCamera.setViewMatrix(glm::mat4(transform_));
+            mainCamera.setPos((transform_ * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)).xyz());
+            mainCamera.setup((transform_ * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)).xyz(), (transform_ * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)).xyz(), (transform_ * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)).xyz());
+            //mainCamera.setViewMatrix(glm::mat4(transform_));
 
 	    //mainCamera.fieldOfview(90.0f);
 	    mainCamera.fieldOfview(s.getFieldOfView()); //valdrind said it make a "Conditional jump or move depends on uninitialised value(s)"

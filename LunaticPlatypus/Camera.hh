@@ -11,9 +11,10 @@ class Camera {
 	Uniform uView;
 	Uniform uProjection;
     private:
-	glm::vec3 _target;
 	glm::vec3 _position;
-	glm::vec3 _upVector;
+	glm::vec3 _forward;
+	glm::vec3 _right;
+	glm::vec3 _up;
 	float _fov;
 	glm::vec2 _clipPlane;
 	FrameBuffer& _gBuffer;
@@ -23,9 +24,11 @@ class Camera {
 	Camera(Camera&&);
 	void operator=(const Camera&&) = delete;
 	void lookAt(glm::vec3&&);
-	void addPos(glm::vec3&&);
 	void setPos(glm::vec3&&);
-	void upVector(glm::vec3&&);
+        void setup(glm::vec3&&,glm::vec3&&,glm::vec3&&);
+	//void up(glm::vec3&&);
+	//void right(glm::vec3&&);
+	//void forward(glm::vec3&&);
 	void fieldOfview(float);
 	void clipPlane(glm::vec2&&);
 	void setViewMatrix(glm::mat4&&);
@@ -33,4 +36,9 @@ class Camera {
 	void updateUniform(unsigned int currentFrame = 0);
 	void unUse();
 	void bindFramebuffer();
+
+        void moveForward(float);
+        void moveRight(float);
+        void moveUp(float);
+        void rotate(glm::vec3);
 };
