@@ -41,5 +41,5 @@ void Light::use() {
 
     uView.upload();
     uProjection.upload();
-    _illuminationBuffer->useW();
+    _illuminationBuffer->useW(1);
 }

@@ -109,11 +109,9 @@ void WindowHandle::keyCallback(GLFWwindow* w_, int key_, int scanCode_, int keyS
     if (keyStatus_ == GLFW_PRESS) {
         if (i == _pressed.end()) {
             _pressed.push_back(k);
-            std::cout << "adding: " << k << '\n';
         }
     } else if (keyStatus_ == GLFW_RELEASE) {
         if (i != _pressed.end()) {
-            std::cout << "releasing: " << k << '\n';
             _pressed.erase(i);
         }
     }

@@ -6,10 +6,12 @@ class ImageRAM {
     private:
 	const GLenum _type;
 	GLuint _imageId;
+        void create(GLenum);
     public:
 	ImageRAM(GLuint = GL_RGBA16F, glm::vec2 = glm::vec2(1920, 1080));
-	void useRW();
-	void useR();
-	void useW();
+	ImageRAM(GLuint, glm::vec3);
+	void useRW(GLuint unit);
+	void useR(GLuint unit);
+	void useW(GLuint unit);
 	void sync();
 };

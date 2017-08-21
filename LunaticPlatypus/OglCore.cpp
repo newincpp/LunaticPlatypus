@@ -64,24 +64,12 @@ void OglCore::init() {
 
     _s._lights.emplace_back();
     _s._dynamicShadowCaster.containUniform(uTime);
-    //_renderTarget.uMeshTransform.addItselfToShaders(_s._drawList); //TODO add meshTransform of every mesh loaded to shaders (function addMeshUniformsToShaders of DrawBuffer) when importing stuff; also deal with upload of multiple uniform with same name
 
     //_sgBuffer->first.use();
     uTime.addItselfToShaders(_s._drawList);
     //_uPostPRocessTexture.addItselfToShaders(_s._drawList);
     _s.addCameraUniformsToShaders();
     std::cout << "OpenGL renderer initialized" << std::endl;
-
-    //glGenTextures(1, &_illuminationBuffer);
-    //glBindTexture(GL_TEXTURE_2D, _illuminationBuffer);
-    //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0 );
-    //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0 );
-    //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    //glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-    ////glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16UI, 1920, 1080); // int
-    //glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA16F, 1920, 1080); // float
-    //checkGlError;
-    //glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void OglCore::render() {
@@ -91,9 +79,12 @@ void OglCore::render() {
 
     _s.update(_currentFrame);
 
-    //glBindImageTexture(1, fractalTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16UI); // int
-    //glBindImageTexture(1, _illuminationBuffer, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F); // float
-    //_sgBuffer->first.use();
+
+    int i = 2; // 1 is reserved to illumination buffer
+    for (ImageRAM& buffer : _randomAccessBuffers) {
+        buffer.useRW(i);
+        ++i;
+    }
     checkGlError;
     _s.render();
     checkGlError;
@@ -106,7 +97,12 @@ void OglCore::render() {
     _compositor.use();
     checkGlError;
     _s.bindGBuffer(0);
-    Light::_illuminationBuffer->useR();
+    Light::_illuminationBuffer->useR(1);
+    i = 2; // 1 is reserved to illumination buffer
+    for (ImageRAM& buffer : _randomAccessBuffers) {
+        buffer.useR(i);
+        ++i;
+    }
     //uTime.upload();
     _renderTarget.render();
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

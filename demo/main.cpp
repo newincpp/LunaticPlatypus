@@ -10,23 +10,15 @@ class MyGame : public Heart::IGamelogic {
 	std::chrono::time_point<std::chrono::system_clock> _start;
 	glm::vec3 p;
 	MyGame() {
-	    //_scene = "./sponza.abc";
-	    _scene = "./vega.abc";
+	    _scene = "./sponza.abc";
+	    //_scene = "./vega.abc";
 	    //_scene = "./Duck.gltf";
 	    //_scene = "./sponza.gltf";
 	    //_scene = "./sponza.glb";
             //_scene = "./vega.glb";
             //_scene = "2CylinderEngine.gltf";
 
-
 	    _start = std::chrono::system_clock::now();
-	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_Q), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 1.0f, 0.0f)); }); //Q
-	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_W), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 0.0f, 1.0f)); }); //W
-	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_E), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, -1.0f, 0.0f)); }); //E
-	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_A), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(-1.0f, 0.0f, 0.0f)); }); //A
-	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_S), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(0.0f, 0.0f, -1.0f)); }); //S
-	    //_lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_D), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().addPos(glm::vec3(1.0f, 0.0f, 0.0f)); }); //D
-
 
 	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_Q), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveUp(0.1f); }); //Q
 	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_W), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveForward(0.1f); }); //W
@@ -35,20 +27,20 @@ class MyGame : public Heart::IGamelogic {
 	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_S), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveForward(-0.1f); }); //S
 	    _lunaticPlatypus->_game->_event.bind(std::to_string(GLFW_KEY_D), [this]() { _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().moveRight(-0.1f); }); //D
 
-	    _lunaticPlatypus->_game->_event.bind("mouse", [this]() { glm::vec2 v = WindowHandle::getMouseMovement() * 0.005f; _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().rotate(glm::vec3(0.0f, v.x, v.y)); });
+	    _lunaticPlatypus->_game->_event.bind("mouse", [this]() { glm::vec2 v = WindowHandle::getMouseMovement() * 0.005f; _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().rotate(glm::vec3(v.y, v.x, 0.0f)); });
 	}
 	// if you want to call a function after the initialisation of the engine use this function
 	virtual void postEngineInit() {
-	    // won't work anymore because of multithreading, need to be a "unique task"
-	    //_lunaticPlatypus->getRenderer().getCamera().lookAt(glm::vec3(-1.0, 13.5, 0.0));
-	    //_lunaticPlatypus->getRenderer().getCamera().setPos(glm::vec3(17.5, 4, -7.7));
-	    _lunaticPlatypus->getRenderThread().uniqueTasks.push_back([this](){
+            //_lunaticPlatypus->getRenderThread().uniqueTasks.push_back([this](){
 		    // calling "unsafeGetRenderer" inside a "uniqueTask" make it safe because it will execute it inside the render thread
-		    std::cout << "unique task from game" << std::endl;
-		    _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().lookAt(glm::vec3(-1.0, 13.5, 0.0));
-		    _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().setPos(glm::vec3(17.5, 4, -7.7));
-		    });
+                    //std::cout << "unique task from game" << std::endl;
+                    //_lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().lookAt(glm::vec3(-1.0, 13.5, 0.0));
+                    //_lunaticPlatypus->getRenderThread().unsafeGetRenderer().getCamera().setPos(glm::vec3(17.5, 4, -7.7));
+                    //});
 
+            _lunaticPlatypus->getRenderThread().uniqueTasks.push_back([this](){
+                    _lunaticPlatypus->getRenderThread().unsafeGetRenderer().getBuffers().emplace_back(GL_RGBA8, glm::vec3(256, 256, 256));
+                    });
 	}
 	virtual void update() {
 	    std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - _start;

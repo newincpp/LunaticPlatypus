@@ -12,6 +12,7 @@ uniform sampler2D gAlbedoSpec;
 uniform sampler2D gDepth;
 
 layout(binding=1, rgba16f) uniform image2D uRaytracedShadowBuffer; // float
+layout(binding=2, rgba8) uniform readonly image3D cheapGI;
 //uniform layout(binding=1, rgba16ui) uimage2D uFractalTexture; // int
 
 in vec2 TexCoords;
@@ -686,12 +687,19 @@ void main() {
     debugDefaultLight[1] = Light(-debugDefaultLight[0].position, debugDefaultLight[0].colour);
     debugDefaultLight[2] = Light(mix(vec3(15, (5 * sin(uTime / 900)) + 8, 8), vec3(-17, (5 * sin(uTime / 400)) + 8, 8.5), timeBounce(1400)), vec3(9.8, 9.8, 9.75));
     debugDefaultLight[3] = Light(mix(vec3(-1.5, 5, -2), vec3(-1.5, 21, 7), timeBounce(900)), vec3(12.8, 12.8, 12.75));
-    //outColour = CurrentAlbedo;
-    outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
+    outColour = CurrentAlbedo;
+
+    vec3 giBufferCenter = getCameraPos() - vec3(imageSize(cheapGI)) / 2.0f;
+    const float texelToWorldUnitscaling = 8;
+    ivec3 giTexelCoord = ivec3(distance(giBufferCenter, CurrentPosition) / texelToWorldUnitscaling);
+    vec3 giColour= imageLoad(cheapGI, giTexelCoord).rgb;
+    outColour = mix(vec3(1.0, 1.0, 1.0) ,giColour, ssao(6, 1));
+
+    //outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
     //outColour = pbrDirectIllumination(roughness, metallicness, 1.0f);
     //outColour = CurrentAlbedo;
     float f = clamp(fresnel(2.5), 0.0, 1.0);
-    outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
+    //outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
     //outColour = SSR(f, vec3(0.0,0.05,0.05));
     //outColour = texture2D(gAlbedoSpec, TexCoords, 6 * timeBounce(600)).xyz;
     ivec2 coord = ivec2((gl_FragCoord.xy / vec2(1920.0f, 1080.0f)) * vec2(imageSize(uRaytracedShadowBuffer)));

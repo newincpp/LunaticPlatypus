@@ -134,9 +134,13 @@ void Camera::moveUp(float scal) {
 }
 
 void Camera::rotate(glm::vec3 a) {
-    glm::mat4 rot = glm::rotate(glm::mat4(), a.x, glm::vec3(1.0, 0.0, 0.0));
-    rot = glm::rotate(rot, a.y, glm::vec3(0.0, 1.0, 0.0));
-    rot = glm::rotate(rot, a.z, glm::vec3(0.0, 0.0, 1.0));
+    //glm::mat4 rot = glm::rotate(glm::mat4(), a.x, glm::vec3(1.0, 0.0, 0.0));
+    //rot = glm::rotate(rot, a.y, glm::vec3(0.0, 1.0, 0.0));
+    //rot = glm::rotate(rot, a.z, glm::vec3(0.0, 0.0, 1.0));
+
+    glm::mat4 rot = glm::rotate(glm::mat4(), a.x, _right);
+    rot = glm::rotate(rot, a.y, _up);
+    rot = glm::rotate(rot, a.z, _forward);
 
     _right = (rot * glm::vec4(_right, 1.0f)).xyz();
     _up = (rot * glm::vec4(_up, 1.0f)).xyz();

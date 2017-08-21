@@ -30,7 +30,6 @@ class WindowHandle {
 	inline void pollEvents() {
 	    glfwPollEvents();
             for (std::string& p : _pressed) {
-                std::cout << "yay: " << p << '\n';
                 EventInterface::sExec(p);
             }
 	}
