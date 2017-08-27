@@ -21,5 +21,5 @@ void RenderTexture<DEPTH>::_TexImage2D(glm::vec2& resolution_) {
 
 template <>
 void RenderTexture<COLOR>::_TexImage2D(glm::vec2& resolution_) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolution_.x, resolution_.y, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolution_.x, resolution_.y, 0, GL_RGBA, GL_FLOAT, NULL);
 }

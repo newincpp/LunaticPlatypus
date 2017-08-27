@@ -6,9 +6,9 @@ layout(location = 1) uniform mat4 uMeshTransform;
 layout(location = 2) uniform mat4 uView;
 layout(location = 3) uniform mat4 uProjection;
 
-uniform sampler2D gPosition;
-uniform sampler2D gNormal;
-uniform sampler2D gAlbedoSpec;
+uniform sampler2D gPosition; // TODO will be deleted
+uniform sampler2D gNormalRough;
+uniform sampler2D gAlbedoMetallic;
 uniform sampler2D gDepth;
 
 layout(binding=1, rgba16f) uniform image2D uRaytracedShadowBuffer; // float
@@ -30,19 +30,17 @@ vec3 CurrentPosition;
 float CurrentDepth;
 float CurrentDepthNotLinearized;
 
-
 struct Light {
     vec3 position;
     vec3 colour;
 };
-
 
 Light debugDefaultLight[4];
 //Light debugDefaultLight;
 
 
 #define PI    3.14159265
-#define OREN_NAYAR
+//#define OREN_NAYAR
 
 /* http://filmicworlds.com/blog/filmic-tonemapping-operators/
 float A = 0.15;
@@ -229,7 +227,7 @@ float normalStuff(vec3 normal, vec2 coord) {
     //float mul = //directionMultiplier(coord.x, TexCoords.x, normal.x, cn.x);
     //directionMultiplier(coord.x, TexCoords.x, normal.z, cn.z) *
     //directionMultiplier(coord.x, TexCoords.x, normal.y, cn.y);
-    vec3 cn = texture2D(gNormal, coord).xyz;
+    vec3 cn = texture2D(gNormalRough, coord).xyz;
     float mul = 1.0;
     vec3 c = cross(cn, normal);
     float angle = (atan(length(c), dot(normal, cn)));
@@ -492,7 +490,7 @@ vec3 raytrace1() {
     //return vec3(hitPixel, depth) * (intersection ? 1.0f : 0.0f);
 
     if (intersection) {
-	return texelFetch(gNormal, ivec2(hitPixel), 0).xyz;
+	return texelFetch(gNormalRough, ivec2(hitPixel), 0).xyz;
     } else {
 	vec3 (0.0f);
     }
@@ -528,7 +526,7 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex, vec3 diffuseColou
 	++complexity;
     }
 
-    float facing = dot(texture2D(gNormal, sampledPosition, samplingOffset).xyz * 2.0f - 1.0f, reflectionVector);
+    float facing = dot(texture2D(gNormalRough, sampledPosition, samplingOffset).xyz * 2.0f - 1.0f, reflectionVector);
     float d = clamp(0.0f, 1.0f, distance(CurrentPosition, sampledViewPos) / 100.0f);
     samplingOffset = mix(1.0, 6.0, d); // really cheap fake "cone tracing" using mipmap filtering
     if ((facing < 0.0f) && (test > threshold)) {
@@ -539,7 +537,7 @@ vec3 naiveRaymarch(in vec3 reflectionVector, in sampler2D tex, vec3 diffuseColou
 }
 
 vec3 raytrace(in vec3 reflectionVector, vec3 diffuseColour) {
-    return naiveRaymarch(reflectionVector, gAlbedoSpec, diffuseColour);
+    return naiveRaymarch(reflectionVector, gAlbedoMetallic, diffuseColour);
 }
 
 vec3 SSR(float fresnel, vec3 diffuseColour) {
@@ -614,6 +612,7 @@ vec3 pbrDirectIllumination(float roughness, float metallic, float ao) {
     vec3 V = normalize(getCameraPos() - CurrentPosition);
 
     vec3 Lo = vec3(0.0);
+    vec3 F0 = mix(vec3(0.04), CurrentAlbedo, metallic);
 
     for(int i = 0; i < 4; ++i) { // Loop over Lights
 	// direct radiance
@@ -626,7 +625,7 @@ vec3 pbrDirectIllumination(float roughness, float metallic, float ao) {
 	    vec3 H = normalize(V + L);
 
 
-	    vec3 F = fresnel(max(dot(H, V), 0.0), mix(vec3(0.04), CurrentAlbedo, metallic));
+	    vec3 F = fresnel(max(dot(H, V), 0.0), F0);
 
 	    // Bidirectional reflectance distribution function (BRDF)
 #ifdef OREN_NAYAR
@@ -644,44 +643,53 @@ vec3 pbrDirectIllumination(float roughness, float metallic, float ao) {
 	}
     }
 
-    // TODO inacurate ambient term
-    vec3 ambient = vec3(0.001) * CurrentAlbedo * ao;
+    // ignore reflections
+    //vec3 ambient = vec3(0.001) * CurrentAlbedo * ao;
+
+    // include reflections
+    vec3 kS = fresnel(max(dot(N, V), 0.0), F0);
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;     
+    vec3 irradiance = SSR(fresnel(2.5), outColour);
+    vec3 diffuse      = irradiance * CurrentAlbedo;
+    vec3 ambient = (kD * diffuse) * ao; 
+
     vec3 color = ambient + Lo; 
 
 
-    // gamma correction
+    // HDR tonemapping
     color = color / (color + vec3(1.0));
+    // gamma correction
     return pow(color, vec3(1.0/2.2)); 
 }
 
 
 /****************************** Compositor *******************/
 
-
-vec3 VSPositionFromDepth(vec2 vTexCoord) {
-    float z = texture2D(gDepth, vTexCoord).x;
-    float x = vTexCoord.x * 2 - 1;
-    float y = (1 - vTexCoord.y) * 2 - 1;
+// thx Matt Pettineo mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
+vec3 VSPositionFromDepth() {
+    float z = CurrentDepthNotLinearized;
+    float x = TexCoords.x * 2.0f - 1.0f;
+    float y = (1 - TexCoords.y) * 2.0f - 1.0f;
     vec4 vProjectedPos = vec4(x, y, z, 1.0f);
     vec4 vPositionVS = inverse(uProjection) * vProjectedPos;
     vec3 p = vPositionVS.xyz / vPositionVS.w;
-    return p;
-    //if (timeBounce(600) < 0.5) {
-    //} else {
-    //    return (inverse(uView) * vec4(p, 0.0f)).xyz;
-    //}
+    return (inverse(uView) * vec4(p, 1.0)).xyz;
 }
 
 void main() { 
-    CurrentNormal = normalize(texture2D(gNormal, TexCoords).xyz * 2.0f - 1.0f);
+    CurrentNormal = normalize(texture2D(gNormalRough, TexCoords).xyz * 2.0f - 1.0f);
     CurrentNormalWorldSpace = (inverse(uView) * vec4(CurrentNormal,0.0f)).xyz;
-    CurrentPosition = texture2D(gPosition, TexCoords).xyz;
+    CurrentPosition = texture2D(gPosition, TexCoords).xyz; // TODO: remplace with VSPositionFromDepth
     CurrentDepthNotLinearized = texture2D(gDepth, TexCoords).x;
     CurrentDepth = linearizeDepth(CurrentDepthNotLinearized);
-    CurrentAlbedo = texture2D(gAlbedoSpec, TexCoords).xyz;
+    CurrentAlbedo = texture2D(gAlbedoMetallic, TexCoords).xyz;
 
-    float metallicness = 1.;
-    float roughness = 1.00;
+    //float metallicness = 0.7;
+    //float roughness = 0.3;
+
+    float metallicness = texture2D(gAlbedoMetallic, TexCoords).w;
+    float roughness = texture2D(gNormalRough, TexCoords).w;
 
     debugDefaultLight[0] = Light(mix(vec3(-17,2,-7), vec3(4,2,0), timeBounce(900)), vec3(4.8, 4.8, 4.75));
     debugDefaultLight[1] = Light(-debugDefaultLight[0].position, debugDefaultLight[0].colour);
@@ -693,15 +701,17 @@ void main() {
     const float texelToWorldUnitscaling = 8;
     ivec3 giTexelCoord = ivec3(distance(giBufferCenter, CurrentPosition) / texelToWorldUnitscaling);
     vec3 giColour= imageLoad(cheapGI, giTexelCoord).rgb;
-    outColour = mix(vec3(1.0, 1.0, 1.0) ,giColour, ssao(6, 1));
+    //outColour = mix(vec3(1.0, 1.0, 1.0) ,giColour, ssao(6, 1));
 
-    //outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
-    //outColour = pbrDirectIllumination(roughness, metallicness, 1.0f);
-    //outColour = CurrentAlbedo;
-    float f = clamp(fresnel(2.5), 0.0, 1.0);
-    //outColour = mix(outColour, SSR(f, outColour), f); // ad-hoc way to add SSR while I didn't implement IBL
-    //outColour = SSR(f, vec3(0.0,0.05,0.05));
-    //outColour = texture2D(gAlbedoSpec, TexCoords, 6 * timeBounce(600)).xyz;
+    outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
+    //float x = timeBounce(1000);
+    //if (x > 0.5f) {
+    //    x = 1.0f;
+    //} else {
+    //    x = 0.0f;
+    //}
+    //outColour = mix(CurrentPosition, VSPositionFromDepth(), x);
+
     ivec2 coord = ivec2((gl_FragCoord.xy / vec2(1920.0f, 1080.0f)) * vec2(imageSize(uRaytracedShadowBuffer)));
     //if (TexCoords.x < timeBounce(1000)) {
     //outColour = imageLoad(uRaytracedShadowBuffer, coord).xyz;
@@ -709,7 +719,6 @@ void main() {
 
     vec2 rtUV = getUVfromPosition(CurrentPosition);
     //outColour = vec3(rtUV, 0.0);
-    //outColour = texture2D(gAlbedoSpec, rtUV).xyz;
 
     //outColour = imageLoad(uRaytracedShadowBuffer, coord).xyz;
     //imageStore(uRaytracedShadowBuffer, coord, vec4(0.0, 0.0, 0.0, 1.0));

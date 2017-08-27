@@ -232,7 +232,7 @@ void Importer::genMesh(const Alembic::Abc::IObject& iobj, RenderThread& s_, glm:
             std::function<void(void)> createShader = [selectedShader, faceSetName]() {
                         selectedShader->first.add(faceSetName + ".material/vertex.glsl", GL_VERTEX_SHADER);
                         selectedShader->first.add(faceSetName + ".material/fragment.glsl", GL_FRAGMENT_SHADER);
-                        selectedShader->first.link({"gPosition", "gNormal", "gAlbedoSpec"});
+                        selectedShader->first.link({"gPosition", "gNormalRough", "gAlbedoMetallic"});
                         selectedShader->second.reserve(1024);
                 };
             s_.uniqueTasks.push_back(createShader);

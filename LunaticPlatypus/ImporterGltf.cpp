@@ -84,7 +84,7 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
         dlist.emplace_back();
         dlist.back().first.add("default.material/vertex.glsl", GL_VERTEX_SHADER);
         dlist.back().first.add("default.material/fragment.glsl", GL_FRAGMENT_SHADER);
-        dlist.back().first.link({"gPosition", "gNormal", "gAlbedoSpec"});
+        dlist.back().first.link({"gPosition", "gNormalRough", "gAlbedoMetallic"});
     }
 
     // this code is shit

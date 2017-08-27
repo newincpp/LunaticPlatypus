@@ -4,7 +4,7 @@ ifeq ($(IMGUIENABLED), true)
 	INCLUDE+=-I$(LUNATICPLATYPUSDIR)/imgui/
 endif
 
-CXXFLAGS= -Wconversion -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
+CXXFLAGS= -disable-free -Wconversion -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 
 LIBS= libLunaticPlatypus.a $(LUNATICPLATYPUSDIR)/libs/linux/libAlembic.a /usr/lib/libHalf.a /usr/lib/libIex.a
 ifeq ($(IMPORTER),ALEMBIC)

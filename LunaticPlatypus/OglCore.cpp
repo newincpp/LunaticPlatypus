@@ -48,8 +48,8 @@ void OglCore::init() {
 
     _s._fb.emplace_back();
     _s._fb[0].addBuffer("gPosition");
-    _s._fb[0].addBuffer("gNormal");
-    _s._fb[0].addBuffer("gAlbedoSpec");
+    _s._fb[0].addBuffer("gNormalRough");
+    _s._fb[0].addBuffer("gAlbedoMetallic");
     _s._fb[0].addDepthBuffer("gDepth");
     _s._fb[0].enable();
     //Mesh m;
