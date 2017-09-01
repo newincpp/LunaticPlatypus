@@ -1,6 +1,7 @@
 //#warning "using GLTF importer"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
+#include "StaticGameClass.hh"
 
 void Importer::load(std::string& file, RenderThread& d_, Heart::IGamelogic* g_, Graph& scene_) {
     tinygltf::Model* model = new tinygltf::Model();
@@ -132,6 +133,12 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
             glGenVertexArrays(1, &m._vao);
             glBindVertexArray(m._vao);
 
+            const tinygltf::Accessor &positionAccessor = model_->accessors[primitive.attributes.begin()->second];
+            const tinygltf::Accessor &indiceAccessor = model_->accessors[primitive.indices];
+
+            const tinygltf::BufferView &bufferView = model_->bufferViews[positionAccessor.bufferView];
+            const tinygltf::BufferView &indiceBufferView = model_->bufferViews[indiceAccessor.bufferView];
+
             for (const std::pair<const std::string, int>& attribute : primitive.attributes) {
                 const tinygltf::Accessor &accessor = model_->accessors[attribute.second];
                 int size = 1;
@@ -153,10 +160,10 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
                     if (attributeLocation.find(attribute.first) != attributeLocation.end()) {
                         std::cout << " at location: " << attributeLocation[attribute.first] << '\n';
                         glEnableVertexAttribArray(attributeLocation[attribute.first]);
-                        glVertexAttribPointer(attributeLocation[attribute.first], size, accessor.componentType, GL_FALSE, 0, BUFFER_OFFSET(accessor.byteOffset));
-                        if (accessor.componentType == GL_FLOAT) {
-                            //std::cout << "type is glFloat\n";
-                        }
+                        glVertexAttribPointer(attributeLocation[attribute.first], size, accessor.componentType, GL_FALSE, 0, (void*)bufferView.byteStride);
+                        //if (accessor.componentType == GL_FLOAT) {
+                        //    std::cout << "type is glFloat\n";
+                        //}
                         //std::cout << "offset inplace: " << accessor.byteOffset << " size is: " << size << '\n';
                     } else {
                         std::cout << attribute.first << "this attribute isn't a vertex buffer\n";
@@ -165,11 +172,8 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 
             }
 
-            const tinygltf::Accessor &positionAccessor = model_->accessors[(*primitive.attributes.find("POSITION")).second];
-            const tinygltf::BufferView &bufferView = model_->bufferViews[positionAccessor.bufferView];
             // gltf documentation cf:
             // "When a primitive's indices property is defined, it references the accessor to use for index data, and GL's drawElements"
-            const tinygltf::BufferView &indiceBufferView = model_->bufferViews[primitive.indices];
             if (bufferView.target == 0 || indiceBufferView.target == 0) {
                 std::cout << "WARN: bufferView.target is zero" << std::endl;
                 continue;  // Unsupported bufferView.
@@ -192,7 +196,7 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
             } else {
                 std::cout << "this mesh is fucked up ?" << std::endl;
             }
-            if (bufferView.target == GL_ARRAY_BUFFER) {
+            if (bufferView.target == GL_ARRAY_BUFFER) { // could be generalised with indiceBufferView
                 glGenBuffers(1, &m._vbo);
                 glBindBuffer(bufferView.target, m._vbo);
                 std::cout << "generating GL_ARRAY_BUFFER\n";
@@ -222,7 +226,7 @@ void Importer::genCamera(const tinygltf::Camera& gltfCam_, RenderThread* rt_, gl
     cam.lookAt(glm::vec3(.0f, 4.5f, 8.4f));
     glm::vec4 position = glm::vec4(0.0, 0.0, 0.0, 1.0) * transform_;
     cam.setPos(glm::vec3(position.x, position.y, position.z));
-    cam.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
+    //cam.upVector(glm::vec3(0.0f, -1.0f, 0.0f));
     if (gltfCam_.type.compare("perspective") == 0) {
         //std::cout << "aspect ratio: " << gltfCam_.perspective.aspectRatio << "\n";
         //std::cout << "fovy :" << gltfCam_.perspective.yfov << '\n';
@@ -234,5 +238,14 @@ void Importer::genCamera(const tinygltf::Camera& gltfCam_, RenderThread* rt_, gl
     }
 }
 void Importer::genGameClass(const std::string& name_, Heart::IGamelogic* g_, glm::mat4& transf, Node& n_) {
-    g_->_gameClasses.emplace_back(name_, n_);
+    std::cout << "gameClass detected: " << name_ << '\n';
+    GameClass* gc = nullptr;
+    gc = StaticGameClassGenerator::gen(name_, n_);
+    if (!gc) {
+        std::cout << name_ << " is loaded as Dynamic\n";
+        gc = new DynamicGameClass(name_, n_);
+    } else {
+        std::cout << name_ << " is loaded as static\n";
+    }
+    g_->_gameClasses.push_back(gc);
 }
