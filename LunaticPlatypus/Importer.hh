@@ -23,8 +23,9 @@
 class Importer {
     private:
 #ifdef GLTF2
-	void visitor(const tinygltf::Model*, const tinygltf::Node&, unsigned int, RenderThread&, Heart::IGamelogic*, glm::mat4, Node&);
-	void genMesh(const tinygltf::Model*, const tinygltf::Mesh&, RenderThread*, glm::mat4, Node&);
+	void visitor(const tinygltf::Model*, const tinygltf::Node&, unsigned int, RenderThread&, Heart::IGamelogic*, glm::mat4, Node&, std::vector<GLuint>*);
+	void genMesh(const tinygltf::Model*, const tinygltf::Mesh&, RenderThread*, glm::mat4, Node&, std::vector<GLuint>* GLBufferPool_);
+	void preload(tinygltf::Model &, std::vector<GLuint>*);
         void genCamera(const tinygltf::Camera& , RenderThread* , glm::mat4 transform_, Node&);
 	void genGameClass(const std::string&, Heart::IGamelogic*, glm::mat4&, Node&);
 #elif defined(ALEMBICV2)

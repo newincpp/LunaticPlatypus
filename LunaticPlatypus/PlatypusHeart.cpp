@@ -42,8 +42,6 @@ Heart::Heart() : _fw(nullptr), _win() {
 }
 
 void Heart::run() {
-    bool mod = false;
-    char imguistr[512] = "";
     std::chrono::time_point<std::chrono::high_resolution_clock> endFrame;
     std::chrono::time_point<std::chrono::high_resolution_clock> beginFrame;
 

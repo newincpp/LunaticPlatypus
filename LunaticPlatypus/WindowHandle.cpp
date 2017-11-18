@@ -96,7 +96,7 @@ WindowHandle::~WindowHandle() {
     glfwTerminate();
 }
 
-void WindowHandle::keyCallback(GLFWwindow* w_, int key_, int scanCode_, int keyStatus_, int modsKey_) {
+void WindowHandle::keyCallback(GLFWwindow* w_, int key_, int, int keyStatus_, int) {
 #ifdef IMGUIENABLED
     ImGui_ImplGlfwGL3_KeyCallback(w_, key_, scanCode_, keyStatus_, modsKey_);
 #endif

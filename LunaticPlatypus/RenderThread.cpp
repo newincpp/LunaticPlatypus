@@ -37,9 +37,10 @@ void RenderThread::_renderLogic(RenderThread* t_) {
             task++;
             t_->uniqueTasks.erase(lastTask); // according to the cppref iterators aren't invalidated after an erase
 
-            if (t_->_budget < std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - beginFrame).count()) {
-                break;
-            }
+            //if (t_->_budget < std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - beginFrame).count()) {
+	    //        std::cout << "out of budget" << std::endl;
+            //    break;
+            //}
         }
         t_->_renderer.render();
 

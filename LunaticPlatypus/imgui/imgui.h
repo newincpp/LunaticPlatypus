@@ -1402,7 +1402,7 @@ struct ImFont
 // my implementation of imgui
 void ImGui_RenderDrawLists(ImDrawData* draw_data);
 //#include <GLFW/glfw3.h>
-class GLFWwindow;
+struct GLFWwindow;
 void ImGui_ImplGlfwGL3_KeyCallback(GLFWwindow*, int key, int, int action, int mods);
 void ImGui_ImplGlfwGL3_MouseButtonCallback(GLFWwindow*, int button, int action, int /*mods*/);
 void ImGui_ImplGlfwGL3_CharCallback(GLFWwindow*, unsigned int c);

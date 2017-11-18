@@ -704,18 +704,8 @@ void main() {
     //outColour = mix(vec3(1.0, 1.0, 1.0) ,giColour, ssao(6, 1));
 
     outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
-    //float x = timeBounce(1000);
-    //if (x > 0.5f) {
-    //    x = 1.0f;
-    //} else {
-    //    x = 0.0f;
-    //}
-    //outColour = mix(CurrentPosition, VSPositionFromDepth(), x);
 
     ivec2 coord = ivec2((gl_FragCoord.xy / vec2(1920.0f, 1080.0f)) * vec2(imageSize(uRaytracedShadowBuffer)));
-    //if (TexCoords.x < timeBounce(1000)) {
-    //outColour = imageLoad(uRaytracedShadowBuffer, coord).xyz;
-    //}
 
     vec2 rtUV = getUVfromPosition(CurrentPosition);
     //outColour = vec3(rtUV, 0.0);

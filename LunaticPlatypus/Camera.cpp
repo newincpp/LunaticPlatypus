@@ -117,8 +117,10 @@ void Camera::clipPlane(glm::vec2&& clip_) {
 
 void Camera::setup(glm::vec3&& fw_, glm::vec3&& right_, glm::vec3&& up_) {
     _forward = glm::normalize(fw_);
-    _right = glm::normalize(glm::cross(_forward, up_));
-    _up = glm::cross(_right, _forward);
+    _right = glm::normalize(right_);
+    _up = up_;
+    //_right = glm::normalize(glm::cross(_forward, up_));
+    //_up = glm::cross(_right, _forward);
 }
 
 void Camera::moveForward(float scal) {

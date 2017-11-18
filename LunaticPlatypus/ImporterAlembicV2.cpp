@@ -1,4 +1,4 @@
-#warning "using Alembic Importer Version 2"
+#include "Importer.cpp"
 #include <Alembic/AbcGeom/All.h>
 #include <Alembic/AbcCoreAbstract/All.h>
 #include <Alembic/AbcCoreFactory/All.h>

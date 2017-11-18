@@ -9,7 +9,6 @@ endif
     
 SRC	= Camera.cpp \
 	   FrameBuffer.cpp \
-	   Importer.cpp \
 	   Mesh.cpp \
 	   Light.cpp \
 	   OglCore.cpp \
@@ -48,9 +47,11 @@ INSTALL = ../demo
 
 ifeq ($(IMPORTER),GLTF2)
     DEFINE+=-DGLTF2
+    SRC+= ImporterGltf.cpp
 endif
 ifeq ($(IMPORTER),ALEMBIC)
     DEFINE+=-DALEMBICV2
+    SRC+= ImporterAlembicV2.cpp
     LIBS+= ./libs/$(LIBFOLDER)/Objectsoup/libHalf/*.o \
 	  ./libs/$(LIBFOLDER)/Objectsoup/libAlembic/*.o
 
@@ -58,6 +59,7 @@ ifeq ($(IMPORTER),ALEMBIC)
 endif
 ifeq ($(IMPORTER),ASSIMP)
     DEFINE+=-DASSIMP
+    SRC+= ImporterAssimp.cpp
     LIBS+= ./libs/$(LIBFOLDER)/Objectsoup/libassimp/*.o \
 	   ./libs/$(LIBFOLDER)/Objectsoup/libz/*.o
 endif

@@ -4,12 +4,12 @@ ifeq ($(IMGUIENABLED), true)
 	INCLUDE+=-I$(LUNATICPLATYPUSDIR)/imgui/
 endif
 
-CXXFLAGS= -disable-free -Wconversion -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
+CXXFLAGS= -Wconversion -Wall -Wextra -W -std=c++14 $(OPTIM) $(DEFINE) $(DEBUG) $(INCLUDE)
 
-LIBS= libLunaticPlatypus.a $(LUNATICPLATYPUSDIR)/libs/linux/libAlembic.a /usr/lib/libHalf.a /usr/lib/libIex.a
 ifeq ($(IMPORTER),ALEMBIC)
-	LIBS+=$(LUNATICPLATYPUSDIR)/libs/linux/libAlembic.a /usr/lib/libHalf.a /usr/lib/libIex.a
+	LIBS=$(LUNATICPLATYPUSDIR)/libs/linux/libAlembic.a #/usr/lib/libHalf.a /usr/lib/libIex.a
 endif
+LIBS+= libLunaticPlatypus.a 
 
 #pkg-config --static --libs glfw3
 ifeq ($(OS),Linux)

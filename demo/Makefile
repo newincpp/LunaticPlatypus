@@ -7,7 +7,7 @@ NAME	=demo
 
 OBJS	= $(SRC:.$(EXT)=.o)
 
-LDFLAGS += -fsanitize=address
+LDFLAGS += #-fsanitize=address
 
 all: $(NAME)
 
