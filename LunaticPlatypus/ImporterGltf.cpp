@@ -63,9 +63,16 @@ void Importer::preload(tinygltf::Model &model_, std::vector<GLuint>* GLBufferPoo
     GLBufferPool_->resize(model_.bufferViews.size());
     for (size_t i = 0; i < model_.bufferViews.size(); i++) { // TODO : batch into reasonably sized renderThread::uniqueTask to avoid stalling for a long time while uploading to GPU
       const tinygltf::BufferView &bufferView = model_.bufferViews[i];
+      std::cout << "bufferView.name: \"" << bufferView.name << "\"\n";
       if (bufferView.target == 0) {
         std::cout << "WARN: bufferView.target is zero" << std::endl;
         continue;  // Unsupported bufferView.
+      } else if (bufferView.target == GL_ARRAY_BUFFER){
+        std::cout << "generating ARRAY" << std::endl;
+      } else if (bufferView.target == GL_ELEMENT_ARRAY_BUFFER) {
+        std::cout << "generating ELEMENT" << std::endl;
+      } else {
+	std::cout << "fuck ?\n";
       }
       const tinygltf::Buffer &buffer = model_.buffers[bufferView.buffer];
       glGenBuffers(1, &(*GLBufferPool_)[i]);
@@ -87,7 +94,7 @@ glm::mat4 convertTo(const decltype(tinygltf::Node::matrix)& from) {
 void Importer::visitor(const tinygltf::Model* model_, const tinygltf::Node& nod_, unsigned int depth, RenderThread& renderThread_, Heart::IGamelogic* glog_, glm::mat4 transf_, Node& sceneGraph_, std::vector<GLuint>* GLBufferPool_) {
     transf_ *= convertTo(nod_.matrix);
     if (nod_.mesh >= 0) {
-        //std::cout << "mesh id: " << nod_.mesh << '\n';
+        std::cout << "mesh id: " << nod_.mesh << '\n';
         renderThread_.uniqueTasks.push_back(std::bind(&Importer::genMesh, this, model_, model_->meshes[nod_.mesh], &renderThread_, transf_, sceneGraph_, GLBufferPool_)); // TODO: this code will diplicate meshes if an index gets loaded twice, as a Mesh contain its transform matrix this is fine until glDrawElementsInstanced is implemented
     }
     if (nod_.camera >= 0) {
@@ -106,17 +113,15 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 	//Node& n = sceneGraph_.push();
 
 	std::map<std::string, GLuint> attributeLocation = {{"POSITION", 0}, {"NORMAL", 1}, {"TEXCOORD_0", 2}};
-	std::cout << "------- using pool of prealocated GLBuffer: " << GLBufferPool_->size() << " allocated \n";
 
 	std::list<std::pair<Shader, std::vector<Mesh>>>& dlist = renderThread_->unsafeGetRenderer().getDrawBuffer()._drawList;
 	if (dlist.empty()) {
 		dlist.emplace_back();
 		dlist.back().first.bindDefaultShader();
 		dlist.back().first.link({"gPosition", "gNormalRough", "gAlbedoMetallic"});
-		//dlist.back().first.add("default.material/vertex.glsl", GL_VERTEX_SHADER);
-		//dlist.back().first.add("default.material/fragment.glsl", GL_FRAGMENT_SHADER);
 	}
 
+	std::cout << "Mesh name: " << mesh_.name << '\n';
 	std::cout << "primitive size: " << mesh_.primitives.size() << '\n';
 
 	// gltf documentation cf:
@@ -137,6 +142,7 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 			for (const std::pair<const std::string, int>& attribute : primitive.attributes) {
 				const tinygltf::Accessor &accessor = model_->accessors[attribute.second];
 				m._vbo = (*GLBufferPool_)[accessor.bufferView];
+				std::cout << "bind: " << accessor.bufferView << "\n";
 				glBindBuffer(GL_ARRAY_BUFFER, m._vbo);
 				int size = 1;
 				if (accessor.type == TINYGLTF_TYPE_SCALAR) {
@@ -162,15 +168,16 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 					//}
 					//std::cout << "offset inplace: " << accessor.byteOffset << " size is: " << size << '\n';
 				} else {
-					std::cout << attribute.first << "WW: this attribute isn't a vertex buffer\n";
+					std::cout << attribute.first << " WW: this attribute isn't a vertex buffer\n";
 				}
 
 			}
 
 			const tinygltf::Accessor &indexAccessor = model_->accessors[primitive.indices];
+			std::cout << "indexAccessor bind: " << indexAccessor.bufferView << "\n";
 			m._ebo = (*GLBufferPool_)[indexAccessor.bufferView];
 			m._size = indexAccessor.count;
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (*GLBufferPool_)[indexAccessor.bufferView]);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m._ebo);
 			//CheckErrors("bind buffer");
 			//int mode = -1;
 			if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {

@@ -12,7 +12,6 @@ class MyGame : public Heart::IGamelogic {
 	MyGame() {
 	    //_scene = "./sponza.abc";
 	    //_scene = "./vega.abc";
-	    //_scene = "./Duck.gltf";
 	    //_scene = "./sponza.gltf";
 	    //_scene = "./sponza.glb";
             //_scene = "./vega.gltf";

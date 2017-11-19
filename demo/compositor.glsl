@@ -704,6 +704,7 @@ void main() {
     //outColour = mix(vec3(1.0, 1.0, 1.0) ,giColour, ssao(6, 1));
 
     outColour = pbrDirectIllumination(roughness, metallicness, ssao(6, 1));
+    outColour += vec3(0.3, 0.3, 0.3);
 
     ivec2 coord = ivec2((gl_FragCoord.xy / vec2(1920.0f, 1080.0f)) * vec2(imageSize(uRaytracedShadowBuffer)));
 
