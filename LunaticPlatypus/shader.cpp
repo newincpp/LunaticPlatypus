@@ -25,7 +25,6 @@ void Shader::add(const std::string& sourceFile_, GLenum type_) {
 	id = &_vertexId.second;
 	//_vertexId.first = sourceFile_; //crash in separated thread "unreadable data" said lldb
 	_vertexId.first.assign(sourceFile_);
-	//_vertexId.first = "yay!";
     } else if (type_ == GL_FRAGMENT_SHADER) {
 	id = &_fragmentId.second;
 	_fragmentId.first = sourceFile_;
@@ -179,7 +178,7 @@ void Shader::bindDefaultShader() {
             "void main() {\n"
             "    gPosition = vInfVertexPos_;\n"
             "    gNormal = vInfVertexNormal_;\n"
-            "    gAlbedoSpec.rgb = vec3(1.0, 1.0, 1.0);\n"
+            "    gAlbedoSpec.rgb = vec3(vInfUvCoord_, 1.0);\n"
             "}\n";
         defaultFragmentShader= glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(defaultFragmentShader, 1, &defF, NULL);

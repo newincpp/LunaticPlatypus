@@ -111,9 +111,10 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 	std::list<std::pair<Shader, std::vector<Mesh>>>& dlist = renderThread_->unsafeGetRenderer().getDrawBuffer()._drawList;
 	if (dlist.empty()) {
 		dlist.emplace_back();
-		dlist.back().first.add("default.material/vertex.glsl", GL_VERTEX_SHADER);
-		dlist.back().first.add("default.material/fragment.glsl", GL_FRAGMENT_SHADER);
+		dlist.back().first.bindDefaultShader();
 		dlist.back().first.link({"gPosition", "gNormalRough", "gAlbedoMetallic"});
+		//dlist.back().first.add("default.material/vertex.glsl", GL_VERTEX_SHADER);
+		//dlist.back().first.add("default.material/fragment.glsl", GL_FRAGMENT_SHADER);
 	}
 
 	std::cout << "primitive size: " << mesh_.primitives.size() << '\n';
@@ -130,6 +131,9 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 			glGenVertexArrays(1, &m._vao);
 			glBindVertexArray(m._vao);
 
+			if (primitive.attributes.size() > 3) {
+				std::cout << "WW: more attribute than supported\n";
+			}
 			for (const std::pair<const std::string, int>& attribute : primitive.attributes) {
 				const tinygltf::Accessor &accessor = model_->accessors[attribute.second];
 				m._vbo = (*GLBufferPool_)[accessor.bufferView];
@@ -158,7 +162,7 @@ void Importer::genMesh(const tinygltf::Model* model_, const tinygltf::Mesh& mesh
 					//}
 					//std::cout << "offset inplace: " << accessor.byteOffset << " size is: " << size << '\n';
 				} else {
-					std::cout << attribute.first << "this attribute isn't a vertex buffer\n";
+					std::cout << attribute.first << "WW: this attribute isn't a vertex buffer\n";
 				}
 
 			}
