@@ -1,6 +1,10 @@
 LunaticPlatypus
 =======
 
+**This version is not maintained anymore the engine has been rebooted here:**
+
+https://git.psychoscientists.com/newin/LunaticPlatypusV2 
+
 LunaticPlatypus is a game engine designed with the philosophy "If less is more then nothing is everything".
 
 To build this engine go to the LunaticPlatypus folder and use `INSTALL="/path/to/my/project/" make extractLibs && make && make install && make project` alternatively you can also just `INSTALL="/path/to/my/project/" make full`.
