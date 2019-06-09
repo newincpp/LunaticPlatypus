@@ -3,7 +3,7 @@ LunaticPlatypus
 
 **This version is not maintained anymore the engine has been rebooted here:**
 
-https://git.psychoscientists.com/newin/LunaticPlatypusV2 
+https://git.n700.ovh/newin/LunaticPlatypusV2
 
 LunaticPlatypus is a game engine designed with the philosophy "If less is more then nothing is everything".
 
